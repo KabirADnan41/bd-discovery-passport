@@ -1,0 +1,103 @@
+/* Design tokens. Raw palette first, then semantic roles that components use.
+   Contrast of every text pair is checked in tests/unit/contrast.test.js. */
+:root {
+  color-scheme: light;
+  /* palette (client brief) */
+  --parchment: #f3ebdd;
+  --paper: #fffdf7;
+  --deep-ink: #143128;
+  --bengal-green: #0f5132;
+  --discovery-green: #2f7d5b;
+  --passport-vermilion: #b93b33;
+  --muted-brass: #b68b3a;
+  --river-blue: #347e91;
+  --undiscovered-sage: #c9cec5;
+
+  /* surfaces */
+  --surface-canvas: var(--parchment);
+  --surface-paper: var(--paper);
+  --surface-sunk: #ebe1cf;
+  --surface-cover: var(--bengal-green);
+
+  /* text */
+  --text-primary: var(--deep-ink);
+  --text-secondary: #3d5249;
+  --text-muted: #56675f;
+  --text-on-cover: var(--paper);
+
+  /* lines */
+  --rule: rgb(20 49 40 / 0.14);
+  --rule-strong: rgb(20 49 40 / 0.3);
+
+  /* map */
+  --map-locked: var(--undiscovered-sage);
+  --map-locked-hatch: #a3ac9f;
+  --map-discovered: var(--discovery-green);
+  --map-selected: var(--bengal-green);
+  --map-border: var(--paper);
+  --map-outline: var(--deep-ink);
+  --map-division: rgb(20 49 40 / 0.55);
+  --map-graticule: rgb(20 49 40 / 0.1);
+  --map-hover: rgb(20 49 40 / 0.1);
+  --map-water-label: var(--river-blue);
+
+  /* accents */
+  --accent-stamp: var(--passport-vermilion); /* stamp graphics, selection outline, danger button */
+  --accent-stamp-text: #a8332c; /* small vermilion text: ≥5.1:1 on every light surface (#b93b33 is 4.34 on sunk) */
+  --accent-river: var(--river-blue);
+  --accent-brass: var(--muted-brass);
+  --focus-ring: var(--river-blue);
+
+  /* depth: tinted to the ink hue, never black */
+  --shadow-paper: 0 1px 0 rgb(20 49 40 / 0.05), 0 18px 40px -22px rgb(20 49 40 / 0.35);
+  --shadow-sheet: 0 -1px 0 rgb(20 49 40 / 0.08), 0 -18px 40px -24px rgb(20 49 40 / 0.4);
+
+  /* motion */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1); /* strong ease-out (animate skill) */
+  --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1); /* iOS-like drawer curve */
+  --dur-hover: 140ms;
+  --dur-reveal: 260ms;
+  --dur-sheet: 340ms;
+  --dur-stamp: 460ms;
+
+  /* shape: controls are pills, surfaces are 12px */
+  --radius-surface: 12px;
+  --radius-control: 999px;
+}
+
+/* Dark "night atlas". public/theme-init.js sets data-theme before first paint. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --surface-canvas: #0e1a16;
+  --surface-paper: #15251f;
+  --surface-sunk: #0a1411;
+  --surface-cover: #2f7d5b;
+
+  --text-primary: #efe8d9;
+  --text-secondary: #c3cbc3;
+  --text-muted: #a3aea6;
+  --text-on-cover: #0e1a16;
+
+  --rule: rgb(239 232 217 / 0.14);
+  --rule-strong: rgb(239 232 217 / 0.3);
+
+  --map-locked: #2b3b35;
+  --map-locked-hatch: #3c5048;
+  --map-discovered: #3f9a72;
+  --map-selected: #5fbf8f;
+  --map-border: #0e1a16;
+  --map-outline: #d9d1c0;
+  --map-division: rgb(239 232 217 / 0.45);
+  --map-graticule: rgb(239 232 217 / 0.08);
+  --map-hover: rgb(239 232 217 / 0.12);
+  --map-water-label: #7fbccb;
+
+  --accent-stamp: #e4695d;
+  --accent-stamp-text: #e4695d;
+  --accent-river: #7fbccb;
+  --accent-brass: #d5b06a;
+  --focus-ring: #7fbccb;
+
+    --shadow-paper: 0 1px 0 rgb(0 0 0 / 0.2), 0 18px 40px -22px rgb(0 0 0 / 0.6);
+    --shadow-sheet: 0 -1px 0 rgb(0 0 0 / 0.3), 0 -18px 40px -24px rgb(0 0 0 / 0.7);
+}

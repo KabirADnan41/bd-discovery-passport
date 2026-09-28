@@ -1,0 +1,52 @@
+{
+  "name": "bangladesh-discovery-passport",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Explore Bangladesh, one district at a time. An interactive SVG atlas of the 64 districts.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build:map": "node scripts/build-district-map.mjs",
+    "validate:data": "node scripts/validate-map-data.mjs",
+    "build": "npm run validate:data && vite build",
+    "preview": "wrangler pages dev --port 8788 --ip 127.0.0.1",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "check": "npm run lint && npm run test && npm run build && npm run test:e2e",
+    "db:migrate:local": "wrangler d1 migrations apply bd-discovery-passport --local",
+    "db:reset-limits:local": "wrangler d1 execute bd-discovery-passport --local --command \"DELETE FROM rate_limits\"",
+    "dev:full": "npm run build && wrangler pages dev --port 8788",
+    "test:api": "node tests/api/smoke.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/anek-bangla": "5.3.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.63.0",
+    "@tailwindcss/vite": "4.3.3",
+    "@testing-library/react": "16.3.3",
+    "@vitejs/plugin-react": "6.1.1",
+    "d3-geo": "3.1.1",
+    "eslint": "10.11.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-refresh": "0.5.7",
+    "globals": "17.12.0",
+    "jsdom": "30.1.1",
+    "tailwindcss": "4.3.3",
+    "topojson-client": "3.1.0",
+    "topojson-server": "3.0.1",
+    "topojson-simplify": "3.0.3",
+    "vite": "8.3.1",
+    "vitest": "5.0.2",
+    "wrangler": "4.142.0"
+  }
+}

@@ -1,0 +1,116 @@
+/* Styles for the static policy pages (privacy/, terms/). Same tokens and type as the atlas. */
+@import 'tailwindcss/preflight.css';
+@import '@fontsource-variable/anek-bangla/wght.css';
+@import './tokens.css';
+
+html {
+  background: var(--surface-canvas);
+  color: var(--text-primary);
+}
+body {
+  margin: 0;
+  font-family: 'Anek Bangla Variable', 'Noto Sans Bengali', 'Nirmala UI', system-ui, sans-serif;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+html {
+  scrollbar-color: var(--rule-strong) transparent;
+}
+::selection {
+  background: color-mix(in srgb, var(--accent-river) 25%, transparent);
+}
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+.policy {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+  line-height: 1.65;
+}
+.policy header {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.policy h1 {
+  font-size: clamp(1.9rem, 5vw, 2.5rem);
+  line-height: 1.1;
+  font-weight: 600;
+  text-wrap: balance;
+  margin: 0.4rem 0 0.4rem;
+}
+.policy h2 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 2.2rem 0 0.5rem;
+  text-wrap: balance;
+}
+.policy p,
+.policy li {
+  color: var(--text-secondary);
+  max-width: 65ch;
+}
+.policy ul {
+  padding-left: 1.2rem;
+}
+.policy li + li {
+  margin-top: 0.35rem;
+}
+.policy strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.policy code {
+  font-size: 0.9em;
+  padding: 0.05em 0.35em;
+  border-radius: 4px;
+  background: var(--surface-sunk);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.policy a {
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 0.2em;
+}
+.policy a:hover {
+  text-decoration-color: currentColor;
+}
+.policy .meta {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.policy .back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 560;
+}
+.policy table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  margin: 0.75rem 0;
+}
+.policy th,
+.policy td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.55rem 0.6rem 0.55rem 0;
+  border-bottom: 1px solid var(--rule);
+  color: var(--text-secondary);
+}
+.policy th {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.policy footer {
+  margin-top: 3rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}

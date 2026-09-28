@@ -1,0 +1,45 @@
+# Optional CI. Runs only once this folder is pushed to GitHub (which needs the owner's OK).
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+
+      - name: Generated map data matches its pinned sources
+        run: npm run build:map && git diff --exit-code -- src/generated data/map-build-report.json
+
+      - run: npm run build
+
+      - name: Throwaway pepper and local D1 for the API tests
+        run: |
+          node -e "require('fs').writeFileSync('.dev.vars','AUTH_PEPPER='+require('crypto').randomBytes(32).toString('base64url')+'\n')"
+          npm run db:migrate:local
+
+      - run: npx playwright install --with-deps chromium
+      - name: End-to-end tests (production build + Functions + D1 + real CSP headers)
+        run: npx playwright test
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

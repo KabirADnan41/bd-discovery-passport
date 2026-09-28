@@ -1,0 +1,552 @@
+{
+  "source": {
+    "file": "data/source/bangladesh.geojson",
+    "bytes": 3596695,
+    "features": 544
+  },
+  "joins": {
+    "byRepositoryId": 419,
+    "bySpatialJoin": 118,
+    "byReviewedCorrection": 7
+  },
+  "corrections": [
+    {
+      "sourceName": "Companiganj",
+      "repositoryDistrictId": "54",
+      "correctedDistrictId": "49",
+      "reason": "Companiganj upazila, Noakhali (not Companiganj upazila, Sylhet)"
+    },
+    {
+      "sourceName": "Daulatpur",
+      "repositoryDistrictId": "60",
+      "correctedDistrictId": "59",
+      "reason": "Daulatpur thana, Khulna city (not Daulatpur upazila, Kushtia)"
+    },
+    {
+      "sourceName": "Mirpur",
+      "repositoryDistrictId": "60",
+      "correctedDistrictId": "1",
+      "reason": "Mirpur thana, Dhaka city (not Mirpur upazila, Kushtia)"
+    },
+    {
+      "sourceName": "Mohammadpur",
+      "repositoryDistrictId": "61",
+      "correctedDistrictId": "1",
+      "reason": "Mohammadpur thana, Dhaka city (not Mohammadpur upazila, Magura)"
+    },
+    {
+      "sourceName": "Pirganj",
+      "repositoryDistrictId": "33",
+      "correctedDistrictId": "32",
+      "reason": "Pirganj upazila, Rangpur (the two Pirganj joins are swapped)"
+    },
+    {
+      "sourceName": "Pirganj",
+      "repositoryDistrictId": "32",
+      "correctedDistrictId": "33",
+      "reason": "Pirganj upazila, Thakurgaon (the two Pirganj joins are swapped)"
+    },
+    {
+      "sourceName": "Sreepur",
+      "repositoryDistrictId": "61",
+      "correctedDistrictId": "3",
+      "reason": "Sreepur upazila, Gazipur (not Sreepur upazila, Magura)"
+    }
+  ],
+  "orphanAssignments": [
+    {
+      "name": "Adabor",
+      "districtId": "1"
+    },
+    {
+      "name": "Anowara",
+      "districtId": "43"
+    },
+    {
+      "name": "Austagram",
+      "districtId": "6"
+    },
+    {
+      "name": "Badda",
+      "districtId": "1"
+    },
+    {
+      "name": "Baghai Chhari",
+      "districtId": "50"
+    },
+    {
+      "name": "Baghmara",
+      "districtId": "24"
+    },
+    {
+      "name": "Bakalia",
+      "districtId": "43"
+    },
+    {
+      "name": "Bakshiganj",
+      "districtId": "5"
+    },
+    {
+      "name": "Bangshal",
+      "districtId": "1"
+    },
+    {
+      "name": "Bayejid Bostami",
+      "districtId": "43"
+    },
+    {
+      "name": "Biman Bandar",
+      "districtId": "1"
+    },
+    {
+      "name": "Boalia",
+      "districtId": "24"
+    },
+    {
+      "name": "Cantonment",
+      "districtId": "1"
+    },
+    {
+      "name": "Chak Bazar",
+      "districtId": "1"
+    },
+    {
+      "name": "Chandgaon",
+      "districtId": "43"
+    },
+    {
+      "name": "Chhagalnaiya",
+      "districtId": "46"
+    },
+    {
+      "name": "Chittagong Port",
+      "districtId": "43"
+    },
+    {
+      "name": "Chuadanga Sadar",
+      "districtId": "56"
+    },
+    {
+      "name": "Comilla Adarsha Sadar",
+      "districtId": "44"
+    },
+    {
+      "name": "Comilla Sadar Dakshin",
+      "districtId": "44"
+    },
+    {
+      "name": "Companiganj",
+      "districtId": "54"
+    },
+    {
+      "name": "Cox's Bazar Sadar",
+      "districtId": "45"
+    },
+    {
+      "name": "Dakshin Sunamganj",
+      "districtId": "53"
+    },
+    {
+      "name": "Dakshinkhan",
+      "districtId": "1"
+    },
+    {
+      "name": "Darus Salam",
+      "districtId": "1"
+    },
+    {
+      "name": "Daulatpur",
+      "districtId": "60"
+    },
+    {
+      "name": "Demra",
+      "districtId": "1"
+    },
+    {
+      "name": "Dhanmondi",
+      "districtId": "1"
+    },
+    {
+      "name": "Double Mooring",
+      "districtId": "43"
+    },
+    {
+      "name": "Fulbari",
+      "districtId": "26"
+    },
+    {
+      "name": "Fulgazi",
+      "districtId": "46"
+    },
+    {
+      "name": "Gangni",
+      "districtId": "62"
+    },
+    {
+      "name": "Gazipur Sadar",
+      "districtId": "3"
+    },
+    {
+      "name": "Gendaria",
+      "districtId": "1"
+    },
+    {
+      "name": "Golabganj",
+      "districtId": "54"
+    },
+    {
+      "name": "Gulshan",
+      "districtId": "1"
+    },
+    {
+      "name": "Gurudaspur",
+      "districtId": "21"
+    },
+    {
+      "name": "Hajiganj",
+      "districtId": "42"
+    },
+    {
+      "name": "Halishahar",
+      "districtId": "43"
+    },
+    {
+      "name": "Hatiya",
+      "districtId": "49"
+    },
+    {
+      "name": "Hazaribagh",
+      "districtId": "1"
+    },
+    {
+      "name": "Jaintiapur",
+      "districtId": "54"
+    },
+    {
+      "name": "Jatrabari",
+      "districtId": "1"
+    },
+    {
+      "name": "Joypurhat Sadar",
+      "districtId": "19"
+    },
+    {
+      "name": "Kabirhat",
+      "districtId": "49"
+    },
+    {
+      "name": "Kadamtali",
+      "districtId": "1"
+    },
+    {
+      "name": "Kafrul",
+      "districtId": "1"
+    },
+    {
+      "name": "Kalabagan",
+      "districtId": "1"
+    },
+    {
+      "name": "Kaliakair",
+      "districtId": "3"
+    },
+    {
+      "name": "Kamalnagar",
+      "districtId": "48"
+    },
+    {
+      "name": "Kamrangir Char",
+      "districtId": "1"
+    },
+    {
+      "name": "Kanthalia",
+      "districtId": "37"
+    },
+    {
+      "name": "Kawkhali",
+      "districtId": "39"
+    },
+    {
+      "name": "Kawkhali (Betbunia)",
+      "districtId": "50"
+    },
+    {
+      "name": "Khagrachhari Sadar",
+      "districtId": "47"
+    },
+    {
+      "name": "Khalishpur",
+      "districtId": "59"
+    },
+    {
+      "name": "Khan Jahan Ali",
+      "districtId": "59"
+    },
+    {
+      "name": "Khilgaon",
+      "districtId": "1"
+    },
+    {
+      "name": "Khilkhet",
+      "districtId": "1"
+    },
+    {
+      "name": "Khulna Sadar",
+      "districtId": "59"
+    },
+    {
+      "name": "Khulshi",
+      "districtId": "43"
+    },
+    {
+      "name": "Kotwali",
+      "districtId": "43"
+    },
+    {
+      "name": "Kotwali",
+      "districtId": "1"
+    },
+    {
+      "name": "Kotwali",
+      "districtId": "57"
+    },
+    {
+      "name": "Lalbagh",
+      "districtId": "1"
+    },
+    {
+      "name": "Lalmonirhat Sadar",
+      "districtId": "29"
+    },
+    {
+      "name": "Mahadebpur",
+      "districtId": "20"
+    },
+    {
+      "name": "Manohardi",
+      "districtId": "12"
+    },
+    {
+      "name": "Manoharganj",
+      "districtId": "44"
+    },
+    {
+      "name": "Matihar",
+      "districtId": "24"
+    },
+    {
+      "name": "Matlab Dakshin",
+      "districtId": "42"
+    },
+    {
+      "name": "Maulvi Bazar Sadar",
+      "districtId": "52"
+    },
+    {
+      "name": "Meherpur Sadar",
+      "districtId": "62"
+    },
+    {
+      "name": "Mirpur",
+      "districtId": "60"
+    },
+    {
+      "name": "Mohammadpur",
+      "districtId": "61"
+    },
+    {
+      "name": "Motijheel",
+      "districtId": "1"
+    },
+    {
+      "name": "Naniarchar",
+      "districtId": "50"
+    },
+    {
+      "name": "Narail Sadar",
+      "districtId": "63"
+    },
+    {
+      "name": "Narayanganj Sadar",
+      "districtId": "11"
+    },
+    {
+      "name": "Netrokona Sadar",
+      "districtId": "13"
+    },
+    {
+      "name": "New Market",
+      "districtId": "1"
+    },
+    {
+      "name": "Pahartali",
+      "districtId": "43"
+    },
+    {
+      "name": "Pallabi",
+      "districtId": "1"
+    },
+    {
+      "name": "Paltan",
+      "districtId": "1"
+    },
+    {
+      "name": "Panchlaish",
+      "districtId": "43"
+    },
+    {
+      "name": "Patenga",
+      "districtId": "43"
+    },
+    {
+      "name": "Rajpara",
+      "districtId": "24"
+    },
+    {
+      "name": "Ramna",
+      "districtId": "1"
+    },
+    {
+      "name": "Rampura",
+      "districtId": "1"
+    },
+    {
+      "name": "Raumari",
+      "districtId": "28"
+    },
+    {
+      "name": "Royganj",
+      "districtId": "25"
+    },
+    {
+      "name": "Roypur",
+      "districtId": "48"
+    },
+    {
+      "name": "Roypura",
+      "districtId": "12"
+    },
+    {
+      "name": "Sabujbagh",
+      "districtId": "1"
+    },
+    {
+      "name": "Saghatta",
+      "districtId": "27"
+    },
+    {
+      "name": "Saltha",
+      "districtId": "2"
+    },
+    {
+      "name": "Senbagh",
+      "districtId": "49"
+    },
+    {
+      "name": "Serajdikhan",
+      "districtId": "9"
+    },
+    {
+      "name": "Shah Ali",
+      "districtId": "1"
+    },
+    {
+      "name": "Shah Makhdum",
+      "districtId": "24"
+    },
+    {
+      "name": "Shahbagh",
+      "districtId": "1"
+    },
+    {
+      "name": "Shajahanpur",
+      "districtId": "18"
+    },
+    {
+      "name": "Shariatpur Sadar",
+      "districtId": "15"
+    },
+    {
+      "name": "Sher-e-bangla Nagar",
+      "districtId": "1"
+    },
+    {
+      "name": "Shyampur",
+      "districtId": "1"
+    },
+    {
+      "name": "Singra",
+      "districtId": "21"
+    },
+    {
+      "name": "Sonadanga",
+      "districtId": "59"
+    },
+    {
+      "name": "Sonatola",
+      "districtId": "18"
+    },
+    {
+      "name": "Sreepur",
+      "districtId": "61"
+    },
+    {
+      "name": "Subarnachar",
+      "districtId": "49"
+    },
+    {
+      "name": "Sutrapur",
+      "districtId": "1"
+    },
+    {
+      "name": "Tejgaon",
+      "districtId": "1"
+    },
+    {
+      "name": "Tejgaon Ind. Area",
+      "districtId": "1"
+    },
+    {
+      "name": "Tentulia",
+      "districtId": "31"
+    },
+    {
+      "name": "Turag",
+      "districtId": "1"
+    },
+    {
+      "name": "Uttar Khan",
+      "districtId": "1"
+    },
+    {
+      "name": "Uttara",
+      "districtId": "1"
+    },
+    {
+      "name": "Zanjira",
+      "districtId": "15"
+    }
+  ],
+  "output": {
+    "file": "src/generated/districtPaths.generated.json",
+    "bytes": 138990,
+    "districtPathBytes": 80893,
+    "districts": 64,
+    "viewBox": [
+      0,
+      0,
+      1000,
+      1316
+    ]
+  },
+  "simplification": {
+    "method": "TopoJSON shared-arc Visvalingam (spherical triangle area), kept 25% of weighted vertices, quantization 100000",
+    "arcVerticesBefore": 52829,
+    "arcVerticesAfter": 16532,
+    "sliversRemoved": 1,
+    "subPixelRingsDropped": 121,
+    "minRingAreaViewUnits": 1
+  },
+  "totalAreaKm2": 140145,
+  "warnings": []
+}

@@ -1,0 +1,16 @@
+# Cloudflare Pages project: static site in dist/ plus Pages Functions in functions/.
+# Free plan: 100k requests/day, 10 ms CPU per request, D1 500 MB per database.
+name = "bd-discovery-passport"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-09-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "bd-discovery-passport"
+# Production database (created 2026-09-28, region APAC). Local dev uses a separate local copy.
+database_id = "a226fa2a-05f5-45de-94ea-681b8bb1e8c5"
+migrations_dir = "migrations"
+
+# AUTH_PEPPER is a secret, never committed:
+#   production: npx wrangler pages secret put AUTH_PEPPER
+#   local dev:  .dev.vars (gitignored)

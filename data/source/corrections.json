@@ -1,0 +1,12 @@
+{
+  "note": "Reviewed corrections to district_id joins in bangladesh.geojson. Each polygon's name is shared by upazilas in two districts, and the upstream name matcher attached it to the wrong one. The corrected district is the ADM2 district (same geoBoundaries release) that contains the polygon's interior point, and it matches the known location of the named place. The build fails on any disagreement not listed here, and on any listed correction that is no longer needed.",
+  "corrections": [
+    { "sourceName": "Mirpur", "repositoryDistrictId": "60", "correctedDistrictId": "1", "reason": "Mirpur thana, Dhaka city (not Mirpur upazila, Kushtia)" },
+    { "sourceName": "Mohammadpur", "repositoryDistrictId": "61", "correctedDistrictId": "1", "reason": "Mohammadpur thana, Dhaka city (not Mohammadpur upazila, Magura)" },
+    { "sourceName": "Sreepur", "repositoryDistrictId": "61", "correctedDistrictId": "3", "reason": "Sreepur upazila, Gazipur (not Sreepur upazila, Magura)" },
+    { "sourceName": "Daulatpur", "repositoryDistrictId": "60", "correctedDistrictId": "59", "reason": "Daulatpur thana, Khulna city (not Daulatpur upazila, Kushtia)" },
+    { "sourceName": "Companiganj", "repositoryDistrictId": "54", "correctedDistrictId": "49", "reason": "Companiganj upazila, Noakhali (not Companiganj upazila, Sylhet)" },
+    { "sourceName": "Pirganj", "repositoryDistrictId": "33", "correctedDistrictId": "32", "reason": "Pirganj upazila, Rangpur (the two Pirganj joins are swapped)" },
+    { "sourceName": "Pirganj", "repositoryDistrictId": "32", "correctedDistrictId": "33", "reason": "Pirganj upazila, Thakurgaon (the two Pirganj joins are swapped)" }
+  ]
+}

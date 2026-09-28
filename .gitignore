@@ -1,0 +1,22 @@
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+.env
+.env.*
+*.log
+test-results/
+playwright-report/
+coverage/
+.DS_Store
+
+# impeccable skill ships a 16 MB Windows binary; keep it local only
+.claude/skills/impeccable/scripts/bin/
+
+# Private reference material (copyrighted books). Never publish.
+/reference/
+
+# Kept on this PC only (owner decision 2026-09-28): third-party Claude skill copies and the machine-specific skill audit
+/.claude/skills/
+/.claude/settings.local.json
+/docs/claude-skill-audit.md

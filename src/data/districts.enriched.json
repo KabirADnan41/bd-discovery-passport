@@ -1,0 +1,459 @@
+{
+  "1": {
+    "name": {
+      "en": "Dhaka",
+      "bn": "ঢাকা"
+    },
+    "contentStatus": "verified",
+    "landmarks": [
+      {
+        "name": {
+          "en": "Lalbagh Fort",
+          "bn": "লালবাগ কেল্লা"
+        },
+        "category": "Mughal fort",
+        "note": "Begun in 1678 by Prince Muhammad Azam Shah in old Dhaka and never completed.",
+        "sources": [
+          {
+            "label": "Wikipedia: Lalbagh Fort",
+            "url": "https://en.wikipedia.org/wiki/Lalbagh_Fort"
+          }
+        ]
+      },
+      {
+        "name": {
+          "en": "Ahsan Manzil",
+          "bn": "আহসান মঞ্জিল"
+        },
+        "category": "Palace museum",
+        "note": "Seat of the Nawabs of Dhaka on the Buriganga, now a museum run by the Bangladesh National Museum.",
+        "sources": [
+          {
+            "label": "Wikipedia: Ahsan Manzil",
+            "url": "https://en.wikipedia.org/wiki/Ahsan_Manzil"
+          }
+        ]
+      },
+      {
+        "name": {
+          "en": "National Parliament House",
+          "bn": "জাতীয় সংসদ ভবন"
+        },
+        "category": "Architecture",
+        "note": "Designed by Louis Kahn at Sher-e-Bangla Nagar and completed in 1982.",
+        "sources": [
+          {
+            "label": "Wikipedia: Jatiya Sangsad Bhaban",
+            "url": "https://en.wikipedia.org/wiki/Jatiya_Sangsad_Bhaban"
+          }
+        ]
+      }
+    ],
+    "cultureFood": [
+      {
+        "name": {
+          "en": "Jamdani weaving",
+          "bn": "জামদানি বুনন"
+        },
+        "type": "craft",
+        "note": "Fine handloom fabric traditionally woven around Dhaka. UNESCO Intangible Cultural Heritage, 2013.",
+        "sources": [
+          {
+            "label": "UNESCO: Traditional art of Jamdani weaving",
+            "url": "https://ich.unesco.org/en/RL/traditional-art-of-jamdani-weaving-00879"
+          }
+        ]
+      },
+      {
+        "name": {
+          "en": "Rickshaw painting",
+          "bn": "রিকশাচিত্র"
+        },
+        "type": "tradition",
+        "note": "Hand-painted cycle rickshaws, a recognised feature of Dhaka. UNESCO Intangible Cultural Heritage, 2023.",
+        "sources": [
+          {
+            "label": "UNESCO: Rickshaws and rickshaw painting in Dhaka",
+            "url": "https://ich.unesco.org/en/RL/rickshaws-and-rickshaw-painting-in-dhaka-01589"
+          }
+        ]
+      },
+      {
+        "name": {
+          "en": "Mangal Shobhajatra",
+          "bn": "মঙ্গল শোভাযাত্রা"
+        },
+        "type": "tradition",
+        "note": "New Year procession on 14 April, organised by the Faculty of Fine Art, University of Dhaka. UNESCO, 2016.",
+        "sources": [
+          {
+            "label": "UNESCO: Mangal Shobhajatra on Pahela Baishakh",
+            "url": "https://ich.unesco.org/en/RL/mangal-shobhajatra-on-pahela-baishakh-01091"
+          }
+        ]
+      }
+    ]
+  },
+  "17": {
+    "name": {
+      "en": "Tangail",
+      "bn": "টাঙ্গাইল"
+    },
+    "contentStatus": "verified",
+    "landmarks": [],
+    "cultureFood": [
+      {
+        "name": {
+          "en": "Tangail saree weaving",
+          "bn": "টাঙ্গাইল শাড়ি বুনন"
+        },
+        "type": "craft",
+        "note": "Handwoven sarees of the Basak and Jhola weaving communities. UNESCO Intangible Cultural Heritage, 2025.",
+        "sources": [
+          {
+            "label": "UNESCO: Traditional Saree weaving art of Tangail",
+            "url": "https://ich.unesco.org/en/RL/traditional-saree-weaving-art-of-tangail-02322"
+          }
+        ]
+      }
+    ]
+  },
+  "20": {
+    "name": {
+      "en": "Naogaon",
+      "bn": "নওগাঁ"
+    },
+    "contentStatus": "verified",
+    "landmarks": [
+      {
+        "name": {
+          "en": "Somapura Mahavihara, Paharpur",
+          "bn": "সোমপুর মহাবিহার, পাহাড়পুর"
+        },
+        "category": "UNESCO World Heritage Site",
+        "note": "A great Buddhist monastery and renowned centre of learning from the 7th to the 12th century, at Paharpur in Badalgachhi. Inscribed in 1985.",
+        "sources": [
+          {
+            "label": "UNESCO World Heritage: Ruins of the Buddhist Vihara at Paharpur",
+            "url": "https://whc.unesco.org/en/list/322/"
+          }
+        ]
+      }
+    ],
+    "cultureFood": []
+  },
+  "45": {
+    "name": {
+      "en": "Cox's Bazar",
+      "bn": "কক্স বাজার"
+    },
+    "contentStatus": "verified",
+    "stamp": {
+      "code": "CXB"
+    },
+    "landmarks": [
+      {
+        "name": {
+          "en": "Cox's Bazar Beach",
+          "bn": "কক্সবাজার সমুদ্রসৈকত"
+        },
+        "category": "Sea beach",
+        "note": "A natural sea beach running about 120 km along the Bay of Bengal.",
+        "sources": [
+          {
+            "label": "Wikipedia: Cox's Bazar Beach",
+            "url": "https://en.wikipedia.org/wiki/Cox%27s_Bazar_Beach"
+          }
+        ]
+      },
+      {
+        "name": {
+          "en": "St. Martin's Island",
+          "bn": "সেন্ট মার্টিন দ্বীপ"
+        },
+        "category": "Coral island",
+        "note": "Bangladesh's only coral island, locally called Narikel Jinjira, meaning Coconut Island.",
+        "sources": [
+          {
+            "label": "Wikipedia: St. Martin's Island",
+            "url": "https://en.wikipedia.org/wiki/St._Martin%27s_Island"
+          }
+        ]
+      },
+      {
+        "name": {
+          "en": "Maheshkhali Island",
+          "bn": "মহেশখালী দ্বীপ"
+        },
+        "category": "Island",
+        "note": "The only hilly island in Bangladesh, home to the Adinath Temple.",
+        "sources": [
+          {
+            "label": "Wikipedia: Maheshkhali Island",
+            "url": "https://en.wikipedia.org/wiki/Maheshkhali_Island"
+          }
+        ]
+      }
+    ],
+    "cultureFood": [
+      {
+        "name": {
+          "en": "Shutki (sun-dried fish)",
+          "bn": "শুঁটকি"
+        },
+        "type": "food",
+        "note": "Maheshkhali is known for sun-dried fish, alongside betel leaf and salt.",
+        "sources": [
+          {
+            "label": "Wikipedia: Maheshkhali Island",
+            "url": "https://en.wikipedia.org/wiki/Maheshkhali_Island"
+          }
+        ]
+      }
+    ]
+  },
+  "54": {
+    "name": {
+      "en": "Sylhet",
+      "bn": "সিলেট"
+    },
+    "contentStatus": "verified",
+    "landmarks": [
+      {
+        "name": {
+          "en": "Shah Jalal Dargah",
+          "bn": "শাহজালাল দরগাহ"
+        },
+        "category": "Shrine",
+        "note": "Shrine of the 14th-century Sufi saint Shah Jalal, the most visited religious site in Bangladesh.",
+        "sources": [
+          {
+            "label": "Wikipedia: Shah Jalal Dargah",
+            "url": "https://en.wikipedia.org/wiki/Shah_Jalal_Dargah"
+          }
+        ]
+      },
+      {
+        "name": {
+          "en": "Ratargul Swamp Forest",
+          "bn": "রাতারগুল জলাবন"
+        },
+        "category": "Freshwater swamp forest",
+        "note": "A freshwater swamp forest in Gowainghat upazila, about 26 km from Sylhet city.",
+        "sources": [
+          {
+            "label": "Wikipedia: Ratargul Swamp Forest",
+            "url": "https://en.wikipedia.org/wiki/Ratargul_Swamp_Forest"
+          }
+        ]
+      },
+      {
+        "name": {
+          "en": "Jaflong",
+          "bn": "জাফলং"
+        },
+        "category": "River valley",
+        "note": "Stone-strewn banks of the Piyain and Dawki rivers on the Meghalaya border, home to a Khasi community.",
+        "sources": [
+          {
+            "label": "Wikipedia: Jaflong",
+            "url": "https://en.wikipedia.org/wiki/Jaflong"
+          }
+        ]
+      },
+      {
+        "name": {
+          "en": "Malnicherra Tea Estate",
+          "bn": "মালনীছড়া চা বাগান"
+        },
+        "category": "Tea garden",
+        "note": "Described as the first tea garden of Bangladesh, in commercial production from 1857.",
+        "sources": [
+          {
+            "label": "Tea Traders Association of Bangladesh",
+            "url": "https://ttabctg.com/about-us/history-of-bangladesh-tea/"
+          }
+        ]
+      }
+    ],
+    "cultureFood": [
+      {
+        "name": {
+          "en": "Shital Pati weaving",
+          "bn": "শীতলপাটি"
+        },
+        "type": "craft",
+        "note": "Cool mats woven from green murta cane, mostly in the greater Sylhet region. UNESCO Intangible Cultural Heritage, 2017.",
+        "sources": [
+          {
+            "label": "UNESCO: Traditional art of Shital Pati weaving of Sylhet",
+            "url": "https://ich.unesco.org/en/RL/traditional-art-of-shital-pati-weaving-of-sylhet-01112"
+          }
+        ]
+      }
+    ]
+  },
+  "55": {
+    "name": {
+      "en": "Bagerhat",
+      "bn": "বাগেরহাট"
+    },
+    "contentStatus": "verified",
+    "landmarks": [
+      {
+        "name": {
+          "en": "Historic Mosque City of Bagerhat",
+          "bn": "বাগেরহাটের ঐতিহাসিক মসজিদের শহর"
+        },
+        "category": "UNESCO World Heritage Site",
+        "note": "The former city of Khalifatabad, founded by Ulugh Khan Jahan in the 15th century. Inscribed in 1985.",
+        "sources": [
+          {
+            "label": "UNESCO World Heritage: Historic Mosque City of Bagerhat",
+            "url": "https://whc.unesco.org/en/list/321/"
+          }
+        ]
+      },
+      {
+        "name": {
+          "en": "Sixty Dome Mosque",
+          "bn": "ষাট গম্বুজ মসজিদ"
+        },
+        "category": "Mosque",
+        "note": "Built by Khan Jahan Ali in the 15th century. Despite its name it has 81 domes resting on sixty columns.",
+        "sources": [
+          {
+            "label": "Wikipedia: Sixty Dome Mosque",
+            "url": "https://en.wikipedia.org/wiki/Sixty_Dome_Mosque"
+          }
+        ]
+      }
+    ],
+    "cultureFood": []
+  },
+  "60": {
+    "name": {
+      "en": "Kushtia",
+      "bn": "কুষ্টিয়া"
+    },
+    "contentStatus": "verified",
+    "landmarks": [
+      {
+        "name": {
+          "en": "Lalon Akhra, Cheuriya",
+          "bn": "লালন আখড়া, ছেঁউড়িয়া"
+        },
+        "category": "Shrine",
+        "note": "Resting place of the mystic poet Lalon (1774-1890), near Kushtia railway station. Followers gather here twice a year to celebrate his songs.",
+        "sources": [
+          {
+            "label": "Wikipedia: Lalon",
+            "url": "https://en.wikipedia.org/wiki/Lalon"
+          }
+        ]
+      }
+    ],
+    "cultureFood": [
+      {
+        "name": {
+          "en": "Baul songs",
+          "bn": "বাউল গান"
+        },
+        "type": "tradition",
+        "note": "A mystic song tradition of rural Bangladesh and West Bengal. UNESCO Intangible Cultural Heritage, 2008.",
+        "sources": [
+          {
+            "label": "UNESCO: Baul songs",
+            "url": "https://ich.unesco.org/en/RL/baul-songs-00107"
+          }
+        ]
+      }
+    ]
+  },
+  "64": {
+    "name": {
+      "en": "Satkhira",
+      "bn": "সাতক্ষীরা"
+    },
+    "contentStatus": "verified",
+    "landmarks": [
+      {
+        "name": {
+          "en": "The Sundarbans",
+          "bn": "সুন্দরবন"
+        },
+        "category": "Mangrove forest",
+        "note": "Shyamnagar upazila borders the Sundarbans, one of the largest mangrove forests in the world and a UNESCO World Heritage Site since 1997.",
+        "sources": [
+          {
+            "label": "Wikipedia: Satkhira District",
+            "url": "https://en.wikipedia.org/wiki/Satkhira_District"
+          },
+          {
+            "label": "UNESCO World Heritage: The Sundarbans",
+            "url": "https://whc.unesco.org/en/list/798/"
+          }
+        ]
+      },
+      {
+        "name": {
+          "en": "Tetulia Jame Mosque",
+          "bn": "তেঁতুলিয়া জামে মসজিদ"
+        },
+        "category": "Mosque",
+        "note": "Built in 1858-59.",
+        "sources": [
+          {
+            "label": "Wikipedia: Satkhira District",
+            "url": "https://en.wikipedia.org/wiki/Satkhira_District"
+          }
+        ]
+      },
+      {
+        "name": {
+          "en": "Sultanpur Shahi Mosque",
+          "bn": "সুলতানপুর শাহী মসজিদ"
+        },
+        "category": "Mosque",
+        "note": "Described as about 500 years old.",
+        "sources": [
+          {
+            "label": "Wikipedia: Satkhira District",
+            "url": "https://en.wikipedia.org/wiki/Satkhira_District"
+          }
+        ]
+      }
+    ],
+    "cultureFood": [
+      {
+        "name": {
+          "en": "Shrimp",
+          "bn": "চিংড়ি"
+        },
+        "type": "food",
+        "note": "The district's leading export, from thousands of shrimp farms.",
+        "sources": [
+          {
+            "label": "Wikipedia: Satkhira District",
+            "url": "https://en.wikipedia.org/wiki/Satkhira_District"
+          }
+        ]
+      },
+      {
+        "name": {
+          "en": "Mangoes",
+          "bn": "আম"
+        },
+        "type": "food",
+        "note": "Satkhira mangoes are among the district's exports.",
+        "sources": [
+          {
+            "label": "Wikipedia: Satkhira District",
+            "url": "https://en.wikipedia.org/wiki/Satkhira_District"
+          }
+        ]
+      }
+    ]
+  },
+  "$comment": "Curated passport content keyed by bd-districts.json id. contentStatus: verified = every claim below was checked against the cited source on 2026-09-28; mock = placeholder text that must never be shown as fact; incomplete = no curated claims yet. Districts missing from this file are treated as incomplete. English notes paraphrase the cited source; do not strengthen a claim beyond it."
+}

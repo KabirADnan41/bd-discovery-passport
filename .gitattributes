@@ -1,0 +1,8 @@
+# Keep LF everywhere so Windows, Linux CI and Cloudflare builds see identical files.
+* text=auto eol=lf
+*.pdf binary
+*.woff2 binary
+*.png binary
+*.exe binary
+# Pinned source data: stored byte-for-byte (their SHA-256 is verified by the map build)
+data/source/** -text

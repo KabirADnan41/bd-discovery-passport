@@ -1,0 +1,36 @@
+{
+  "note": "Pinned inputs for scripts/build-district-map.mjs. The build refuses to run if a file's SHA-256 changes. Update hashes deliberately when refreshing sources.",
+  "files": {
+    "bangladesh.geojson": {
+      "sha256": "49ac76da270c80f17563894eae79a3c8df818312d1d5fbfde0334a9be2864017",
+      "role": "ADM3 (upazila/thana) polygons with district_id joins",
+      "from": "https://github.com/ifahimreza/bangladesh-geojson/blob/4723ee5f9fecaa79af6266a746cf89c39841a02d/src/data/bangladesh.geojson",
+      "upstream": "geoBoundaries gbOpen BGD ADM3 simplified, commit 9469f09 (geometry verified byte-identical for all 544 features)",
+      "license": "CC BY 4.0 (geometry: geoBoundaries; underlying authority BBS / OCHA ROAP)"
+    },
+    "bangladesh.geojson.meta.json": {
+      "sha256": "10d7e4488498f54dad340d723f2bc4eeadeb34ffb1569ac6aec46d3a36f2aea7",
+      "role": "Provenance sidecar published with bangladesh.geojson",
+      "from": "https://github.com/ifahimreza/bangladesh-geojson/blob/4723ee5f9fecaa79af6266a746cf89c39841a02d/src/data/bangladesh.geojson.meta.json",
+      "license": "MIT"
+    },
+    "bd-districts.json": {
+      "sha256": "c5e8ccad268c2278f6db1c001ed6d506c7d06de5ee4fa4e1c200fabc47847ecf",
+      "role": "Authoritative 64 district IDs, EN/BN names, division_id",
+      "from": "https://github.com/ifahimreza/bangladesh-geojson/blob/4723ee5f9fecaa79af6266a746cf89c39841a02d/src/data/bd-districts.json",
+      "license": "MIT"
+    },
+    "bd-divisions.json": {
+      "sha256": "fbf411d53139da39c957dc378e3c5ee1911f274909a95670f283142ce19ad1fb",
+      "role": "Authoritative 8 division IDs, EN/BN names",
+      "from": "https://github.com/ifahimreza/bangladesh-geojson/blob/4723ee5f9fecaa79af6266a746cf89c39841a02d/src/data/bd-divisions.json",
+      "license": "MIT"
+    },
+    "geoBoundaries-BGD-ADM2_simplified.geojson": {
+      "sha256": "7dbdb186f3b8af10417147a99859196fcd89c619fb5c6ac3804251fb6b449b6a",
+      "role": "Spatial reference ONLY: assigns the 118 ADM3 polygons that have no district_id in the repo, and cross-checks the 426 that do. Not rendered.",
+      "from": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/BGD/ADM2/geoBoundaries-BGD-ADM2_simplified.geojson",
+      "license": "CC BY 4.0 (geoBoundaries; underlying authority BBS / OCHA ROAP)"
+    }
+  }
+}

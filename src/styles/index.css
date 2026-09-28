@@ -1,0 +1,596 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/anek-bangla/wght.css';
+@import './tokens.css';
+
+@theme inline {
+  --font-sans: 'Anek Bangla Variable', 'Noto Sans Bengali', 'Nirmala UI', system-ui, sans-serif;
+  --color-canvas: var(--surface-canvas);
+  --color-paper: var(--surface-paper);
+  --color-sunk: var(--surface-sunk);
+  --color-cover: var(--surface-cover);
+  --color-ink: var(--text-primary);
+  --color-ink-2: var(--text-secondary);
+  --color-ink-3: var(--text-muted);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-stamp: var(--accent-stamp-text);
+  --color-river: var(--accent-river);
+  --color-brass: var(--accent-brass);
+  --color-found: var(--map-discovered);
+}
+
+@layer base {
+  html {
+    background: var(--surface-canvas);
+    color: var(--text-primary);
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    margin: 0;
+    /* landscape phones: keep content clear of the notch (viewport-fit=cover is set) */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    font-family: var(--font-sans);
+    font-feature-settings: 'kern';
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Bangla needs more line height than Latin for its matras and vowel signs. */
+  :lang(bn) {
+    line-height: 1.55;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--accent-river) 25%, transparent);
+  }
+  /* browser-drawn surfaces take the palette too: scrollbars, caret, native checkboxes and radios */
+  html {
+    scrollbar-color: var(--rule-strong) transparent;
+    accent-color: var(--text-primary);
+  }
+  input {
+    caret-color: var(--accent-river);
+  }
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+}
+
+/* Fixed paper grain: a single non-scrolling layer (no repaint while scrolling). */
+.paper-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: radial-gradient(rgb(20 49 40 / 0.035) 0.6px, transparent 0.7px);
+  background-size: 5px 5px;
+}
+[data-theme='dark'] .paper-grain {
+  background-image: radial-gradient(rgb(239 232 217 / 0.03) 0.6px, transparent 0.7px);
+}
+
+/* ------------------------------------------------------------------ controls */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0 1.1rem;
+  border-radius: var(--radius-control);
+  font-weight: 560;
+  font-size: 0.95rem;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-hover) ease,
+    border-color var(--dur-hover) ease,
+    color var(--dur-hover) ease,
+    transform 160ms var(--ease-out);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px) scale(0.98);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-quiet {
+  border: 1px solid var(--rule-strong);
+  color: var(--text-primary);
+  background: transparent;
+}
+.btn-quiet:hover {
+  border-color: var(--text-primary);
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+.btn-solid {
+  border: 1px solid var(--text-primary);
+  background: var(--text-primary);
+  color: var(--surface-paper);
+}
+.btn-solid:hover {
+  background: color-mix(in srgb, var(--text-primary) 88%, var(--surface-canvas));
+}
+.btn-danger {
+  border: 1px solid var(--accent-stamp);
+  background: var(--accent-stamp);
+  color: var(--surface-paper);
+}
+.btn-danger:hover {
+  background: color-mix(in srgb, var(--accent-stamp) 88%, black);
+}
+.field-input {
+  min-height: 44px;
+  width: 100%;
+  padding: 0 0.75rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 8px;
+  background: var(--surface-canvas);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: border-color var(--dur-hover) ease;
+}
+.field-input:focus {
+  border-color: var(--accent-river);
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+.link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 0.2em;
+  transition: text-decoration-color var(--dur-hover) ease;
+}
+.link:hover {
+  text-decoration-color: currentColor;
+}
+
+/* ------------------------------------------------------------------ map */
+.map-canvas {
+  position: relative;
+  aspect-ratio: var(--map-ratio);
+  width: 100%;
+}
+@media (min-width: 1024px) {
+  .map-canvas {
+    width: min(100%, calc((100dvh - var(--masthead-h) - 2.5rem) * var(--map-ratio)));
+  }
+}
+.map-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  touch-action: manipulation;
+}
+.district {
+  cursor: pointer;
+  stroke: var(--map-border);
+  stroke-width: 0.7;
+  stroke-linejoin: round;
+  outline: none;
+  transition: fill var(--dur-hover) ease;
+}
+.district:active {
+  filter: brightness(0.9); /* press acknowledged instantly; no scaling, so shared borders stay intact */
+}
+.district[data-state='locked'] {
+  fill: url(#hatch-locked);
+}
+.district[data-state='discovered'] {
+  fill: var(--map-discovered);
+}
+.district[data-state='discovered'][data-selected='true'] {
+  fill: var(--map-selected);
+}
+.map-outline,
+.map-division,
+.map-graticule {
+  fill: none;
+  pointer-events: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.map-outline {
+  stroke: var(--map-outline);
+  stroke-width: 1.3;
+}
+.map-division {
+  stroke: var(--map-division);
+  stroke-width: 1;
+  stroke-dasharray: 5 3;
+}
+.map-graticule {
+  stroke: var(--map-graticule);
+  stroke-width: 0.8;
+}
+.map-annotation {
+  fill: var(--text-muted);
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  pointer-events: none;
+}
+.map-context {
+  fill: var(--text-muted);
+  font-size: 19px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+.map-context[data-water='true'] {
+  fill: var(--map-water-label);
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0.08em;
+}
+.map-context-bn {
+  font-size: 17px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+@media (max-width: 639px) {
+  .map-annotation,
+  .map-context-bn {
+    display: none;
+  }
+  .map-context {
+    font-size: 26px;
+  }
+}
+
+/* overlays drawn above the fills so outlines are never covered by a neighbour */
+.overlay-hover {
+  fill: var(--map-hover);
+  stroke: var(--map-outline);
+  stroke-width: 1.4;
+  pointer-events: none;
+  animation: fade-in var(--dur-hover) var(--ease-out);
+}
+.overlay-selected-halo {
+  fill: none;
+  stroke: var(--surface-paper);
+  stroke-width: 5;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.overlay-selected {
+  fill: none;
+  stroke: var(--accent-stamp);
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+  pointer-events: none;
+  animation: fade-in var(--dur-reveal) var(--ease-out);
+}
+.overlay-focus {
+  fill: none;
+  stroke: var(--focus-ring);
+  stroke-width: 3;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+/* hatch pattern colours (pattern content is in the SVG defs) */
+.hatch-bg {
+  fill: var(--map-locked);
+}
+.hatch-line {
+  stroke: var(--map-locked-hatch);
+  stroke-width: 1.1;
+}
+
+/* ------------------------------------------------------------------ tooltip */
+.map-tooltip {
+  position: absolute;
+  z-index: 20;
+  translate: -50% calc(-100% - 12px);
+  pointer-events: none;
+  white-space: nowrap;
+  padding: 0.45rem 0.7rem 0.4rem;
+  border-radius: 8px;
+  background: var(--text-primary);
+  color: var(--surface-paper);
+  box-shadow: var(--shadow-paper);
+  /* mounted once per appearance: it enters once, then moves between districts instantly */
+  animation: tooltip-in 125ms var(--ease-out);
+}
+
+/* ------------------------------------------------------------------ passport card */
+.passport-page {
+  position: relative;
+  border-radius: calc(var(--radius-surface) - 5px);
+  background: var(--surface-paper);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-brass) 35%, transparent);
+}
+.passport-enter {
+  animation: page-in var(--dur-reveal) var(--ease-out);
+}
+@media (min-width: 1024px) {
+  /* passport booklet: thin cover edge around a paper page, concentric radii */
+  .passport-cover-lg {
+    display: flex;
+    max-height: calc(100dvh - var(--masthead-h) - 2.5rem);
+    padding: 5px;
+    border-radius: var(--radius-surface);
+    background: var(--surface-cover);
+    box-shadow: var(--shadow-paper);
+  }
+  .passport-cover-lg > .passport-page {
+    flex: 1;
+  }
+}
+@media (min-width: 1024px) {
+  .sheet[data-exiting='true'] {
+    display: none; /* the desktop page is replaced in place, no exit needed */
+  }
+}
+@media (max-width: 1023px) {
+  .sheet {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 30;
+    max-height: min(72dvh, 720px);
+    display: flex;
+    flex-direction: column;
+    /* the sheet is the passport cover; the paper page sits inside it with concentric corners */
+    border-radius: 18px 18px 0 0;
+    background: var(--surface-cover);
+    box-shadow: var(--shadow-sheet);
+    /* transition (not keyframes) so a close during the entrance retargets smoothly */
+    transform: translateY(0);
+    transition: transform var(--dur-sheet) var(--ease-sheet);
+  }
+  @starting-style {
+    .sheet {
+      transform: translateY(100%);
+    }
+  }
+  /* exit the way it entered: back down through the bottom edge, a little faster */
+  .sheet[data-exiting='true'] {
+    transform: translateY(100%);
+    transition-duration: 220ms;
+  }
+  /* grab handle: the drag target (content below keeps normal scrolling) */
+  .sheet-handle {
+    display: flex;
+    justify-content: center;
+    padding: 7px 0 6px;
+    touch-action: none;
+    user-select: none;
+    cursor: grab;
+  }
+  .sheet-handle span {
+    width: 40px;
+    height: 4px;
+    border-radius: var(--radius-control);
+    background: color-mix(in srgb, var(--text-on-cover) 55%, transparent);
+  }
+  .sheet .passport-cover-lg {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+  }
+  /* the sheet already slides; its page only fades so there is one movement, not two */
+  .sheet .passport-enter {
+    animation-name: fade-in;
+  }
+  .sheet .passport-page {
+    flex: 1;
+    border-radius: 13px 13px 0 0;
+    box-shadow: none;
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* ------------------------------------------------------------------ masthead menu */
+.menu-popover {
+  position: fixed;
+  inset: auto;
+  top: calc(var(--masthead-h) + 0.5rem);
+  right: max(1rem, env(safe-area-inset-right));
+  max-height: calc(100dvh - var(--masthead-h) - 1.5rem);
+  overflow-y: auto;
+}
+.menu-popover {
+  /* origin-aware: grows out of the Menu button in the top-right corner */
+  transform-origin: top right;
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 180ms var(--ease-out),
+    transform 180ms var(--ease-out),
+    overlay 180ms var(--ease-out) allow-discrete,
+    display 180ms var(--ease-out) allow-discrete;
+}
+.menu-popover:not(:popover-open) {
+  opacity: 0;
+  transform: scale(0.96);
+  transition-duration: 120ms;
+}
+@starting-style {
+  .menu-popover:popover-open {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+/* ------------------------------------------------------------------ modal dialogs (centred, so no origin) */
+.modal {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out),
+    overlay 200ms var(--ease-out) allow-discrete,
+    display 200ms var(--ease-out) allow-discrete;
+}
+.modal:not([open]) {
+  opacity: 0;
+  transform: scale(0.97);
+  transition-duration: 150ms;
+}
+@starting-style {
+  .modal[open] {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+.modal::backdrop {
+  background: rgb(20 49 40 / 0.45);
+  opacity: 1;
+  transition:
+    opacity 200ms var(--ease-out),
+    overlay 200ms var(--ease-out) allow-discrete,
+    display 200ms var(--ease-out) allow-discrete;
+}
+[data-theme='dark'] .modal::backdrop {
+  background: rgb(0 0 0 / 0.55);
+}
+.modal:not([open])::backdrop {
+  opacity: 0;
+}
+@starting-style {
+  .modal[open]::backdrop {
+    opacity: 0;
+  }
+}
+.theme-option {
+  display: grid;
+}
+.theme-option span {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-control);
+  font-size: 0.9rem;
+  font-weight: 540;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-hover) ease,
+    color var(--dur-hover) ease;
+}
+.theme-option span:hover {
+  color: var(--text-primary);
+}
+.theme-option input:checked + span {
+  background: var(--text-primary);
+  color: var(--surface-paper);
+}
+.theme-option input:focus-visible + span {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ passport stamp */
+.stamp {
+  color: var(--accent-stamp);
+  mix-blend-mode: multiply;
+  opacity: 0.92;
+}
+[data-theme='dark'] .stamp {
+  mix-blend-mode: normal;
+}
+.stamp-impact {
+  animation: stamp-impact var(--dur-stamp) var(--ease-out) both;
+}
+.ledger-tick {
+  transition: background-color 200ms var(--ease-out);
+}
+/* orchestration: the newest tick fills after the stamp has landed (map, card, stamp, then progress) */
+.ledger-tick[data-new='true'] {
+  transition-delay: 380ms;
+}
+
+/* theme switches are instant: no half-faded controls mid-switch */
+[data-theme-switching] *,
+[data-theme-switching] *::before,
+[data-theme-switching] *::after {
+  transition: none !important;
+}
+
+/* ------------------------------------------------------------------ keyframes */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes tooltip-in {
+  from {
+    opacity: 0;
+    translate: -50% calc(-100% - 6px);
+  }
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+/* press, overshoot, settle: the rubber stamp hits the page */
+@keyframes stamp-impact {
+  0% {
+    opacity: 0;
+    transform: scale(1.6) rotate(calc(var(--stamp-rot) - 10deg));
+    filter: blur(2px);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(0.94) rotate(var(--stamp-rot));
+    filter: blur(0);
+  }
+  75% {
+    transform: scale(1.03) rotate(var(--stamp-rot));
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(var(--stamp-rot));
+  }
+}
+
+/* Reduced motion: fewer and gentler, not zero. Keep fades that aid comprehension; drop movement. */
+@media (prefers-reduced-motion: reduce) {
+  .sheet,
+  .sheet[data-exiting='true'] {
+    transform: none;
+    transition: opacity 200ms var(--ease-out);
+  }
+  .sheet[data-exiting='true'] {
+    opacity: 0;
+  }
+  @starting-style {
+    .sheet {
+      transform: none;
+      opacity: 0;
+    }
+  }
+  .menu-popover,
+  .menu-popover:not(:popover-open),
+  .modal,
+  .modal:not([open]) {
+    transform: none;
+  }
+  @starting-style {
+    .menu-popover:popover-open,
+    .modal[open] {
+      transform: none;
+    }
+  }
+  .passport-enter,
+  .map-tooltip {
+    animation-name: fade-in;
+  }
+  .stamp-impact {
+    animation: fade-in 200ms var(--ease-out) both;
+  }
+  .btn:active:not(:disabled) {
+    transform: none;
+  }
+  .ledger-tick[data-new='true'] {
+    transition-delay: 0ms;
+  }
+}
