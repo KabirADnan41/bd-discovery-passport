@@ -24,6 +24,14 @@ for (const theme of ['light', 'dark']) {
       expect(await scan(page)).toEqual([]);
     });
 
+    test('quiz mode after a guess', async ({ page }) => {
+      await page.goto('/');
+      await page.locator('.mode-switch').getByText('Quiz').click();
+      await page.locator('[data-district-id="17"]').click();
+      await expect(page.locator('.quiz-feedback')).toBeVisible();
+      expect(await scan(page)).toEqual([]);
+    });
+
     test('menu and sign-up dialog', async ({ page }) => {
       await page.goto('/');
       await page.getByRole('button', { name: 'Menu' }).click();

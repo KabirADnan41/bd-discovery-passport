@@ -4,7 +4,7 @@
 check against a design already built from the `design-taste-frontend` and `high-end-visual-design` skills. It led to one
 change (16 px reading text on the passport page). Nothing here was copied: no code, illustrations or brand identity.
 
-## Local references (`D:\skills\design-md\`, VoltAgent/awesome-design-md, MIT)
+## Local references (a local design-md reference folder, VoltAgent/awesome-design-md, MIT)
 
 ### Airbnb (`design-md/airbnb/DESIGN.md`)
 - **Pattern studied:** a travel-discovery product with one accent colour used sparingly, modest heading weights, and a single
@@ -22,7 +22,7 @@ change (16 px reading text on the passport page). Nothing here was copied: no co
 - **Principle adopted:** hairline rules to group content (the passport sections, the gazetteer), a quiet masthead, no cards
   for structure.
 - **How we differ:** Wired uses serif display type and square buttons. We use one Bengali-first family (Anek Bangla) because
-  Bangla readability comes first, and pill controls on 12 px surfaces as our single shape system.
+  Bangla readability comes first. Our shape system: 8 px controls on 12 px surfaces (pills until the v2 redesign).
 
 ### Apple (`design-md/apple/DESIGN.md`)
 - **Pattern studied:** "Body copy at 17px, not 16px ... reading, not scanning"; headline weight 600 with slight negative tracking.
@@ -43,8 +43,15 @@ change (16 px reading text on the passport page). Nothing here was copied: no co
 | https://css-tricks.com/svg-map-rollovers/ | Region hover linked to region names | Simple, dependency-free hover | Hover highlight drawn as an overlay above the fills | Our overlay keeps shared borders intact (no scaling), and the tooltip is anchored to the district, not the cursor |
 | https://developer.apple.com/design/human-interface-guidelines/sheets and https://m3.material.io/components/bottom-sheets/guidelines | Sheets: grabber, swipe down to dismiss, a close button, underlying content still visible | The mobile passport page is a sheet | Grabber + velocity-based swipe dismissal + a Close button + Escape; the page scrolls so the district stays visible above the sheet | Both pages render only with JavaScript, so their text could not be fetched for quoting; we relied on these well-established platform conventions |
 
+## v2 redesign (2026-10-05)
+
+A design brief (PROGRESS.md #45) studied 10 sites, including Worldle, Seterra, GeoGuessr, Airbnb, Google Arts & Culture,
+The Pudding, National Geographic and Linear. Direction taken: bigger display type (a type scale from display down to eyebrow),
+fewer boxes, Bangladesh green as a solid surface, vermilion only as a signal, dark mode as a night atlas, and no new font.
+What changed is listed in PROGRESS.md #46.
+
 ## What makes this design ours
 
 A parchment atlas with a real graticule and neighbouring-country labels, hatched "uncharted" districts that turn to solid ink
-when discovered, a passport booklet (green cover, brass hairline, paper page) that becomes a bottom sheet on phones, and an
+when discovered, a passport booklet (a solid green cover band above a paper page) that becomes a bottom sheet on phones, and an
 inked rubber stamp with its own slight tilt for every district. None of this comes from the references above.

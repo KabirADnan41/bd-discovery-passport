@@ -37,10 +37,10 @@ export function useAccount({ onRestored, onGuest } = {}) {
     };
   }, []);
 
-  const authenticate = useCallback(async (mode, username, password) => {
+  const authenticate = useCallback(async (mode, username, password, hpNote) => {
     const key = await deriveOrFail(username, password);
     if (!key) return NO_CRYPTO;
-    const r = await (mode === 'signup' ? signUp : logIn)(username, key);
+    const r = await (mode === 'signup' ? signUp(username, key, hpNote) : logIn(username, key));
     if (r.ok) setAccount({ status: 'signed-in', username: r.data.username });
     return r;
   }, []);

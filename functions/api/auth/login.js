@@ -20,16 +20,17 @@ import {
 export async function onRequestPost({ request, env }) {
   const now = nowSeconds();
   const { username, passwordKey } = readCredentials(await readJson(request));
-  await housekeeping(env.DB, now);
 
-  // Overall request budget per network, then failed-guess limits per (username, network) and per username.
-  if (!(await withinRateLimit(env.DB, `login:${await ipBucket(env, request)}`, 30, GUESS_WINDOW, now))) {
-    return error(429, 'Too many sign-in attempts from this network. Please wait 15 minutes and try again.');
-  }
+  // Failed-guess limits per (username, network) and per username first (read-only, so a blocked sign-in writes
+  // nothing), then the overall request budget per network.
   const keys = await guessKeys(env, request, username);
   if (!(await canGuess(env.DB, keys, now))) {
     return error(429, 'Too many wrong passwords for this account. Please wait 15 minutes and try again.');
   }
+  if (!(await withinRateLimit(env.DB, `login:${await ipBucket(env, request)}`, 30, GUESS_WINDOW, now))) {
+    return error(429, 'Too many sign-in attempts from this network. Please wait 15 minutes and try again.');
+  }
+  if (Math.random() < 0.05) await housekeeping(env.DB, now);
 
   const user = await env.DB.prepare('SELECT id, verifier FROM users WHERE username = ?1').bind(username).first();
   const verifier = await makeVerifier(env.AUTH_PEPPER, passwordKey); // computed either way, so timing reveals nothing

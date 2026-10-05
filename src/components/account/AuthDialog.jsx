@@ -72,9 +72,10 @@ export default function AuthDialog({ mode, guestCount, onSwitchMode, onSubmit, o
       (problem.field === 'username' ? firstFieldRef : passwordRef).current?.focus(); // focus the first error
       return;
     }
+    const hpNote = e.currentTarget.elements.hp_note?.value ?? ''; // honeypot: only bots fill it; read before the await
     setBusy(true);
     setError('');
-    const result = await onSubmit(mode, username, password, guestCount > 0 && mergeGuest);
+    const result = await onSubmit(mode, username, password, guestCount > 0 && mergeGuest, hpNote);
     setBusy(false);
     if (!result.ok) {
       setError(errorMessage(result));
@@ -86,7 +87,7 @@ export default function AuthDialog({ mode, guestCount, onSwitchMode, onSubmit, o
     <Modal open={Boolean(mode)} labelledBy={`${uid}-title`} onClose={handleClose} initialFocusRef={firstFieldRef}>
       <form className="grid gap-5 px-6 pt-6 pb-6" onSubmit={submit} noValidate>
         <div>
-          <h2 id={`${uid}-title`} className="text-[1.3rem] leading-tight font-semibold">
+          <h2 id={`${uid}-title`} className="text-h2 text-balance">
             {copy.title}
           </h2>
           <p className="mt-1.5 text-[0.9rem] leading-relaxed text-ink-2">
@@ -130,6 +131,9 @@ export default function AuthDialog({ mode, guestCount, onSwitchMode, onSubmit, o
             aria-describedby={mode === 'signup' ? `${uid}-pass-hint` : undefined}
           />
         </Field>
+        {mode === 'signup' && (
+          <input className="sr-only" name="hp_note" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+        )}
         <label className="-mt-2 flex min-h-11 items-center gap-2.5 text-[0.9rem] text-ink-2">
           <input type="checkbox" className="size-4 accent-[var(--text-primary)]" checked={showPassword} onChange={e => setShowPassword(e.target.checked)} />
           Show password

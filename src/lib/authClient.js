@@ -46,7 +46,8 @@ async function api(path, method = 'GET', body) {
 }
 
 export const fetchMe = () => api('/api/me');
-export const signUp = (username, passwordKey) => api('/api/auth/signup', 'POST', { username: normalizeUsername(username), passwordKey });
+export const signUp = (username, passwordKey, hpNote) =>
+  api('/api/auth/signup', 'POST', { username: normalizeUsername(username), passwordKey, hp_note: hpNote });
 export const logIn = (username, passwordKey) => api('/api/auth/login', 'POST', { username: normalizeUsername(username), passwordKey });
 export const logOut = () => api('/api/auth/logout', 'POST', {});
 export const addStamps = ids => api('/api/passport', 'POST', { ids });

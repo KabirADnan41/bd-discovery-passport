@@ -52,10 +52,10 @@ export default function PassportMenu({ account, sync, theme, discoveredCount, on
         ref={popoverRef}
         {...panel}
         aria-label="Passport menu"
-        className="menu-popover m-0 w-[min(calc(100vw-2rem),22rem)] overscroll-contain rounded-[12px] border border-rule bg-paper p-0 text-ink shadow-[var(--shadow-paper)]"
+        className="menu-popover m-0 w-[min(calc(100vw-2rem),22rem)] overscroll-contain rounded-[var(--radius-control)] border border-rule-strong bg-paper p-0 text-ink"
       >
         <section className="border-b border-rule px-5 pt-5 pb-4">
-          <h2 className="text-[0.78rem] font-medium tracking-[0.12em] text-ink-3 uppercase">Account</h2>
+          <h2 className="text-eyebrow text-ink-3 uppercase">Account</h2>
           {account.status === 'checking' && <p className="mt-2 text-[0.92rem] text-ink-2">Checking your account…</p>}
           {account.status === 'unavailable' && (
             <p className="mt-2 text-[0.92rem] text-ink-2">Accounts are unavailable right now. Your stamps are saved in this browser.</p>
@@ -95,8 +95,8 @@ export default function PassportMenu({ account, sync, theme, discoveredCount, on
         </section>
 
         <fieldset className="border-b border-rule px-5 pt-4 pb-4">
-          <legend className="float-left mb-2 w-full text-[0.78rem] font-medium tracking-[0.12em] text-ink-3 uppercase">Appearance</legend>
-          <div className="clear-both grid grid-cols-3 gap-1 rounded-full border border-rule-strong p-1">
+          <legend className="float-left mb-2 w-full text-eyebrow text-ink-3 uppercase">Appearance</legend>
+          <div className="clear-both grid grid-cols-3 gap-1 rounded-[var(--radius-control)] border border-rule-strong p-[3px]">
             {THEMES.map(t => (
               <label key={t} className="theme-option">
                 <input type="radio" name="theme" value={t} checked={theme.pref === t} onChange={() => theme.choose(t)} className="sr-only" />

@@ -15,8 +15,32 @@
   --color-rule-strong: var(--rule-strong);
   --color-stamp: var(--accent-stamp-text);
   --color-river: var(--accent-river);
-  --color-brass: var(--accent-brass);
+  --color-brass: var(--accent-brass-text);
   --color-found: var(--map-discovered);
+  --color-success: var(--text-success);
+}
+
+/* Type scale: one family (Anek Bangla), contrast by size and weight. Used as text-display, text-h1 ... text-eyebrow. */
+@theme {
+  --text-display: clamp(2.6rem, 1.4rem + 4vw, 4.4rem);
+  --text-display--line-height: 1;
+  --text-display--letter-spacing: -0.02em;
+  --text-display--font-weight: 700;
+  --text-h1: clamp(2.2rem, 1.6rem + 2vw, 3.2rem);
+  --text-h1--line-height: 1.02;
+  --text-h1--letter-spacing: -0.015em;
+  --text-h1--font-weight: 700;
+  --text-h2: 1.75rem;
+  --text-h2--line-height: 1.1;
+  --text-h2--letter-spacing: -0.01em;
+  --text-h2--font-weight: 650;
+  --text-h3: 1.1rem;
+  --text-h3--line-height: 1.25;
+  --text-h3--font-weight: 600;
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1.2;
+  --text-eyebrow--letter-spacing: 0.12em;
+  --text-eyebrow--font-weight: 600;
 }
 
 @layer base {
@@ -107,12 +131,12 @@
   background: color-mix(in srgb, var(--text-primary) 5%, transparent);
 }
 .btn-solid {
-  border: 1px solid var(--text-primary);
-  background: var(--text-primary);
-  color: var(--surface-paper);
+  border: 1px solid var(--surface-cover);
+  background: var(--surface-cover);
+  color: var(--text-on-cover);
 }
 .btn-solid:hover {
-  background: color-mix(in srgb, var(--text-primary) 88%, var(--surface-canvas));
+  background: color-mix(in srgb, var(--surface-cover) 86%, black);
 }
 .btn-danger {
   border: 1px solid var(--accent-stamp);
@@ -148,6 +172,40 @@
 .link:hover {
   text-decoration-color: currentColor;
 }
+/* place names as plain text links (no chips): a 44px hit area and an underline that firms up on hover */
+.place-links {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.7rem;
+}
+.place-links > li {
+  display: flex;
+  align-items: center;
+  column-gap: 0.7rem;
+}
+/* the separator trails each name, so a wrapped line never starts with a dot */
+.place-links > li:not(:last-child)::after {
+  content: '\00B7';
+  color: var(--text-muted);
+}
+.place-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 44px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.place-link > span:first-child {
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+  transition: text-decoration-color var(--dur-hover) ease;
+}
+.place-link:hover > span:first-child {
+  text-decoration-color: currentColor;
+}
 
 /* ------------------------------------------------------------------ map */
 .map-canvas {
@@ -157,7 +215,7 @@
 }
 @media (min-width: 1024px) {
   .map-canvas {
-    width: min(100%, calc((100dvh - var(--masthead-h) - 2.5rem) * var(--map-ratio)));
+    width: min(100%, calc((100dvh - var(--masthead-h) - 6.5rem) * var(--map-ratio))); /* room for a two-line legend */
   }
 }
 .map-svg {
@@ -186,6 +244,28 @@
 }
 .district[data-state='discovered'][data-selected='true'] {
   fill: var(--map-selected);
+}
+/* quiz: the board goes neutral so only the marks carry colour; the feedback text says the same thing */
+[data-mode='quiz'] .district:not([data-quiz]) {
+  fill: url(#hatch-locked);
+}
+.district[data-quiz] {
+  stroke: var(--text-primary);
+  stroke-width: 2;
+}
+.district[data-quiz='wrong'] {
+  fill: var(--map-wrong);
+}
+.district[data-quiz='correct'] {
+  fill: var(--map-discovered);
+}
+.district[data-quiz='answer'] {
+  fill: var(--accent-brass);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .district[data-quiz='wrong'] {
+    animation: wrong-pulse var(--dur-feedback) ease-in-out;
+  }
 }
 .map-outline,
 .map-division,
@@ -293,36 +373,47 @@
   border-radius: 8px;
   background: var(--text-primary);
   color: var(--surface-paper);
-  box-shadow: var(--shadow-paper);
   /* mounted once per appearance: it enters once, then moves between districts instantly */
   animation: tooltip-in 125ms var(--ease-out);
 }
 
 /* ------------------------------------------------------------------ passport card */
-.passport-page {
-  position: relative;
-  border-radius: calc(var(--radius-surface) - 5px);
+/* The booklet: a solid Bengal-green band (the cover) above a paper page. `.cover` is every solid green surface. */
+.passport {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--radius-surface);
   background: var(--surface-paper);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-brass) 35%, transparent);
+  box-shadow: var(--shadow-paper);
+}
+.cover {
+  background: var(--surface-cover);
+  color: var(--text-on-cover);
+}
+.cover .btn-quiet {
+  border-color: color-mix(in srgb, var(--text-on-cover) 45%, transparent);
+  color: var(--text-on-cover);
+}
+.cover .btn-quiet:hover {
+  border-color: var(--text-on-cover);
+  background: color-mix(in srgb, var(--text-on-cover) 12%, transparent);
+}
+/* the river-blue ring is too close to the green; paper keeps focus visible on the band */
+.cover :focus-visible {
+  outline-color: var(--text-on-cover);
+}
+.passport-page {
+  min-height: 0;
+  flex: 1;
 }
 .passport-enter {
   animation: page-in var(--dur-reveal) var(--ease-out);
 }
 @media (min-width: 1024px) {
-  /* passport booklet: thin cover edge around a paper page, concentric radii */
-  .passport-cover-lg {
-    display: flex;
+  .passport {
     max-height: calc(100dvh - var(--masthead-h) - 2.5rem);
-    padding: 5px;
-    border-radius: var(--radius-surface);
-    background: var(--surface-cover);
-    box-shadow: var(--shadow-paper);
   }
-  .passport-cover-lg > .passport-page {
-    flex: 1;
-  }
-}
-@media (min-width: 1024px) {
   .sheet[data-exiting='true'] {
     display: none; /* the desktop page is replaced in place, no exit needed */
   }
@@ -333,11 +424,7 @@
     inset: auto 0 0 0;
     z-index: 30;
     max-height: min(72dvh, 720px);
-    display: flex;
-    flex-direction: column;
-    /* the sheet is the passport cover; the paper page sits inside it with concentric corners */
     border-radius: 18px 18px 0 0;
-    background: var(--surface-cover);
     box-shadow: var(--shadow-sheet);
     /* transition (not keyframes) so a close during the entrance retargets smoothly */
     transform: translateY(0);
@@ -353,11 +440,11 @@
     transform: translateY(100%);
     transition-duration: 220ms;
   }
-  /* grab handle: the drag target (content below keeps normal scrolling) */
+  /* grab handle: the drag target at the top of the green band (content below keeps normal scrolling) */
   .sheet-handle {
     display: flex;
     justify-content: center;
-    padding: 7px 0 6px;
+    padding: 8px 0 2px;
     touch-action: none;
     user-select: none;
     cursor: grab;
@@ -365,22 +452,14 @@
   .sheet-handle span {
     width: 40px;
     height: 4px;
-    border-radius: var(--radius-control);
+    border-radius: 2px;
     background: color-mix(in srgb, var(--text-on-cover) 55%, transparent);
-  }
-  .sheet .passport-cover-lg {
-    display: flex;
-    min-height: 0;
-    flex: 1;
   }
   /* the sheet already slides; its page only fades so there is one movement, not two */
   .sheet .passport-enter {
     animation-name: fade-in;
   }
   .sheet .passport-page {
-    flex: 1;
-    border-radius: 13px 13px 0 0;
-    box-shadow: none;
     padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
   }
 }
@@ -460,12 +539,13 @@
 .theme-option {
   display: grid;
 }
-.theme-option span {
+.theme-option > span {
   display: flex;
-  min-height: 40px;
+  min-height: 44px;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-control);
+  border-radius: calc(var(--radius-control) - 3px);
   font-size: 0.9rem;
   font-weight: 540;
   color: var(--text-secondary);
@@ -474,7 +554,7 @@
     background-color var(--dur-hover) ease,
     color var(--dur-hover) ease;
 }
-.theme-option span:hover {
+.theme-option > span:hover {
   color: var(--text-primary);
 }
 .theme-option input:checked + span {
@@ -497,13 +577,6 @@
 }
 .stamp-impact {
   animation: stamp-impact var(--dur-stamp) var(--ease-out) both;
-}
-.ledger-tick {
-  transition: background-color 200ms var(--ease-out);
-}
-/* orchestration: the newest tick fills after the stamp has landed (map, card, stamp, then progress) */
-.ledger-tick[data-new='true'] {
-  transition-delay: 380ms;
 }
 
 /* theme switches are instant: no half-faded controls mid-switch */
@@ -529,6 +602,12 @@
   from {
     opacity: 0;
     transform: translateY(8px);
+  }
+}
+/* quiz: one soft pulse on a wrong guess (reduced motion: the fill alone) */
+@keyframes wrong-pulse {
+  50% {
+    opacity: 0.7;
   }
 }
 /* press, overshoot, settle: the rubber stamp hits the page */
@@ -589,8 +668,5 @@
   }
   .btn:active:not(:disabled) {
     transform: none;
-  }
-  .ledger-tick[data-new='true'] {
-    transition-delay: 0ms;
   }
 }

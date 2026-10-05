@@ -63,7 +63,9 @@ Full numbers: `data/map-build-report.json`.
 
 64 ids exactly matching `bd-districts.json`; names and divisions match the source; valid paths; bounding boxes inside
 the viewBox; label points inside their bounding box; symmetric neighbours; unique stamp codes; every curated claim has
-https sources, no markup and no en/em dashes; `contentStatus` in `verified | mock | incomplete`.
+https sources, no markup and no en/em dashes; `contentStatus` in `verified | mock | incomplete`. Places: 3 to 6 for every real
+district id, each with an address that ends with the district's name (or a common spelling of it), https sources, no markup,
+and a note of at most 140 characters.
 
 ## Curated content (`src/data/districts.enriched.json`)
 
@@ -73,6 +75,20 @@ then Wikipedia. Banglapedia returned a bot page to every request. Notes paraphra
 example, Ratargul is "a freshwater swamp forest", not "the only one". The other 56 districts show real structural facts
 (division, area, neighbours) and "More discoveries coming soon." To add a district: add an entry with sources, then run
 `npm run validate:data`.
+
+## Places to go (`src/data/places.json`)
+
+334 places for all 64 districts (4 to 6 each), plus addresses for the 17 existing landmarks. Sources: Wikipedia, the Bangladesh
+Tourism Board site and national news. `*.gov.bd` portals failed the fetch tool's certificate check and Banglapedia returned a
+placeholder; pages with text aimed at AI agents were not used.
+
+Reviewed on 2026-10-05: all 185 flagged items (closed or collapsed sites, border areas, invented names) were checked, giving
+32 corrections and 0 places dropped. Chittagong Hill Tracts entries note that foreign visitors may need permission. A random
+sample of 30 (seed 20261005) found 1 error (3.3%), fixed. QA then opened 8 random Directions links in a headless browser (all
+correct) and fixed 4 suspect ones. Where Google lists a place only in Bengali, the address carries the Bengali village name.
+
+Each place has a Directions link: `https://www.google.com/maps/dir/?api=1&destination=<name>, <address>, Bangladesh`
+(URL-encoded, no API key). Google Maps Platform APIs need billing and are not used.
 
 ## Known upstream issues worth reporting
 

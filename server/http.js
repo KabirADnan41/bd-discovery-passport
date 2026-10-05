@@ -10,7 +10,7 @@ export class HttpError extends Error {
 export function json(data, { status = 200, headers = {} } = {}) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...headers },
+    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...headers },
   });
 }
 
@@ -29,6 +29,16 @@ export async function readJson(request, maxBytes = 2048) {
   } catch {
     throw new HttpError(400, 'Invalid request body.');
   }
+}
+
+/** Rate-limit key for a client address: an IPv6 address becomes its /64 (one subscriber's block), IPv4 stays as it is. */
+export function ipNetwork(ip) {
+  if (!ip?.includes(':') || ip.includes('.')) return ip;
+  const [head, tail] = ip.split('::');
+  const left = head ? head.split(':') : [];
+  const right = tail ? tail.split(':') : [];
+  const hextets = tail === undefined ? left : [...left, ...Array(8 - left.length - right.length).fill('0'), ...right];
+  return hextets.slice(0, 4).map(h => parseInt(h, 16).toString(16)).join(':');
 }
 
 // __Host- prefix: the browser only accepts it with Secure, Path=/ and no Domain (no subdomain can set it).

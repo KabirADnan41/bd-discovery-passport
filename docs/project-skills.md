@@ -1,17 +1,17 @@
 # Project skills
 
 Skills copied into `.claude/skills/` (project-local) for this site, plus the built-in and plugin skills the workflow uses.
-All project-local copies are also installed globally in `C:\Users\VICTUS\.claude\skills\` (see `docs/claude-skill-audit.md`);
+All project-local copies are also installed globally in `%USERPROFILE%\.claude\skills\` (see `docs/claude-skill-audit.md`);
 each copy has a `SOURCE.md` with its provenance. "Final status" uses the brief's vocabulary.
 
 | Canonical name | Installed name | Source (path) | Global | Project | Purpose / stage | Conflicts, duplicates | Final status |
 |---|---|---|---|---|---|---|---|
 | karpathy-guidelines | `andrej-karpathy-skills:karpathy-guidelines` (plugin) + `karpathy-guidelines` (project copy) | forrestchang/andrej-karpathy-skills (claude.ai synced plugin) | plugin | yes | Stage A engineering discipline | Same content as the plugin | **APPLIED** |
-| design-taste-frontend | `design-taste-frontend` | Leonxlnx/taste-skill (`D:\uvtr-digital\.claude\skills`) | yes | yes | Stage B visual direction | v1 kept separately as `design-taste-frontend-v1` (global only) | **APPLIED** |
+| design-taste-frontend | `design-taste-frontend` | Leonxlnx/taste-skill (a local skills folder) | yes | yes | Stage B visual direction | v1 kept separately as `design-taste-frontend-v1` (global only) | **APPLIED** |
 | high-end-visual-design | `high-end-visual-design` | Leonxlnx/taste-skill | yes | yes | Stage B refinement | Some rules conflict with the brief (glass, giant radii); the brief won | **APPLIED** (selectively) |
 | frontend-design | `frontend-design` | claude-plugins-official | yes | yes | Alternative visual-direction guide | Overlaps design-taste; not needed twice | NOT NEEDED |
-| web-design-guidelines | `web-design-guidelines` | vercel-labs/agent-skills (`D:\skills\.claude\skills`) | yes | yes | Stage K accessibility/UX audit | none | **APPLIED** |
-| impeccable | `impeccable` (v4.3.1) | impeccable (`D:\uvtr-digital\.claude\skills`; its 16 MB .exe is gitignored) | yes | yes | Stage T final polish | A Cowork scratch copy was superseded | **APPLIED** |
+| web-design-guidelines | `web-design-guidelines` | vercel-labs/agent-skills (another local skills folder) | yes | yes | Stage K accessibility/UX audit | none | **APPLIED** |
+| impeccable | `impeccable` (v4.3.1) | impeccable (a local skills folder; its 16 MB .exe is gitignored) | yes | yes | Stage T final polish | A Cowork scratch copy was superseded | **APPLIED** |
 | emil-design-eng | `emil-design-eng` | emilkowalski/skill | yes | yes | Stage I interaction feel | none | **APPLIED** |
 | pick-ui-library | `pick-ui-library` | emilkowalski/skill | yes | yes | Stage D library choice | `disable-model-invocation`: only you can run `/pick-ui-library` | UNAVAILABLE (decided by the brief's Stage D rule) |
 | prototype | `prototype` | emilkowalski/skill | yes | yes | Stage E layout options | The layout was validated directly with screenshots | NOT NEEDED |

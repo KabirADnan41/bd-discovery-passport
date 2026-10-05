@@ -26,7 +26,7 @@ export const contrast = (a, b) => {
   return (hi + 0.05) / (lo + 0.05);
 };
 
-const TEXT = ['text-primary', 'text-secondary', 'text-muted', 'accent-stamp-text'];
+const TEXT = ['text-primary', 'text-secondary', 'text-muted', 'accent-stamp-text', 'text-success', 'accent-brass-text'];
 const SURFACES = ['surface-canvas', 'surface-paper', 'surface-sunk'];
 
 describe.each([
@@ -47,5 +47,18 @@ describe.each([
 
   it('discovered districts stand out from the page (3:1 non-text)', () => {
     expect(contrast(resolve(tokens, 'map-discovered'), resolve(tokens, 'surface-canvas'))).toBeGreaterThanOrEqual(3);
+  });
+
+  it('wrong quiz guesses stand out from the page (3:1 non-text)', () => {
+    expect(contrast(resolve(tokens, 'map-wrong'), resolve(tokens, 'surface-canvas'))).toBeGreaterThanOrEqual(3);
+  });
+
+  it('control borders are visible against the page and the paper (3:1 non-text)', () => {
+    expect(contrast(resolve(tokens, 'rule-strong'), resolve(tokens, 'surface-canvas'))).toBeGreaterThanOrEqual(3);
+    expect(contrast(resolve(tokens, 'rule-strong'), resolve(tokens, 'surface-paper'))).toBeGreaterThanOrEqual(3);
+  });
+
+  it('text on the green cover meets WCAG AA (4.5:1)', () => {
+    expect(contrast(resolve(tokens, 'text-on-cover'), resolve(tokens, 'surface-cover'))).toBeGreaterThanOrEqual(4.5);
   });
 });

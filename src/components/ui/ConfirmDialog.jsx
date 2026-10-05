@@ -6,7 +6,7 @@ export default function ConfirmDialog({ open, title, children, confirmLabel, can
   return (
     <Modal open={open} labelledBy="confirm-title" onClose={onCancel} initialFocusRef={cancelRef}>
       <div className="px-6 pt-6 pb-5">
-        <h2 id="confirm-title" className="text-[1.3rem] font-semibold">
+        <h2 id="confirm-title" className="text-h2 text-balance">
           {title}
         </h2>
         <div className="mt-2 text-[0.95rem] leading-relaxed text-ink-2">{children}</div>

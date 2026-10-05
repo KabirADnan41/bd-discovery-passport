@@ -4,7 +4,7 @@
 // 600,000 iterations, salted per username (src/lib/authClient.js). The server stores only
 // HMAC-SHA256(AUTH_PEPPER, key). Heavy stretching cannot run on the server because the
 // Workers free plan allows 10 ms of CPU per request and caps PBKDF2 at 100,000 iterations.
-import { HttpError, SESSION_COOKIE, readCookie } from './http.js';
+import { HttpError, SESSION_COOKIE, ipNetwork, readCookie } from './http.js';
 import { USERNAME_RE, base64url, normalizeUsername } from '../shared/credentials.js';
 
 const enc = new TextEncoder();
@@ -51,8 +51,8 @@ export function readCredentials(body) {
   return { username, passwordKey: body.passwordKey };
 }
 
-/** Bucket for per-network limits: an HMAC of the client IP, so raw IPs are never stored. */
-export const ipBucket = (env, request) => hmac(env.AUTH_PEPPER, `ip:${request.headers.get('CF-Connecting-IP') || 'local'}`);
+/** Bucket for per-network limits: an HMAC of the client IP (IPv6 by /64), so raw IPs are never stored. */
+export const ipBucket = (env, request) => hmac(env.AUTH_PEPPER, `ip:${ipNetwork(request.headers.get('CF-Connecting-IP')) || 'local'}`);
 
 /** One fixed-window counter increment (a new window starts once the old one has expired). */
 const countAttempt = (db, key, windowSeconds, now) =>
@@ -66,8 +66,16 @@ const countAttempt = (db, key, windowSeconds, now) =>
     )
     .bind(key, now, now - windowSeconds);
 
-/** Counts this attempt and returns true while the caller is within `limit` attempts per window. */
+/**
+ * Counts this attempt and returns true while the caller is within `limit` attempts per window.
+ * A blocked call only reads, so a flood cannot spend the daily D1 write quota.
+ */
 export async function withinRateLimit(db, key, limit, windowSeconds, now = nowSeconds()) {
+  const current = await db
+    .prepare('SELECT count FROM rate_limits WHERE key = ?1 AND window_start > ?2')
+    .bind(key, now - windowSeconds)
+    .first();
+  if (current && current.count >= limit) return false;
   const row = await countAttempt(db, key, windowSeconds, now).first();
   return row.count <= limit;
 }
@@ -104,7 +112,7 @@ export const clearGuessCounters = (db, keys) =>
   // exact prefix match: base64url HMACs contain '_', which LIKE would treat as a wildcard
   db.prepare('DELETE FROM rate_limits WHERE key = ?1 OR substr(key, 1, length(?2)) = ?2').bind(keys.user, `${keys.user}:`);
 
-/** Small site, so housekeeping piggybacks on sign-in and sign-up requests instead of a scheduled job. */
+/** Small site, so housekeeping piggybacks on about 1 in 20 allowed sign-ins and sign-ups instead of a scheduled job. */
 export const housekeeping = (db, now = nowSeconds()) =>
   db.batch([
     db.prepare('DELETE FROM sessions WHERE expires_at <= ?1').bind(now),

@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = p => JSON.parse(fs.readFileSync(path.join(ROOT, p), 'utf8'));
 
-export function validate({ generated, enriched, sourceDistricts, sourceDivisions }) {
+export function validate({ generated, enriched, sourceDistricts, sourceDivisions, places }) {
   const errors = [];
   const err = m => errors.push(m);
 
@@ -53,6 +53,22 @@ export function validate({ generated, enriched, sourceDistricts, sourceDivisions
   const STATUSES = new Set(['verified', 'mock', 'incomplete']);
   const TYPES = new Set(['food', 'culture', 'craft', 'tradition']);
   const noMarkup = (s, where) => { if (typeof s !== 'string' || !s.trim()) err(`${where}: empty text`); else if (/[<>]|javascript:/i.test(s)) err(`${where}: markup-like text is not allowed`); };
+  const checkSources = (sources, where) => {
+    if (!Array.isArray(sources) || !sources.length) err(`${where}: needs at least one source`);
+    for (const s of sources || []) {
+      noMarkup(s.label, `${where}.source.label`);
+      let url;
+      try { url = new URL(s.url); } catch { err(`${where}: invalid source url`); continue; }
+      if (url.protocol !== 'https:') err(`${where}: source url must be https`);
+    }
+  };
+  // an address ends with the district's name, or a common alternative spelling of it
+  const ALIASES = { 22: ['Chapai Nawabganj'], 25: ['Sirajganj'], 52: ['Moulvibazar'] };
+  const checkAddress = (id, address, where) => {
+    noMarkup(address, `${where}.address`);
+    const names = [expected.get(id).name, ...(ALIASES[id] || [])];
+    if (typeof address === 'string' && !names.some(n => address.endsWith(n))) err(`${where}: address must end with ${names.join(' or ')}`);
+  };
   for (const [id, entry] of Object.entries(enriched)) {
     if (id.startsWith('$')) continue;
     const src = expected.get(id);
@@ -69,15 +85,29 @@ export function validate({ generated, enriched, sourceDistricts, sourceDivisions
       if (/[–—]/.test(it.note)) err(`${where}: use a hyphen, not an en/em dash`);
       if (kind === 'landmark') noMarkup(it.category, `${where}.category`);
       if (kind === 'cultureFood' && !TYPES.has(it.type)) err(`${where}: bad type ${it.type}`);
-      if (!Array.isArray(it.sources) || !it.sources.length) err(`${where}: needs at least one source`);
-      for (const s of it.sources || []) {
-        noMarkup(s.label, `${where}.source.label`);
-        let url;
-        try { url = new URL(s.url); } catch { err(`${where}: invalid source url`); continue; }
-        if (url.protocol !== 'https:') err(`${where}: source url must be https`);
-      }
+      if (it.address !== undefined) checkAddress(id, it.address, where);
+      checkSources(it.sources, where);
     });
   }
+
+  // --- places to go: 3 to 6 per district, every district
+  for (const id of expected.keys()) {
+    const list = places[id];
+    if (!Array.isArray(list)) { err(`places: district ${id} is missing`); continue; }
+    if (list.length < 3 || list.length > 6) err(`places ${id}: needs 3 to 6 places, found ${list.length}`);
+    list.forEach((p, i) => {
+      const where = `places ${id}[${i}]`;
+      noMarkup(p.name?.en, `${where}.name.en`);
+      if (p.name?.bn !== undefined) noMarkup(p.name.bn, `${where}.name.bn`);
+      noMarkup(p.category, `${where}.category`);
+      noMarkup(p.note, `${where}.note`);
+      if (/[–—]/.test(p.note)) err(`${where}: use a hyphen, not an en/em dash`);
+      if (p.note?.length > 140) err(`${where}: note is over 140 characters`);
+      checkAddress(id, p.address, where);
+      checkSources(p.sources, where);
+    });
+  }
+  for (const id of Object.keys(places)) if (!expected.has(id)) err(`places id ${id} is not a real district id`);
   return errors;
 }
 
@@ -87,10 +117,11 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
     enriched: readJson('src/data/districts.enriched.json'),
     sourceDistricts: readJson('data/source/bd-districts.json').districts,
     sourceDivisions: readJson('data/source/bd-divisions.json').divisions,
+    places: readJson('src/data/places.json'),
   });
   if (errors.length) {
     console.error(`validate-map-data: ${errors.length} problem(s)\n  - ${errors.join('\n  - ')}`);
     process.exit(1);
   }
-  console.log('validate-map-data: 64 districts, content and joins OK');
+  console.log('validate-map-data: 64 districts, content, places and joins OK');
 }

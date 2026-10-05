@@ -4,13 +4,18 @@
 > This file is the handoff: what is done, which skill and approach each task used, what is left and with which
 > skills, the approach audit, and how to run everything. Updated at every milestone.
 
-**Last updated:** 2026-09-28, milestone 27: build complete and verified locally. Docs written, CI file ready (not committed).
-**Waiting on the owner** for deployment (Cloudflare login, contact details) and the optional GitHub decision.
+**Last updated:** 2026-10-05, milestone 31: **v2 round built, reviewed and tested** (quiz mode, places to go with Directions
+links, free-plan firewall, redesign). QA, reviews, fixes and docs are done; the leak scan is next, then commit, push and live
+deploy. Today's work is uncommitted and not yet deployed; local `main` and `origin/main` are both at `2fa34e3`.
+Previous: milestone 29 (2026-09-28), **LIVE at https://bd-discovery-passport.pages.dev**, production verified (headers, API smoke
+test, real browser with 0 CSP violations and 0 errors, LCP 520 ms desktop / 2.45 s Slow-4G phone), pushed to github.com/KabirADnan41/bd-discovery-passport (**public**).
 
 Skill status words (from the brief): **APPLIED** (actually used and changed the work), **AVAILABLE** (installed, not yet
 used), **NOT NEEDED** (considered, deliberately skipped, with reason), **UNAVAILABLE** (cannot be used in this session).
 
-**Rough completion: about 93%.** Everything that can be done without your logins is done. Product features are done; what remains is mostly verification, reviews, docs and deployment.
+**Rough completion of the v2 round: about 90%.** Features, security, the redesign, the places data review, QA, reviews, fixes
+and docs are done; the leak scan and the ship (commit, push, deploy) are still to do. (v1 reached about 97% at milestone 29:
+live, only optional work left.)
 
 ---
 
@@ -19,8 +24,8 @@ used), **NOT NEEDED** (considered, deliberately skipped, with reason), **UNAVAIL
 | Area | State |
 |---|---|
 | Phase 0: device skill scan, dedupe, global install, project skills | DONE |
-| Phase 0B: MCP / plugin audit | DONE (write-up still to go into docs/project-skills.md) |
-| Phase 0C: reference books (5 original + *Privacy's Blueprint*, added by the user) | DONE (notes still to go into docs/security.md) |
+| Phase 0B: MCP / plugin audit | DONE (write-up in docs/project-skills.md) |
+| Phase 0C: reference books (5 original + *Privacy's Blueprint*, added by the user) | DONE (notes in docs/security.md section 8) |
 | Geographic pipeline (64 districts from ADM3) | DONE, validated |
 | Verified district content | DONE (8 districts) |
 | Core UI (map, passport card, stamp, progress, gazetteer) | DONE, browser-checked at 5 widths, light + dark |
@@ -39,10 +44,25 @@ used), **NOT NEEDED** (considered, deliberately skipped, with reason), **UNAVAIL
 | Security review (Stage Q) | DONE (manual; the built-in skill needs a git remote): 3 low-severity fixes, all verified |
 | Simplify (Stage S) | DONE: account sync in one hook, passport source in the reducer, no cross-component DOM queries |
 | Final polish (Stages T, V, W) | DONE (impeccable, minimalist-ui); `review-animations` is user-invoke only |
-| Docs + CI file | DONE: README + 7 docs; `.github/workflows/ci.yml` written, not committed |
+| Docs + CI file | DONE: README + 7 docs; `.github/workflows/ci.yml` committed in `2fa34e3` |
 | Final verification | DONE: lint clean, 57 unit, API smoke 3/3 runs, 37 E2E, map data deterministic |
-| Deploy | **WAITING ON YOU** (see section 3) |
+| Deploy | **DONE**: https://bd-discovery-passport.pages.dev (Pages project + D1 in APAC + `AUTH_PEPPER` secret). Verified live with the API smoke test and a real browser |
+| GitHub | **DONE**: commit `2fa34e3` pushed to https://github.com/KabirADnan41/bd-discovery-passport (**public**, `main`; anything pushed is public, so the leak scan must pass before every push). CI (`.github/workflows/ci.yml`) runs on each push; check the Actions tab |
+| Security scan (`claude-security`) | NOT RUN: this session has no Workflow tool (enable Dynamic workflows in /config, then restart) |
 | **User rule** | Never commit or push without asking (saved to memory). GitHub is optional: Cloudflare direct upload works without it |
+| **v2 round (milestones 30 and 31, 2026-10-05)** | **About 90%** (done items: section 2, rows 37 to 51; remaining: leak scan, then commit, push and deploy, section 3) |
+| Project cleanup (stray folder, project skills, MCP scope, `.vscode/`, headroom and PostgreSQL leftovers) | DONE, verified. One owner action left: the empty PostgreSQL 16 install needs an admin shell (section 3) |
+| Security audit (read-only) | DONE: 0 npm vulnerabilities; no secrets in tracked files, history or build output; high finding F1 fixed; F2 accepted as residual risk |
+| Firewall on the free plan (F1 fix) | DONE: method allowlist, per-IP pre-filter (POST and DELETE only, IPv6 per /64 after the reviews), write-free rate limiter, sign-up honeypot, nosniff on API JSON (section 5; `docs/security.md` section 5) |
+| Consent check + privacy notice update | DONE: no consent banner needed (all storage strictly necessary); notice dated 5 October 2026 |
+| Quiz mode (Explore / Quiz switch) | DONE: unit + E2E tests (`tests/unit/quiz.test.js`, `tests/e2e/quiz.spec.js`) |
+| Places to go + Directions links (334 places, all 64 districts) | DONE: data review finished, 32 corrections, 0 dropped; a random sample of 30 found 1 error (3.3%), fixed (#47) |
+| Design brief for the redesign | DONE (Fable) |
+| Redesign implementation | DONE (#46) |
+| Tests at last check | Lint clean, 97 unit pass (5 files), `validate:data` OK, build OK (main JS 139.73 kB gzip; places chunk 41.59 kB gzip, lazy); E2E 47 passed, 7 skipped (designed mobile skips), 0 failed |
+| QA, reviews (code, security, simplicity), fixes, docs | DONE (#48 to #51) |
+| Leak scan | **NEXT** (section 3) |
+| Commit, push, live deploy of the v2 round | TO DO: owner approved them for the end, after tests and the leak scan pass |
 
 ---
 
@@ -52,9 +72,9 @@ used), **NOT NEEDED** (considered, deliberately skipped, with reason), **UNAVAIL
 |---|---|---|---|
 | 1 | Scan C:\ and D:\ for skills | none (shell + Node) | `dir /s /b` for SKILL.md, then a Node script: frontmatter parse, SHA-256 of SKILL.md and of the whole directory, ecosystem from path. 692 files, 418 unique, 274 exact duplicates, 23 name collisions. |
 | 2 | Classify compatibility | none (manual reading) | Read sample SKILL.md files from every family; rules: COMPATIBLE / COMPATIBLE* (needs MCP) / REQUIRES ADAPTATION / INCOMPATIBLE. Verified the global dir via official docs (`~/.claude/skills/<name>/SKILL.md`). |
-| 3 | Install globally (283 skills) | none | Copy, never move; backup manifest + rollback script in `C:\Users\VICTUS\.claude\backups\skill-install-2026-09-28\`. Collisions renamed `<source>-<skill>` including the frontmatter `name`. **Verified live** (the session announced the new skills without a restart). Side effect: past ~110 skills the listing drops descriptions. |
+| 3 | Install globally (283 skills) | none | Copy, never move; backup manifest + rollback script in `%USERPROFILE%\.claude\backups\skill-install-2026-09-28\`. Collisions renamed `<source>-<skill>` including the frontmatter `name`. **Verified live** (the session announced the new skills without a restart). Side effect: past ~110 skills the listing drops descriptions. |
 | 4 | Security plugin | `claude-security` | Installed via `claude plugin install`. **UNAVAILABLE in this session** (plugins load at session start); use next session. |
-| 5 | Project skill library | none | 21 skills in `.claude/skills/`; impeccable's 16 MB .exe gitignored. Report: `docs/claude-skill-audit.md`. |
+| 5 | Project skill library | none | 21 skills in `.claude/skills/`; impeccable's 16 MB .exe gitignored. Report: `docs/claude-skill-audit.md`. (2026-10-05: moved to the global skills folder, see #38.) |
 | 6 | Engineering approach | `andrej-karpathy-skills:karpathy-guidelines` (**APPLIED**, Stage A) | Stated assumptions, verify-steps per task, exact-pinned deps, fail-loud pipeline, removed speculative helpers, no UI library. |
 | 7 | Visual direction | `design-taste-frontend` (**APPLIED**), then `high-end-visual-design` (**APPLIED selectively**) (Stage B) | Design read + dials (6/4/3); client palette kept via the skill's override; em-dash ban; eyebrow restraint; passport "cover + page"; rejected glass nav, giant radii, scroll reveals. |
 | 8 | UI library decision | `pick-ui-library` (**UNAVAILABLE**: user-invocation only) | Brief's Stage D rule: React + Tailwind + native `<dialog>`/popover; no component or icon library. |
@@ -63,7 +83,7 @@ used), **NOT NEEDED** (considered, deliberately skipped, with reason), **UNAVAIL
 | 11 | Data validation | `data:validate-data` (**NOT NEEDED**: it QA's analyses) | `scripts/validate-map-data.mjs` before every build: ids, joins, bbox, neighbours, stamp codes, https sources, no markup, no dashes. |
 | 12 | Content verification | none | UNESCO first, Wikipedia secondary (Banglapedia blocked). Claims never exceed the source. |
 | 13 | Map, card, stamp, gazetteer | karpathy + design-taste (APPLIED) | Inline SVG, roving tabindex + spatial arrows, overlays for hover/selection/focus, hatched vs solid (not colour alone), SVG-filter stamp. |
-| 14 | Browser QA | `chrome-devtools` (**UNAVAILABLE** this session; `.mcp.json` added) | Playwright scripts: screenshots at 375/430/768/1024/1440, console errors, overflow. |
+| 14 | Browser QA | `chrome-devtools` (**UNAVAILABLE** this session; `.mcp.json` added; 2026-10-05: moved to user scope and the project `.mcp.json` deleted, see #38) | Playwright scripts: screenshots at 375/430/768/1024/1440, console errors, overflow. |
 | 15 | Theme (user request) | design-taste §6.C/§8 (APPLIED) | `public/theme-init.js` pre-paint (CSP-safe), `useTheme`, System / Light / Dark radio group in the menu; transitions suppressed for the switch frame. |
 | 16 | Accounts (user request) | karpathy (APPLIED) | Cloudflare Pages Functions + D1. Browser PBKDF2-SHA256 600k; server HMAC + pepper (free plan = 10 ms CPU; PBKDF2 100k measured 15 ms). `__Host-` HttpOnly Secure SameSite=Strict cookie, hashed sessions, Origin + JSON checks, D1 rate limits (IP only as HMAC), union stamp sync, password-confirmed deletion. `/api/me` returns 200 for guests. `tests/api/smoke.mjs` 24/24; browser flow passes. |
 | 17 | Motion opportunities (Stage G) | `find-animation-opportunities` → `animation-vocabulary` → `animate` (all **APPLIED**) | 5 of 10 candidates kept: symmetric sheet exit (`usePresence`, `inert`), dialog + menu `@starting-style` in/out, origin-aware menu, tooltip enters once, ledger tick after the stamp. `--ease-out` = `cubic-bezier(0.23,1,0.32,1)`. Reduced motion = fades only. |
@@ -86,17 +106,44 @@ used), **NOT NEEDED** (considered, deliberately skipped, with reason), **UNAVAIL
 | 36 | Late bug found by the tests | none | The session cap sorted by expiry time, which ties for same-second sign-ins and could drop the new session; now sorted by insertion order, with a regression check. |
 | 28 | Repo hygiene | none | `/reference/` (copyrighted books) gitignored at the root only; `.gitattributes` pins LF; `git add -N` used for review diffs (no commits, per the user). |
 | 24 | Security headers | brief Stage 22 rules | `public/_headers`: strict CSP, nosniff, DENY framing, referrer policy, permissions policy, COOP, CORP, HSTS, immutable `/assets/*`. Verified with curl against `wrangler pages dev`. |
+| 37 | v2 round process (owner's rules, 2026-10-05) | `karpathy-guidelines` (**APPLIED**: simple code) | Work distributed to sub-agents, one task each, in parallel when independent. Model routing: Fable for review and design direction, Opus for edits and research. Briefs written in the style of the owner's prompt library (labelled blocks, rules with reasons, decision paths, honest scoped reports, silent self-check). The session crashed twice from low memory; agents were resumed from saved transcripts, research agents then saved after every district, and heavy jobs (build, wrangler, Playwright, browsers) now run one at a time. Later in the round the session crashed again and the network dropped; agents were resumed or re-briefed, and heavy jobs stayed one at a time. |
+| 38 | Project and machine cleanup | none | Verified. Removed an accidental older copy of another project folder (253 MB) from the project root. The project's 21 copied skills moved to the global skills folder: 27 parked frontend skills restored globally with the owner's permission, 12 identical copies deleted, 9 differing copies archived (global versions kept as newer). chrome-devtools MCP moved to user scope; project `.mcp.json` and `.vscode/` deleted; `.gitignore` now ignores `/.vscode/`, `/skill_review.md`, `/.gstack/`. headroom leftovers removed (a plugin-usage entry, ~30 MB of uv cache). A portable PostgreSQL + pgAdmin copy inside another project's `.local` folder and installer leftovers in Temp deleted; the empty PostgreSQL 16 install in Program Files (default databases only) is an owner action (section 3). |
+| 39 | Security audit | none (read-only audit agent, Fable) | 0 npm vulnerabilities; no secrets in tracked files, git history or build output. **High finding F1:** rate-limited login and sign-up still wrote D1 rows, so one IP could exhaust the free 100k writes/day (fixed in #40). F2 (sign-up reveals that a username is taken) accepted as residual risk. Docs no longer name the pepper backup location or home-folder paths. |
+| 40 | Firewall on the free plan (F1 fix) | `karpathy-guidelines` (**APPLIED**) | WAF, Bot Fight Mode and the rate-limit binding are not available on `*.pages.dev`, so in code: method allowlist in `functions/api/_middleware.js` (405), isolate-local per-IP pre-filter of 60 requests / 60 s before any D1 work (loopback skipped so tests are not throttled), write-free rate limiter with housekeeping on about 1 in 20 allowed sign-ins and sign-ups, sign-up honeypot field (`hp_note`), `X-Content-Type-Options: nosniff` on API JSON; existing Origin and JSON checks kept. Turnstile not used (third-party request and data sharing). Written up in `docs/security.md` section 5. |
+| 41 | Consent check + privacy notice | none | Verdict: every cookie and storage key is strictly necessary for a function the user asked for, so no consent banner. `privacy/index.html` updated: quiz best-score row with the "Clear best score" control, a Directions / Google Maps paragraph, date 5 October 2026. |
+| 42 | Quiz mode | `karpathy-guidelines` (**APPLIED**) | Explore / Quiz radio switch; 10 random districts per round; prompt "Find <name> <Bengali name>"; 10 / 5 / 2 points for a find on try 1 / 2 / 3, then reveal and 0 after a third miss; wrong-guess hint with distance and 8-point direction; summary with score out of 100, best score, Play again, Back to explore, Clear best score. The quiz never adds stamps; tooltips and the gazetteer are hidden in quiz mode. The desktop legend moved into the side panel. Files: `src/lib/quiz.js`, `src/components/game/QuizPanel.jsx`, `tests/unit/quiz.test.js`, `tests/e2e/quiz.spec.js`. |
+| 43 | Places research | none (8 parallel research agents) | 334 places for all 64 districts (4 to 6 each) plus addresses for all 17 existing landmarks. Sources: Wikipedia, the Bangladesh Tourism Board site, national news. `*.gov.bd` portals failed the fetch tool's certificate check; Banglapedia returned a placeholder. Some sites contained text aimed at AI agents; it was ignored and those sites were not used. Data review: #47. |
+| 44 | Places in the app + Directions links | `karpathy-guidelines` (**APPLIED**) | Data in `src/data/places.json`, lazy-loaded by `src/lib/places.js` (dynamic import, kept out of the main bundle, a failed load is retried next time); shown on the district card. Each place has a "Directions" link using Google's no-key Maps URL (opens the Google Maps app on phones; new tab, `rel` noopener). Google Maps Platform APIs not used (billing required; free-tier rule). Validator rules in `scripts/validate-map-data.mjs`; unit tests in `tests/unit/places.test.js`. |
+| 45 | Design brief for the redesign | none (Fable design-direction agent) | 10 inspiration sites (including Worldle, Seterra, GeoGuessr, Airbnb, Google Arts & Culture, The Pudding, National Geographic, Linear). Direction: bigger display type, fewer boxes, Bangladesh green as a solid surface, vermilion only as a signal, dark mode as a night atlas, no new font. Implemented in #46. |
+| 46 | Redesign implementation | `karpathy-guidelines` (**APPLIED**) | Follows the #45 brief. A type scale in `src/styles/index.css` (display, h1, h2, h3, eyebrow), one family. The passport is one booklet: a solid Bengal-green cover band above the paper page, shared by the desktop page and the phone sheet (the brass inset line is gone). Controls are 8 px instead of pills (only the stamp and the grab handle stay round); primary buttons are solid green. The masthead shows a plain count (the tick ledger moved into the side panel); the map key is one line under the map, with its own quiz key; gazetteer entries are underlined text, and a fully stamped division gets a green rule; places are plain text links with 44 px hit areas. Dark mode: land lifted away from the sea, cover `#1d6a49` with paper-coloured text. New tokens: solid `--rule-strong` (3:1 or more), `--accent-brass-text`, `--text-success`, `--map-wrong`; `tests/unit/contrast.test.js` checks them. The policy pages use the display heading. |
+| 47 | Places data review | none (data-review agent) | All 185 flagged items (closed or collapsed sites, border areas, invented names) checked: 32 corrections, 0 places dropped (still 334, 4 to 6 per district). Renames include Teliapara Smriti Soudho, Arunima Resort Golf Club, Jamai Pagol Mazar, Jiner Mosque and Madhupalli (Michael Madhusudan Dutt's House). Chittagong Hill Tracts entries note that foreign visitors may need permission. A random sample of 30 (seed 20261005) found 1 error (3.3%), fixed. |
+| 48 | QA (Phase J) | none (QA agent; heavy jobs one at a time) | Build OK; API smoke 29/29; firewall 3/4 at first (a login blocked by the per-username limit still wrote a `login:ip` row; fixed in #50). Performance: desktop LCP 892 ms, phone LCP 2,056 ms, CLS 0.014. Maps spot-check: 8 of 8 random Directions links correct; 4 suspect links fixed (Shilua stone address; the Kulia mosque renamed Uttar Kulia Jame Masjid, with the Bengali village name in the address because Google lists it only in Bengali; Garaitupi renamed Goraitupi Mazar, village-level pin; Aat Kobor address set to Damurhuda, Chuadanga). Directions links are checked in a headless browser, no API key. |
+| 49 | Reviews (Phase K) | Code, security and simplicity reviewers, in parallel | **Code review:** 4 findings (HIGH: a quiz guess after the round ended crashed; MED: the pre-filter counted `GET /api/me`, so users behind carrier-grade NAT could hit false 429s; LOW: honeypot; LOW: phone quiz tab order). **Security review:** 5 findings (MED: IPv6 not grouped, now per /64 for rate limits; LOW: honeypot renamed from the autofill-prone `website` to `hp_note`; LOW: burst race, accepted and documented; LOW: privacy retention wording; 1 info); `npm audit` 0. **Simplicity review:** 9 suggestions, 8 applied (PlacesToGo live flag, `--color-on-cover`, `POINTS[0]`, merged quiz tests, authClient default, quiz state from the marks, unused `quiz-*` CSS, impossible validator guards, an unused middleware parameter); skipped on purpose: merging `.link` (not identical) and removing the pulse animation. |
+| 50 | Fixes (Phase L) | Fix agent | All review and QA findings fixed. Among them: the pre-filter counts only non-GET requests and groups IPv6 by /64, and a login blocked by the per-username limit no longer writes a `login:ip` row. Not changed on purpose: `useAccount` handling of 429, because `/api/me` can no longer get a 429 from our code, and Cloudflare's own daily-limit 429 correctly shows "Accounts are unavailable". |
+| 51 | Docs (milestone 31) | none (docs agent) | PROGRESS.md brought up to date (the GitHub repo is public, not private); README, `docs/architecture.md`, `docs/data-sources.md`, `docs/security.md`, `docs/design-research.md` and `docs/deployment.md` now cover the quiz, places with Directions links, the redesign and the free-plan firewall. |
 
 ---
 
 ## 3. Still to do
 
-### Needs you (nothing else is blocking)
-| # | Task | What you do | What Claude does after |
+### v2 round: remaining steps (in order; heavy jobs one at a time)
+| # | Step | Who | Note |
 |---|---|---|---|
-| 1 | Cloudflare account | Create a free account, turn on 2FA, run `npx wrangler login` in this folder | Create D1, apply migrations, set the `AUTH_PEPPER` secret, deploy (`docs/deployment.md`), run the smoke test against the live URL |
-| 2 | Contact details | Give a contact email or public link for the privacy notice | Fill `TODO(site owner)` in `privacy/index.html` |
-| 3 | GitHub (optional) | Say yes or no; if yes, give your GitHub noreply email | Commit (with your OK), push, CI runs `.github/workflows/ci.yml` |
+| 1 | Finish the redesign | Redesign agent | **DONE** (#46) |
+| 2 | Finish the places data review | Data-review agent | **DONE** (#47): 32 corrections, 0 dropped; sample of 30 had 1 error, fixed |
+| 3 | QA | QA agent | **DONE** (#48): 8 of 8 random Directions links correct, 4 suspect links fixed |
+| 4 | Reviews | Code, security and simplicity reviewers, in parallel | **DONE** (#49) |
+| 5 | Fixes | Fix agent | **DONE** (#50) |
+| 6 | Leak scan | Leak-scan agent | **NEXT.** Must pass before anything is published; the GitHub repo is public |
+| 7 | Docs | Docs agent | **DONE** (#51) |
+| 8 | Commit, push, deploy | Main session | Owner approved, at the end, after tests and the leak scan pass. Redeploy: `npm run build` + `npx wrangler pages deploy dist --project-name bd-discovery-passport --branch main` |
+
+### Needs you (owner actions; nothing above waits on them)
+| # | Task | What you do | Note |
+|---|---|---|---|
+| 1 | Remove the empty PostgreSQL 16 install | In an Administrator PowerShell: `Remove-Item -LiteralPath 'C:\Program Files\PostgreSQL' -Recurse -Force; Remove-Item -LiteralPath 'HKLM:\SOFTWARE\PostgreSQL' -Recurse -Force` | Only default databases inside; needs an admin shell |
+| 2 | Pepper copy | Keep it only in your password manager | Losing it only matters if the site is ever rebuilt on a new project |
+| 3 | Marketing connectors (optional) | Sign in to Slack, Notion, Ahrefs and the others in claude.ai settings, only if you want them | Not used by this project |
 
 ### Optional extras
 | Task | Skill / approach | Note |
@@ -106,6 +153,7 @@ used), **NOT NEEDED** (considered, deliberately skipped, with reason), **UNAVAIL
 | UI library second opinion | `/pick-ui-library` (you run it) | User-invoke only; current answer: none needed |
 | Product context for design tools | `/impeccable init` (writes PRODUCT.md) | Helps future design passes |
 | Update impeccable | `npx impeccable update` | v4.4.0 available; only if you want it |
+| Faster first paint on slow phones | Prerender the page shell so the map paints before JavaScript | Live LCP on throttled Slow 4G is 2.45 s (limit 2.5 s); the v2 build measured 2,056 ms in QA. The top optional performance win |
 | v2 ideas | Passkeys; Bengali font subsetting; more verified districts | See the approach audit |
 
 ---
@@ -121,7 +169,8 @@ used), **NOT NEEDED** (considered, deliberately skipped, with reason), **UNAVAIL
 | Fonts | Anek Bangla wght axis (~200 KB) | System fonts; glyph subsetting | **Subsetting likely better**. Evaluate with measurements. |
 | Accounts platform | Cloudflare Pages Functions + D1 | Supabase (pauses when idle), Firebase (third-party SDK), Neon/Vercel (two providers), self-hosting (not 24/7) | **Keep**: never sleeps, same origin, over-limit requests fail instead of billing. |
 | Sign-in method | Username + password, browser PBKDF2 600k, server HMAC + pepper | Passkeys; Sign in with Google; email magic links | **Keep for v1**; passkeys are the recommended v2 (phishing-proof, no password DB). No reset without email (stated in the terms). |
-| Abuse protection | D1 rate limits | Cloudflare Turnstile; WAF rule | **Keep**; Turnstile only if spam appears. |
+| Abuse protection | D1 rate limits + an in-code firewall (method allowlist, per-IP pre-filter, honeypot) | Cloudflare Turnstile; WAF rule (needs a custom domain) | **Keep**; Turnstile only if spam appears. |
+| Directions to places | Google's no-key Maps URL, opened in a new tab | Google Maps Platform APIs (billing required); an embedded Google map (third-party requests and a CSP change) | **Keep**: free, nothing is sent to Google until the user chooses the link. |
 | Sessions | HttpOnly cookie, hashed token | JWT in localStorage | **Keep**: safer against XSS. |
 | Theme without flash | External `theme-init.js` | Inline script + CSP hash | **Keep**. |
 | Keyboard map access | Roving tabindex + arrows + gazetteer | 64 tab stops | **Keep**. |
@@ -142,13 +191,39 @@ used), **NOT NEEDED** (considered, deliberately skipped, with reason), **UNAVAIL
 - No inline scripts or `<style>`; React `style` props are CSSOM (the E2E fixture fails on any CSP violation).
 - Dev servers: stopping a background `wrangler pages dev` shell can leave `workerd` running on 8788. Kill the whole process tree
   (`taskkill /PID <sh pid> /T /F`) before restarting, or the old server keeps answering.
+- Firewall (free plan; WAF, Bot Fight Mode and the rate-limit binding are not available on `*.pages.dev`): `functions/api/_middleware.js`
+  allows GET, POST and DELETE only (405 otherwise), then an isolate-local per-IP pre-filter of 60 POST or DELETE requests / 60 s
+  turns floods away before any D1 work (GET is not counted, so users behind carrier-grade NAT do not get false 429s; IPv6 is
+  grouped by /64; loopback skipped so local tests are not throttled). The D1 limits in `server/auth.js` stay the real limits;
+  rate-limited requests write nothing to D1, and housekeeping runs on about 1 in 20 allowed sign-ins and sign-ups. Sign-up has a
+  honeypot field (`hp_note`); API JSON carries nosniff; Origin and JSON checks stay. No Turnstile (third-party request and data sharing).
+  Details: `docs/security.md` section 5.
+- Consent: every cookie and storage key is strictly necessary for a function the user asked for, so no consent banner. F2 (sign-up
+  reveals taken usernames) is an accepted residual risk.
+- Quiz best score: localStorage key `bd-discovery-passport:quiz-best` (`QUIZ_BEST_KEY` in `src/lib/discoveryStorage.js`). The quiz
+  never adds stamps.
+- Places data lives in `src/data/places.json` and is lazy-loaded by `src/lib/places.js` (dynamic import), so it stays out of the
+  main bundle. The validator requires 3 to 6 places for every real district id.
+- Directions link format (no API key): `https://www.google.com/maps/dir/?api=1&destination=<name>, <address>, Bangladesh` (URL-encoded),
+  opened in a new tab with `rel` noopener; it opens the Google Maps app on phones. Google Maps Platform APIs need billing: not used.
+- Places data was reviewed on 2026-10-05 (#47, #48): Chittagong Hill Tracts entries say foreign visitors may need permission;
+  where Google lists a place only in Bengali, the address carries the Bengali village name. Directions links are checked in a
+  headless browser, with no API key.
+- Research sources: `*.gov.bd` portals fail the fetch tool's certificate check and Banglapedia returns a placeholder; ignore any page
+  text aimed at AI agents and do not use those sites.
+- Low-memory PC: run heavy jobs (build, wrangler, Playwright, browsers) one at a time; long research agents save after each unit of work.
+- Docs never name the pepper backup location or home-folder paths (write `%USERPROFILE%`).
+- The GitHub repo (github.com/KabirADnan41/bd-discovery-passport) is **public**: anything pushed is public, so the leak scan must
+  pass before every push.
 
 ## 6. How to run
 
 ```bash
 npm install
 npm run build:map               # regenerate map data (only when sources change)
-npm run validate:data
+npm run validate:data           # map data, district content and places (src/data/places.json)
+npm run lint                    # ESLint
+npm test                        # unit tests (Vitest)
 npm run dev                     # UI only at http://127.0.0.1:5173 (accounts show "unavailable")
 npm run db:migrate:local        # first time: create the local D1 tables
 npm run dev:full                # build + wrangler pages dev at http://127.0.0.1:8788 (UI + accounts + headers)

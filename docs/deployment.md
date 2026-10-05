@@ -1,5 +1,10 @@
 # Deployment (free, 24/7, nothing running on your PC)
 
+**Live:** https://bd-discovery-passport.pages.dev (deployed 2026-09-28; D1 `bd-discovery-passport` in APAC, id
+in `wrangler.toml`; `AUTH_PEPPER` set as a Pages secret, with a copy that
+belongs only in the owner's password manager).
+The one-time setup below is done; only **Every deploy** is needed from now on.
+
 **What you need:** a free Cloudflare account. **GitHub is optional.** Cloudflare Pages accepts a direct upload from this
 folder. Nothing is committed or pushed without your explicit OK.
 
@@ -52,10 +57,13 @@ Then open the site, discover a district, create an account, sign out and back in
 - Workers/Functions: 100,000 requests per day, 10 ms CPU per request. Passwords are stretched in the browser so sign-in fits.
 - D1: 5 GB total (500 MB per database), 5 million rows read and 100,000 written per day.
 - Over a limit, requests of that type fail for the rest of the day. **No charges are possible on the free plan.**
+- WAF rules, Bot Fight Mode and the rate-limit binding are not available on `*.pages.dev`, so a small firewall lives in the
+  code instead (see `docs/security.md` section 5). It needs no dashboard setup.
 - Backups: D1 Time Travel restores to any minute in the last 7 days (see `docs/security.md`).
 
 ## Optional: GitHub + CI
 
 `.github/workflows/ci.yml` runs lint, unit tests, a map-data drift check, the build and the E2E suite on every push. Using it
 needs a GitHub repository and your OK to commit and push. Use your GitHub "noreply" email for commits, so your personal
-address never becomes public. The `/reference/` books are gitignored and must never be published.
+address never becomes public. The `/reference/` books are gitignored and must never be published. The repository
+(github.com/KabirADnan41/bd-discovery-passport) is public, so anything pushed is public: run the leak scan before every push.

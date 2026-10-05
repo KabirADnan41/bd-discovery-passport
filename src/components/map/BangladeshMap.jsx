@@ -9,7 +9,7 @@ const DEFAULT_FOCUS_ID = '1'; // Dhaka: the first tab stop into the map
 const focusDistrict = id => document.getElementById(`district-${id}`)?.focus();
 
 // Fills never re-render on hover: only data-state / data-selected / tabIndex changes reach them.
-const DistrictLayer = memo(function DistrictLayer({ discoveredSet, selectedId, tabbableId, handlers }) {
+const DistrictLayer = memo(function DistrictLayer({ discoveredSet, selectedId, tabbableId, marks, handlers }) {
   return (
     <g>
       {DISTRICTS.map(d => {
@@ -24,6 +24,7 @@ const DistrictLayer = memo(function DistrictLayer({ discoveredSet, selectedId, t
             data-district-name={d.name}
             data-state={discovered ? 'discovered' : 'locked'}
             data-selected={d.id === selectedId}
+            data-quiz={marks?.[d.id]}
             role="button"
             tabIndex={d.id === tabbableId ? 0 : -1}
             aria-label={`${d.name}, ${discovered ? 'discovered' : 'not yet discovered'}`}
@@ -35,7 +36,9 @@ const DistrictLayer = memo(function DistrictLayer({ discoveredSet, selectedId, t
   );
 });
 
-export default function BangladeshMap({ discoveredSet, selectedId, hoveredId, onHoverChange, onActivate, children }) {
+// In quiz mode the map shows no district names (district aria-labels keep them) and Enter makes a guess.
+export default function BangladeshMap({ discoveredSet, selectedId, hoveredId, marks, onHoverChange, onActivate }) {
+  const quiz = marks !== undefined; // quiz marks are passed only in quiz mode
   const [focusedId, setFocusedId] = useState(null);
   const [keyboardFocusId, setKeyboardFocusId] = useState(null);
   const tabbableId = focusedId ?? selectedId ?? DEFAULT_FOCUS_ID;
@@ -70,7 +73,7 @@ export default function BangladeshMap({ discoveredSet, selectedId, hoveredId, on
   const hovered = getDistrict(hoveredId);
   const selected = getDistrict(selectedId);
   const keyboardFocused = getDistrict(keyboardFocusId);
-  const tooltipDistrict = hovered ?? keyboardFocused;
+  const tooltipDistrict = quiz ? null : (hovered ?? keyboardFocused);
 
   return (
     <div className="map-canvas" style={{ '--map-ratio': VB_W / VB_H }}>
@@ -113,7 +116,7 @@ export default function BangladeshMap({ discoveredSet, selectedId, hoveredId, on
           ))}
         </g>
 
-        <DistrictLayer discoveredSet={discoveredSet} selectedId={selectedId} tabbableId={tabbableId} handlers={handlers} />
+        <DistrictLayer discoveredSet={discoveredSet} selectedId={selectedId} tabbableId={tabbableId} marks={marks} handlers={handlers} />
 
         <path className="map-division" d={MAP.divisionBorders} />
         <path className="map-outline" d={MAP.outline} />
@@ -128,10 +131,10 @@ export default function BangladeshMap({ discoveredSet, selectedId, hoveredId, on
         {keyboardFocused && <path className="overlay-focus" d={keyboardFocused.d} />}
       </svg>
 
-      {children}
       <DistrictTooltip district={tooltipDistrict} discovered={tooltipDistrict ? discoveredSet.has(tooltipDistrict.id) : false} />
       <p id="map-instructions" className="sr-only">
-        Use the arrow keys to move between neighbouring districts. Press Enter or Space to discover a district and open its passport page.
+        Use the arrow keys to move between neighbouring districts.{' '}
+        {quiz ? 'Press Enter or Space to guess a district.' : 'Press Enter or Space to discover a district and open its passport page.'}
       </p>
     </div>
   );

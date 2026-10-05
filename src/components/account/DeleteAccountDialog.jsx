@@ -32,7 +32,7 @@ export default function DeleteAccountDialog({ open, username, onDelete, onClose 
   return (
     <Modal open={open} labelledBy={`${uid}-title`} onClose={handleClose} initialFocusRef={passRef}>
       <form className="grid gap-4 px-6 pt-6 pb-6" onSubmit={submit} noValidate>
-        <h2 id={`${uid}-title`} className="text-[1.3rem] font-semibold">
+        <h2 id={`${uid}-title`} className="text-h2 text-balance">
           Delete the account “{username}”?
         </h2>
         <p className="text-[0.95rem] leading-relaxed text-ink-2">This permanently removes your account and all of its stamps. It cannot be undone.</p>

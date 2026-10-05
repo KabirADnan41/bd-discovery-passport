@@ -1,5 +1,6 @@
-// Only harmless game state is stored: the list of discovered district ids. Nothing personal.
+// Only harmless game state is stored: the list of discovered district ids and the best quiz score. Nothing personal.
 export const STORAGE_KEY = 'bd-discovery-passport:v1';
+export const QUIZ_BEST_KEY = 'bd-discovery-passport:quiz-best';
 
 function getStorage() {
   try {
@@ -32,6 +33,32 @@ export function saveDiscovered(ids, storage = getStorage()) {
 export function clearDiscovered(storage = getStorage()) {
   try {
     storage?.removeItem(STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+/** Best quiz score (0 to 100), or 0 if none is saved or the saved value is junk. Never throws. */
+export function loadQuizBest(storage = getStorage()) {
+  try {
+    const best = Number(storage?.getItem(QUIZ_BEST_KEY));
+    return Number.isInteger(best) && best >= 0 && best <= 100 ? best : 0;
+  } catch {
+    return 0;
+  }
+}
+
+export function saveQuizBest(score, storage = getStorage()) {
+  try {
+    storage?.setItem(QUIZ_BEST_KEY, String(score));
+  } catch {
+    // quota or privacy errors: the best score just isn't remembered
+  }
+}
+
+export function clearQuizBest(storage = getStorage()) {
+  try {
+    storage?.removeItem(QUIZ_BEST_KEY);
   } catch {
     // ignore
   }

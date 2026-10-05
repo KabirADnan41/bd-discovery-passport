@@ -54,6 +54,18 @@ test('a district without checked content never shows a blank card', async ({ pag
   expect(await countText(page)).toBe('2');
 });
 
+test('places to go load on card open with Google Maps directions in a new tab', async ({ page }) => {
+  await indexEntry(page, 'Nilphamari').click();
+  const card = openCard(page, 'Nilphamari');
+  const places = card.locator('section', { has: page.getByRole('heading', { name: /^Places to go/ }) });
+  await expect(places.getByRole('listitem').first()).toBeVisible();
+  const directions = places.getByRole('link', { name: /^Directions to .+ in Google Maps \(opens in a new tab\)$/ }).first();
+  await expect(directions).toHaveAttribute('href', /^https:\/\/www\.google\.com\/maps\/dir\/\?api=1&destination=/);
+  await expect(directions).toHaveAttribute('target', '_blank');
+  await expect(directions).toHaveAttribute('rel', /noopener/);
+  expect((await directions.boundingBox()).height).toBeGreaterThanOrEqual(44);
+});
+
 test('stamps persist across reloads (guest)', async ({ page }) => {
   await indexEntry(page, 'Dhaka').click();
   await page.keyboard.press('Escape');

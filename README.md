@@ -9,7 +9,11 @@ anyone else on your device and follows you to other devices.
 - Inline SVG map built at compile time from official-source boundaries (no map library, no tiles)
 - English + বাংলা throughout, light and dark themes, keyboard and screen-reader friendly
 - Landmark and culture notes only where checked against a source (UNESCO first); other districts say so honestly
-- Free to run on Cloudflare Pages + Functions + D1: no servers, no ads, no tracking
+- Places to go for every district (334 in all), each with a Directions link that opens Google Maps (no API key, nothing
+  sent to Google until you choose it)
+- Quiz mode: find 10 random districts on the map, up to 100 points a round; the quiz never adds stamps
+- Free to run on Cloudflare Pages + Functions + D1: no servers, no ads, no tracking. A small in-code firewall (method
+  allowlist, per-IP pre-filter, rate limits, sign-up honeypot) stands in for the WAF the free plan lacks
 
 ## Run it
 

@@ -13,6 +13,7 @@
         },
         "category": "Mughal fort",
         "note": "Begun in 1678 by Prince Muhammad Azam Shah in old Dhaka and never completed.",
+        "address": "Lalbagh, Old Dhaka, Dhaka",
         "sources": [
           {
             "label": "Wikipedia: Lalbagh Fort",
@@ -27,6 +28,7 @@
         },
         "category": "Palace museum",
         "note": "Seat of the Nawabs of Dhaka on the Buriganga, now a museum run by the Bangladesh National Museum.",
+        "address": "Kumartoli, Dhaka",
         "sources": [
           {
             "label": "Wikipedia: Ahsan Manzil",
@@ -41,6 +43,7 @@
         },
         "category": "Architecture",
         "note": "Designed by Louis Kahn at Sher-e-Bangla Nagar and completed in 1982.",
+        "address": "Sher-e-Bangla Nagar, Dhaka",
         "sources": [
           {
             "label": "Wikipedia: Jatiya Sangsad Bhaban",
@@ -132,6 +135,7 @@
         },
         "category": "UNESCO World Heritage Site",
         "note": "A great Buddhist monastery and renowned centre of learning from the 7th to the 12th century, at Paharpur in Badalgachhi. Inscribed in 1985.",
+        "address": "Paharpur, Badalgachhi, Naogaon",
         "sources": [
           {
             "label": "UNESCO World Heritage: Ruins of the Buddhist Vihara at Paharpur",
@@ -159,6 +163,7 @@
         },
         "category": "Sea beach",
         "note": "A natural sea beach running about 120 km along the Bay of Bengal.",
+        "address": "Kolatoli Point, Cox's Bazar",
         "sources": [
           {
             "label": "Wikipedia: Cox's Bazar Beach",
@@ -173,6 +178,7 @@
         },
         "category": "Coral island",
         "note": "Bangladesh's only coral island, locally called Narikel Jinjira, meaning Coconut Island.",
+        "address": "Saint Martin's Union, Teknaf, Cox's Bazar",
         "sources": [
           {
             "label": "Wikipedia: St. Martin's Island",
@@ -187,6 +193,7 @@
         },
         "category": "Island",
         "note": "The only hilly island in Bangladesh, home to the Adinath Temple.",
+        "address": "Maheshkhali, Cox's Bazar",
         "sources": [
           {
             "label": "Wikipedia: Maheshkhali Island",
@@ -226,6 +233,7 @@
         },
         "category": "Shrine",
         "note": "Shrine of the 14th-century Sufi saint Shah Jalal, the most visited religious site in Bangladesh.",
+        "address": "Dargah Mahalla, Sylhet",
         "sources": [
           {
             "label": "Wikipedia: Shah Jalal Dargah",
@@ -240,6 +248,7 @@
         },
         "category": "Freshwater swamp forest",
         "note": "A freshwater swamp forest in Gowainghat upazila, about 26 km from Sylhet city.",
+        "address": "Fatehpur, Gowainghat, Sylhet",
         "sources": [
           {
             "label": "Wikipedia: Ratargul Swamp Forest",
@@ -254,6 +263,7 @@
         },
         "category": "River valley",
         "note": "Stone-strewn banks of the Piyain and Dawki rivers on the Meghalaya border, home to a Khasi community.",
+        "address": "Gowainghat, Sylhet",
         "sources": [
           {
             "label": "Wikipedia: Jaflong",
@@ -268,6 +278,7 @@
         },
         "category": "Tea garden",
         "note": "Described as the first tea garden of Bangladesh, in commercial production from 1857.",
+        "address": "Sylhet-Airport Road, Sylhet",
         "sources": [
           {
             "label": "Tea Traders Association of Bangladesh",
@@ -307,6 +318,7 @@
         },
         "category": "UNESCO World Heritage Site",
         "note": "The former city of Khalifatabad, founded by Ulugh Khan Jahan in the 15th century. Inscribed in 1985.",
+        "address": "Bagerhat Sadar, Bagerhat",
         "sources": [
           {
             "label": "UNESCO World Heritage: Historic Mosque City of Bagerhat",
@@ -321,6 +333,7 @@
         },
         "category": "Mosque",
         "note": "Built by Khan Jahan Ali in the 15th century. Despite its name it has 81 domes resting on sixty columns.",
+        "address": "Bagerhat Sadar, Bagerhat",
         "sources": [
           {
             "label": "Wikipedia: Sixty Dome Mosque",
@@ -345,6 +358,7 @@
         },
         "category": "Shrine",
         "note": "Resting place of the mystic poet Lalon (1774-1890), near Kushtia railway station. Followers gather here twice a year to celebrate his songs.",
+        "address": "Cheuriya, Kumarkhali, Kushtia",
         "sources": [
           {
             "label": "Wikipedia: Lalon",
@@ -384,6 +398,7 @@
         },
         "category": "Mangrove forest",
         "note": "Shyamnagar upazila borders the Sundarbans, one of the largest mangrove forests in the world and a UNESCO World Heritage Site since 1997.",
+        "address": "Burigoalini, Shyamnagar, Satkhira",
         "sources": [
           {
             "label": "Wikipedia: Satkhira District",
@@ -402,6 +417,7 @@
         },
         "category": "Mosque",
         "note": "Built in 1858-59.",
+        "address": "Tetulia, Tala, Satkhira",
         "sources": [
           {
             "label": "Wikipedia: Satkhira District",
@@ -416,6 +432,7 @@
         },
         "category": "Mosque",
         "note": "Described as about 500 years old.",
+        "address": "Sultanpur, Satkhira Sadar, Satkhira",
         "sources": [
           {
             "label": "Wikipedia: Satkhira District",

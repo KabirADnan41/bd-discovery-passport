@@ -20,3 +20,6 @@ coverage/
 /.claude/skills/
 /.claude/settings.local.json
 /docs/claude-skill-audit.md
+/.vscode/
+/skill_review.md
+/.gstack/

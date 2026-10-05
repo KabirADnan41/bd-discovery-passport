@@ -1,15 +1,19 @@
 import { error, json, readJson, sessionCookie } from '../../../server/http.js';
 import { SESSION_SECONDS, createSession, housekeeping, ipBucket, makeVerifier, nowSeconds, readCredentials, withinRateLimit } from '../../../server/auth.js';
 
-// POST /api/auth/signup { username, passwordKey }
+// POST /api/auth/signup { username, passwordKey, hp_note }
 export async function onRequestPost({ request, env }) {
   const now = nowSeconds();
-  const { username, passwordKey } = readCredentials(await readJson(request));
-  await housekeeping(env.DB, now);
+  const body = await readJson(request);
+  const { username, passwordKey } = readCredentials(body);
+  // Honeypot: people never see the "hp_note" field. A bot that fills it gets a normal-looking reply,
+  // but no account, no cookie and no database write.
+  if (body.hp_note) return json({ username, discovered: [] }, { status: 201 });
 
   if (!(await withinRateLimit(env.DB, `signup:${await ipBucket(env, request)}`, 5, 60 * 60, now))) {
     return error(429, 'Too many new accounts from this network. Please try again later.');
   }
+  if (Math.random() < 0.05) await housekeeping(env.DB, now);
 
   const user = await env.DB.prepare(
     'INSERT INTO users (username, verifier, created_at) VALUES (?1, ?2, ?3) ON CONFLICT (username) DO NOTHING RETURNING id',
