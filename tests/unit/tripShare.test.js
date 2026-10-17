@@ -135,6 +135,13 @@ describe('decodeTripShare rejects', () => {
     rejects('1-star-mosque', 'unknown-place', undefined); // no known ids given: no place is trusted
   });
 
+  it('ids that only exist as JavaScript object properties, and known ids not given as a Set', () => {
+    rejects('constructor', 'bad-stop');
+    rejects('1-constructor', 'unknown-place');
+    rejects('1-has-own-property', 'unknown-place');
+    rejects('1-star-mosque', 'unknown-place', { '1-star-mosque': true }); // only an explicit Set of known ids is trusted
+  });
+
   it('the same stop twice, in one day or across days', () => {
     rejects('1-star-mosque.1-star-mosque', 'duplicate');
     rejects('54_54', 'duplicate');
