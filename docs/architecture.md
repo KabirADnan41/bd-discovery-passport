@@ -72,6 +72,11 @@ points on try 1, 2 or 3, then the answer is shown for 0, with a distance and dir
 stamps or opens passport pages, and it hides tooltips and the gazetteer. The best score is kept in `localStorage`
 (`bd-discovery-passport:quiz-best`).
 
+**Trip planner (in progress).** Each place on a passport page has an "Add to trip" button (`DistrictCard`). The trip
+(`src/lib/trip.js`: days of up to 10 stops, each stop once per trip) lives in `GameBoard` state. It is read from
+`localStorage` once and written only when a stop is added (`bd-discovery-passport:trip:v1`). Browser-only by design: no
+API and no D1. The planner screen, sharing and the PDF come in later slices (`PROGRESS.md` section 7).
+
 ## Design system
 
 Tokens in `src/styles/tokens.css` (light + `[data-theme='dark']`); components use semantic roles (`--surface-*`, `--text-*`,

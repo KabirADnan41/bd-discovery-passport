@@ -10,7 +10,7 @@ For the site owner and future maintainers. How the site is protected, what was r
 | `/api/*` (Pages Functions) | Public: sign-up, sign-in, sign-out, "who am I", add/reset stamps, delete account |
 | D1 database | Reachable only from the Functions via the `DB` binding, never directly from the internet |
 | Secrets | `AUTH_PEPPER` (Cloudflare secret; `.dev.vars` locally, gitignored) |
-| Browser storage | `localStorage`: guest stamp ids, theme and the quiz best score only. One HttpOnly session cookie after sign-in |
+| Browser storage | `localStorage`: guest stamp ids, theme, the quiz best score and the trip plan's stop ids (written only after the first "Add to trip"; never sent to the server) only. One HttpOnly session cookie after sign-in |
 | Third parties | None at runtime: no analytics, ads, CDNs, fonts or auth SDKs. A place's Directions link opens Google Maps in a new tab only when the user chooses it; no map is embedded |
 
 ## 2. Threat model (STRIDE, per *Security Engineering* 3rd ed., §27.3.5)

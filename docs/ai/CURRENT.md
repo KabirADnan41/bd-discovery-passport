@@ -12,16 +12,18 @@
   `districtOf`) and LOW (a `|` in a location split the waypoints), each with a failing test first. Not done (optional test
   ideas, no current risk): "loadTrip limits count only kept stops" and a load → save → load fixpoint test. For browser QA
   later: Google may honour only 3 waypoints in a phone browser; on most phones the link opens the Maps app instead.
-- **Next step:** the Add-to-trip UI slice (implementation agent, test first, then main-session review). Per-slice agent
-  pattern: `PROGRESS.md` section 7.
-  - Review findings path: verify each against the code → reject briefly if not real → else reproduce with a test, smallest
-    fix, focused tests, then lint + unit + data + build, local commit.
-  - Add-to-trip spec: one control per place; short visible label ("Add to trip" / "In your trip") with a full accessible
-    name ("Add Star Mosque to trip" / "Star Mosque is in your trip"); localStorage written only after actual use; one
-    privacy-notice row for `bd-discovery-passport:trip:v1`; one E2E test (add → reload → still present). Keep it apart from
-    route planning, sharing, PDF and the TypeScript work. Checkpoint commit when green; a reviewer only if a real
-    state/persistence edge case shows up.
-- **Blockers / owner decisions:** local checkpoint commits (the project memory says ask first; the new global CLAUDE.md
-  allows them); a new Gemini key in `GEMINI_API_KEY` before Phase 0b (Bengali notes).
+- **Done 2026-10-17: "Add to trip" on places.** One button per place (not landmarks or culture), visible "Add to trip" /
+  "In your trip", accessible name `Add to trip: {place}` / `In your trip: {place}` (WCAG 2.5.3: the visible words come
+  first). Saved only after the first add; a full last day starts a new day; a full trip says "Your trip is full.".
+  Privacy notice: new storage row and intro line. Checks: lint, unit 159/159, build, `trip.spec.js` 12/12 (desktop +
+  mobile), discovery + accessibility 21/21 (desktop).
+  - Noted for later, not bugs: "In your trip" looks like "Add to trip" apart from its label (polish slice); "Reset passport"
+    does not clear the trip (the planner screen gets its own clear); the button shows only for places with an address
+    (all 334 have one).
+- **Next step:** the planner screen, split into small slices (owner to confirm the split): (1) a Plan view listing days and
+  stops with remove, up/down and a Directions link per day; (2) map pins and a route line; (3) drag to reorder. Agent
+  pattern: implementation agent, then a focused reviewer for the trip-state integration.
+- **Blockers / owner decisions:** a new Gemini key in `GEMINI_API_KEY` before Phase 0b (Bengali notes). Local checkpoint
+  commits on this branch are approved (17 Oct 2026).
 - **Standing rules:** trips stay browser-only; no push, deploy or publish without the owner's yes; free tier only; no
   Firecrawl until the owner says the credits renewed.
