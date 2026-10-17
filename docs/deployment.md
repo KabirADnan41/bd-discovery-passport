@@ -1,16 +1,15 @@
 # Deployment (free, 24/7, nothing running on your PC)
 
-**Live:** https://bd-discovery-passport.pages.dev (deployed 2026-09-28; D1 `bd-discovery-passport` in APAC, id
-in `wrangler.toml`; `AUTH_PEPPER` set as a Pages secret, with a copy that
-belongs only in the owner's password manager).
-The one-time setup below is done; only **Every deploy** is needed from now on.
+**Live:** https://bd-discovery-passport.pages.dev (Cloudflare Pages with a D1 database `bd-discovery-passport` in APAC; its
+id is in `wrangler.toml`; `AUTH_PEPPER` is a Pages secret). For a fresh setup, follow **One-time setup** once; after that only
+**Every deploy** is needed.
 
 **What you need:** a free Cloudflare account. **GitHub is optional.** Cloudflare Pages accepts a direct upload from this
-folder. Nothing is committed or pushed without your explicit OK.
+folder.
 
 ## One-time setup
 
-Steps marked **you** need your login; Claude can run the rest once you are logged in.
+Steps marked **you** need your Cloudflare login.
 
 1. **You:** create a free Cloudflare account and turn on two-factor authentication (Profile → Authentication).
 2. **You:** in this folder, run `npx wrangler login` and approve in the browser.
@@ -61,9 +60,7 @@ Then open the site, discover a district, create an account, sign out and back in
   code instead (see `docs/security.md` section 5). It needs no dashboard setup.
 - Backups: D1 Time Travel restores to any minute in the last 7 days (see `docs/security.md`).
 
-## Optional: GitHub + CI
+## CI
 
-`.github/workflows/ci.yml` runs lint, unit tests, a map-data drift check, the build and the E2E suite on every push. Using it
-needs a GitHub repository and your OK to commit and push. Use your GitHub "noreply" email for commits, so your personal
-address never becomes public. The `/reference/` books are gitignored and must never be published. The repository
-(github.com/KabirADnan41/bd-discovery-passport) is public, so anything pushed is public: run the leak scan before every push.
+`.github/workflows/ci.yml` runs lint, unit tests, a map-data drift check, the build and the E2E suite on every push and pull
+request.

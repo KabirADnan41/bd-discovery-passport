@@ -89,6 +89,21 @@ handle stay round. The passport is a solid green cover band above a paper page. 
 `--ease-out: cubic-bezier(0.23, 1, 0.32, 1)`, `--ease-sheet: cubic-bezier(0.32, 0.72, 0, 1)`. Reduced motion keeps fades and
 drops movement. Contrast is enforced by `tests/unit/contrast.test.js`.
 
-## Decisions and alternatives
+## Key decisions
 
-See `PROGRESS.md` section 4 (approach audit) for each major decision, the alternatives considered, and the verdict.
+| Decision | Chosen | Alternatives considered | Why |
+|---|---|---|---|
+| Map technology | Inline SVG, paths built at compile time | A tile/map library, Canvas or WebGL | 64 accessible, focusable shapes and no map library to load |
+| District geometry | Dissolve ADM3 units by district id | geoBoundaries ADM2 directly | Stable district ids from the source repo; the dissolve exposed 7 upstream errors |
+| Orphan polygons | ADM2 point-in-polygon, cross-checked | A manual list; nearest centroid | Agreed with 419 of 426 joins; every disagreement was upstream |
+| Map payload | Map JSON bundled into the JavaScript | Prerendering the SVG into `index.html` | Simple today; prerendering may paint the map earlier (measure first) |
+| Fonts | Anek Bangla, variable weight axis (~200 KB) | System fonts; glyph subsetting | One family for both scripts; subsetting is the likely next saving |
+| Accounts platform | Cloudflare Pages Functions + D1 | Supabase (pauses when idle), Firebase (third-party SDK), two-provider setups, self-hosting | Never sleeps, same origin, and over-limit requests fail instead of billing |
+| Sign-in | Username + password, PBKDF2 600k in the browser, HMAC + pepper on the server | Passkeys; Sign in with Google; email magic links | Fits the free plan's CPU limit; passkeys are the recommended next step; no reset without email (stated in the terms) |
+| Abuse protection | D1 rate limits + a small in-code firewall | Cloudflare Turnstile; a WAF rule (needs a custom domain) | No third-party request; Turnstile only if spam appears |
+| Directions | Google's no-key Maps URL, opened in a new tab | Google Maps Platform APIs (billing); an embedded map (third-party requests, CSP change) | Free, and nothing is sent to Google until the user chooses the link |
+| Sessions | HttpOnly cookie, token stored as a hash | JWT in `localStorage` | Safer against XSS |
+| Theme without a flash | External `theme-init.js` | Inline script + CSP hash | Keeps the strict CSP |
+| Keyboard map access | Roving tabindex, arrow keys and the gazetteer | 64 tab stops | One tab stop into the map |
+| Policy pages | Static HTML in the Vite build | React routes; a CMS | Fast, readable without JavaScript, versioned with the code |
+| Privacy defaults | Opt-in merge on sign-in; nothing stored on the server for guests | Always merge | Protective defaults on shared devices |

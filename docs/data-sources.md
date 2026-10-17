@@ -79,8 +79,8 @@ example, Ratargul is "a freshwater swamp forest", not "the only one". The other 
 ## Places to go (`src/data/places.json`)
 
 334 places for all 64 districts (4 to 6 each), plus addresses for the 17 existing landmarks. Sources: Wikipedia, the Bangladesh
-Tourism Board site and national news. `*.gov.bd` portals failed the fetch tool's certificate check and Banglapedia returned a
-placeholder; pages with text aimed at AI agents were not used.
+Tourism Board site and national news. `*.gov.bd` portals and Banglapedia could not be retrieved reliably, so they are not
+cited.
 
 Reviewed on 2026-10-05: all 185 flagged items (closed or collapsed sites, border areas, invented names) were checked, giving
 32 corrections and 0 places dropped. Chittagong Hill Tracts entries note that foreign visitors may need permission. A random
