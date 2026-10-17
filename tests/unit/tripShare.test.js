@@ -132,7 +132,8 @@ describe('decodeTripShare rejects', () => {
 
   it('a well-formed place id that is not a known place', () => {
     rejects('54-gone-place', 'unknown-place');
-    rejects('1-star-mosque', 'unknown-place', undefined); // no known ids given: no place is trusted
+    // no known ids given: no place is trusted (called directly: an explicit undefined would take the helper's default)
+    expect(decodeTripShare('1-star-mosque', undefined)).toEqual({ ok: false, reason: 'unknown-place' });
   });
 
   it('ids that only exist as JavaScript object properties, and known ids not given as a Set', () => {
