@@ -266,6 +266,7 @@ Nothing was committed or pushed.
   dates and place names match the existing `name.bn`). Flagged items go back to Gemini. Results are saved as `note.bn` (and
   Bengali categories) in places.json. Addresses stay English because the Directions links use them. About 40 requests, free tier.
   Needs the key in the `GEMINI_API_KEY` user environment variable and the owner's yes for that run (global rule).
+  **Optional content enrichment** (owner, 2026-10-17): it never blocks reviewing or shipping the planner.
 - **Gemini at runtime is ruled out:** the key cannot sit in the browser, the free quota is shared by all visitors, it would add
   server load, and free-tier prompts may be used by Google.
 
@@ -318,6 +319,18 @@ checkpoint commit per green slice.
 ### Next steps (in order; heavy jobs one at a time)
 1. DONE 2026-10-17: `brag-output/` is ignored by ESLint and git, so `npm run lint` is green. Work moved to the local branch
    `feat/trip-planner`; the short current state now lives in `docs/ai/CURRENT.md` (map of the code: `docs/ai/INDEX.md`).
-2. Code review of the trip-planner diff (code-reviewer agent); fix the findings.
-3. Phase 1 UI, then Phase 3, Phase 2, Phase 0b (after the owner action) and Phase 4.
-4. Reviews (code, security, simplicity), docs, leak scan. Commit, push and deploy only with the owner's yes.
+2. DONE 2026-10-17: Fable review of the trip logic (2 findings fixed) and "Add to trip" on places.
+3. Owner's roadmap (2026-10-17), one verified slice at a time on `feat/trip-planner`:
+   1. Planner screen: days, stops, remove, up/down, one Google Maps link per day, empty state, clear trip (IN PROGRESS).
+   2. Map: pins for the stops and a route line derived from the trip.
+   3. Drag to reorder, reusing `moveStop()` (no separate reorder logic).
+   4. Share by link: `?trip=…`; validate the untrusted data, reject malformed or oversized payloads.
+   5. Suggestions: nearby places and neighbouring-district route ideas.
+   6. Bengali enrichment: optional, only with a fresh Gemini key and the owner's yes for that run.
+   7. PDF / print: browser-generated itinerary, Bengali preserved, clickable Directions links.
+   8. Final review: code review, accessibility, browser testing, security/privacy check, leak scan, docs. Then stop and ask
+      the owner before anything touches `main` or production.
+4. Then architecture hardening, each on its own branch: `refactor/typed-core` (incremental TypeScript),
+   `refactor/runtime-schemas` (Zod at trust boundaries, after dependency approval), `refactor/server-boundaries`
+   (middleware → protected policy → services → repositories → D1). No billing, organisations, elaborate RBAC, feature-flag
+   service or audit database without a real product need.

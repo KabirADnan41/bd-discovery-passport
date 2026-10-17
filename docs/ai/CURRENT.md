@@ -20,9 +20,12 @@
   - Noted for later, not bugs: "In your trip" looks like "Add to trip" apart from its label (polish slice); "Reset passport"
     does not clear the trip (the planner screen gets its own clear); the button shows only for places with an address
     (all 334 have one).
-- **Next step:** the planner screen, split into small slices (owner to confirm the split): (1) a Plan view listing days and
-  stops with remove, up/down and a Directions link per day; (2) map pins and a route line; (3) drag to reorder. Agent
-  pattern: implementation agent, then a focused reviewer for the trip-state integration.
+- **In progress: the planner screen** (owner's go, 2026-10-17). A third mode, Explore / Quiz / Plan (পরিকল্পনা), swaps
+  the side panel to `src/components/trip/TripPanel.jsx`, the way Quiz swaps in `QuizPanel`. Scope: days and stops, up/down
+  (crossing days), remove, add a day, remove an empty day, one Directions link per day, empty state, "Clear trip" (confirm,
+  then `clearTrip()` removes the storage key). Stale stops are pruned only inside the planner. Out of scope: pins, route
+  line, drag, sharing, suggestions, distances, PDF. Agent pattern: implementation agent (Opus), then a focused reviewer
+  for the trip-state integration, then main-session verification and a local commit. Full roadmap: `PROGRESS.md` §7.
 - **Blockers / owner decisions:** a new Gemini key in `GEMINI_API_KEY` before Phase 0b (Bengali notes). Local checkpoint
   commits on this branch are approved (17 Oct 2026).
 - **Standing rules:** trips stay browser-only; no push, deploy or publish without the owner's yes; free tier only; no
