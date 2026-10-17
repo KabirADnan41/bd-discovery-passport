@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useDiscoveryState } from '../../hooks/useDiscoveryState';
 import { useAccount } from '../../hooks/useAccount';
 import { useTheme } from '../../hooks/useTheme';
@@ -6,7 +7,7 @@ import { usePresence } from '../../hooks/usePresence';
 import { usePassportSync } from '../../hooks/usePassportSync';
 import { DISTRICT_IDS, FEATURED_IDS, MAP, TOTAL_DISTRICTS, getDistrict, getDistrictDetails } from '../../lib/districtData';
 import { clearQuizBest, loadDiscovered, loadQuizBest, saveQuizBest } from '../../lib/discoveryStorage';
-import { addDay, addStop, clearTrip, createTrip, hasStop, loadTrip, saveTrip } from '../../lib/trip';
+import { addDay, addStop, clearTrip, createTrip, hasStop, loadTrip, saveTrip, tripMapData } from '../../lib/trip';
 import { ROUND_SIZE, createRound, feedbackText, guess, next, promptText, quizMarks, totalScore } from '../../lib/quiz';
 import { clearStamps, errorMessage } from '../../lib/authClient';
 import BangladeshMap from '../map/BangladeshMap';
@@ -28,6 +29,15 @@ const EYEBROW = 'text-eyebrow text-brass uppercase';
 const isKeyboard = e => e.detail === 0; // click events synthesized from Enter/Space have detail 0
 const focusMap = () => document.querySelector('[data-district-id][tabindex="0"]')?.focus(); // the map's single tab stop
 const placeStop = id => ({ kind: 'place', id }); // how a place is stored in a trip
+const MAP_SECTION_ID = 'map-section'; // where a phone's "Show on map" goes
+
+// Scrolls an element to the top of the screen (without animation if the user prefers reduced motion), then focuses it, with no second scroll.
+function scrollToAndFocus(element) {
+  if (!element) return;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  element.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+  element.focus({ preventScroll: true });
+}
 
 export default function GameBoard() {
   const theme = useTheme();
@@ -53,6 +63,7 @@ export default function GameBoard() {
   const [planMode, setPlanMode] = useState(false); // the trip planner; never on during a quiz round
   const [quizBest, setQuizBest] = useState(null);
   const [trip, setTrip] = useState(() => loadTrip()); // read once; nothing is written until the first stop is added
+  const [mapReturnDay, setMapReturnDay] = useState(null); // phones: the day whose "Show on map" button the user jumped from, until they go back to it
   const [clearOpen, setClearOpen] = useState(false);
   const [asking, setAsking] = useState('passport'); // what the one ConfirmDialog asks about; it outlives `open`, so a closing dialog keeps its words
   const quizMode = round !== null;
@@ -135,6 +146,18 @@ export default function GameBoard() {
     tripFocusRef.current = 'trip-title'; // the button that opened the dialog goes with the stops
   };
 
+  // On a phone the map sits below the planner: "Show on map" jumps to it and remembers the day, so "Back to day" can return to that button.
+  // The button is on screen before the scroll: added after it, above the map, it would make the browser scroll on to keep the map still.
+  const showDayOnMap = day => {
+    flushSync(() => setMapReturnDay(day));
+    scrollToAndFocus(document.getElementById(MAP_SECTION_ID));
+  };
+
+  const backToDay = () => {
+    scrollToAndFocus(document.getElementById(`trip-show-map-${mapReturnDay}`) ?? document.getElementById('trip-title')); // the heading, if that day has no stops now
+    setMapReturnDay(null);
+  };
+
   // Quiz mode: choosing a district is a guess. It never opens a passport page or adds a stamp.
   const handleGuess = useCallback(
     id => {
@@ -178,6 +201,7 @@ export default function GameBoard() {
   const startPlan = () => {
     close();
     setRound(null); // abandons a round without asking, as explore does
+    setMapReturnDay(null); // a jump to the map from an earlier visit to the planner is forgotten
     setPlanMode(true);
     setAnnouncement('Plan mode.');
   };
@@ -298,6 +322,9 @@ export default function GameBoard() {
   const guestCount = signedIn ? 0 : discovered.length;
   // The mode's panel holds the desktop right column: always in a quiz, and in plan mode while no passport page is open.
   const panelHoldsColumn = quizMode || (planMode && !selectedId);
+  // Plan mode draws the trip on the map once it has a stop; explore and quiz never do.
+  const tripMap = mode === 'plan' ? tripMapData(trip) : null;
+  const tripOnMap = tripMap?.pins.length > 0;
 
   // What the one ConfirmDialog shows for each question it can ask.
   const dialogs = {
@@ -424,22 +451,37 @@ export default function GameBoard() {
                   onClearBest={clearBest}
                 />
               ) : (
-                <TripPanel trip={trip} onEdit={editTrip} onClear={askToClearTrip} />
+                <TripPanel trip={trip} onEdit={editTrip} onClear={askToClearTrip} onShowOnMap={showDayOnMap} />
               )}
             </div>
           )}
 
-          <div className="flex flex-col items-center py-4 lg:py-5">
+          {/* focusable, so a phone's "Show on map" can land here; a name, so a screen reader says where focus went */}
+          <section id={MAP_SECTION_ID} tabIndex={-1} aria-label="Map" className="flex flex-col items-center py-4 lg:py-5">
+            {mode === 'plan' && mapReturnDay !== null && (
+              // a wrapper hides it on desktop, as in the planner: .btn's own display would win over lg:hidden on the button
+              <div className="mb-3 self-start lg:hidden">
+                <button type="button" className="btn btn-quiet" onClick={backToDay}>
+                  Back to day {mapReturnDay}
+                </button>
+              </div>
+            )}
             <BangladeshMap
               discoveredSet={discoveredSet}
               selectedId={selectedId}
               hoveredId={hoveredId}
               marks={marks}
+              tripMap={tripOnMap ? tripMap : undefined}
               onHoverChange={setHoveredId}
               onActivate={quizMode ? handleGuess : handleActivate}
             />
-            <MapLegend quiz={quizMode} className="mt-3" />
-          </div>
+            <MapLegend mode={mode} className="mt-3" />
+            {tripOnMap && (
+              <p className="mt-2 w-full text-[0.85rem] text-ink-3 lg:text-center">
+                Pins and lines are approximate. Use each day’s Directions for the real route.
+              </p>
+            )}
+          </section>
 
           {/* in quiz mode this column holds only a closing phone sheet, so on desktop it leaves the grid to the quiz panel;
               in plan mode it does so too, unless a passport page is open in the planner's place */}

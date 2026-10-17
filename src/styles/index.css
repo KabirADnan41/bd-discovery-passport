@@ -356,6 +356,30 @@
   pointer-events: none;
 }
 
+/* The trip on the map (plan mode): a dashed line per day and a pin per district, in the 1000-wide viewBox's units. Ink on both
+   themes (it reads on green and on hatching), and clicks pass through to the districts underneath. */
+.trip-overlay {
+  pointer-events: none;
+}
+.trip-overlay polyline {
+  fill: none;
+  stroke: var(--text-primary);
+  stroke-width: 5;
+  stroke-dasharray: 10 12; /* dashes say "approximate": the line joins district anchors, not roads */
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.trip-overlay circle {
+  fill: var(--text-primary);
+  stroke: var(--surface-paper); /* the paper outline lifts a pin off the fills, the hatching and the route */
+  stroke-width: 4;
+}
+.trip-overlay text {
+  fill: var(--surface-paper);
+  font-size: 24px;
+  font-weight: 700;
+}
+
 /* hatch pattern colours (pattern content is in the SVG defs) */
 .hatch-bg {
   fill: var(--map-locked);

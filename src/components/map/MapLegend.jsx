@@ -29,16 +29,39 @@ const QUIZ_ITEMS = [
   { en: 'Answer shown', bn: 'উত্তর', swatch: areaSwatch({ style: { fill: 'var(--accent-brass)' } }) },
 ];
 
-// One line of text under the map, not a box.
-export default function MapLegend({ quiz = false, className = '' }) {
+// Plan mode adds the trip's pins and routes. These swatches use the tokens of .trip-overlay in index.css, so the key matches the map.
+// No Bengali yet: the app has no wording to reuse for them.
+const TRIP_ITEMS = [
+  {
+    en: 'Trip stop, by district (a number shows several stops there)',
+    swatch: <circle cx="11" cy="7" r="5" style={{ fill: 'var(--text-primary)', stroke: 'var(--surface-paper)', strokeWidth: 1.5 }} />,
+  },
+  {
+    en: 'Approximate route by day, district to district, not roads',
+    swatch: (
+      <line
+        x1="2"
+        y1="7"
+        x2="20"
+        y2="7"
+        style={{ stroke: 'var(--text-primary)', strokeWidth: 2, strokeDasharray: '3 4', strokeLinecap: 'round' }}
+      />
+    ),
+  },
+];
+
+const ITEMS = { explore: EXPLORE_ITEMS, quiz: QUIZ_ITEMS, plan: [...EXPLORE_ITEMS, ...TRIP_ITEMS] };
+
+// One line of text under the map, not a box. `mode` is 'explore', 'quiz' or 'plan'.
+export default function MapLegend({ mode = 'explore', className = '' }) {
   return (
     <ul className={`flex w-full flex-wrap gap-x-5 gap-y-1.5 text-[0.85rem] text-ink-3 lg:justify-center ${className}`} aria-label="Map key">
-      {(quiz ? QUIZ_ITEMS : EXPLORE_ITEMS).map(item => (
+      {ITEMS[mode].map(item => (
         <li key={item.en} className="flex items-center gap-2">
           <Swatch>{item.swatch}</Swatch>
           <span>
             {item.en}{' '}
-            <span lang="bn">{item.bn}</span>
+            {item.bn && <span lang="bn">{item.bn}</span>}
           </span>
         </li>
       ))}

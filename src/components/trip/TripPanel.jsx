@@ -76,8 +76,11 @@ function Stop({ trip, day, index, names, focusAfterRemove, onEdit }) {
   );
 }
 
-/** The trip planner. GameBoard owns the trip; `onEdit(nextTrip, announcement, focusId)` saves and announces every change. */
-export default function TripPanel({ trip, onEdit, onClear }) {
+/**
+ * The trip planner. GameBoard owns the trip; `onEdit(nextTrip, announcement, focusId)` saves and announces every change,
+ * and `onShowOnMap(dayNumber)` takes a phone down to the map.
+ */
+export default function TripPanel({ trip, onEdit, onClear, onShowOnMap }) {
   const [placesById, setPlacesById] = useState(null); // null while loading, false if the data could not load
   useEffect(() => {
     loadPlaces().then(all => setPlacesById(new Map(Object.values(all).flat().map(p => [p.id, p]))), () => setPlacesById(false));
@@ -148,6 +151,18 @@ export default function TripPanel({ trip, onEdit, onClear }) {
                       </svg>
                       <span className="sr-only"> for day {d + 1} in Google Maps (opens in a new tab)</span>
                     </a>
+                  )}
+                  {day.length > 0 && (
+                    // phones only: from the desktop's two columns the map is already in view. The wrapper does the hiding, as .btn's
+                    // own display would win over lg:hidden on the button itself.
+                    <div className="lg:hidden">
+                      <TripButton
+                        id={`trip-show-map-${d + 1}`}
+                        label="Show on map"
+                        fullLabel={`Show on map: day ${d + 1}`}
+                        onPress={() => onShowOnMap(d + 1)}
+                      />
+                    </div>
                   )}
                   {day.length === 0 && trip.days.length > 1 && (
                     <TripButton

@@ -5,6 +5,7 @@ import DistrictTooltip from './DistrictTooltip';
 
 const [, , VB_W, VB_H] = MAP.viewBox;
 const DEFAULT_FOCUS_ID = '1'; // Dhaka: the first tab stop into the map
+const PIN_RADIUS = 19; // viewBox units: with its outline a pin is about as wide as the gap between the two closest district anchors (41)
 
 const focusDistrict = id => document.getElementById(`district-${id}`)?.focus();
 
@@ -37,7 +38,8 @@ const DistrictLayer = memo(function DistrictLayer({ discoveredSet, selectedId, t
 });
 
 // In quiz mode the map shows no district names (district aria-labels keep them) and Enter makes a guess.
-export default function BangladeshMap({ discoveredSet, selectedId, hoveredId, marks, onHoverChange, onActivate }) {
+// `tripMap` ({ pins, routes } from tripMapData) is passed in plan mode only: the trip is drawn at each district's own anchor, nowhere else.
+export default function BangladeshMap({ discoveredSet, selectedId, hoveredId, marks, tripMap, onHoverChange, onActivate }) {
   const quiz = marks !== undefined; // quiz marks are passed only in quiz mode
   const [focusedId, setFocusedId] = useState(null);
   const [keyboardFocusId, setKeyboardFocusId] = useState(null);
@@ -126,6 +128,27 @@ export default function BangladeshMap({ discoveredSet, selectedId, hoveredId, ma
           <g key={`s${selected.id}`}>
             <path className="overlay-selected-halo" d={selected.d} />
             <path className="overlay-selected" d={selected.d} />
+          </g>
+        )}
+        {tripMap && (
+          <g className="trip-overlay" aria-hidden="true">
+            {tripMap.routes.map(
+              (route, day) =>
+                route.length > 1 && <polyline key={day} data-trip-day={day + 1} points={route.map(id => getDistrict(id).label.join(',')).join(' ')} />,
+            )}
+            {tripMap.pins.map(({ districtId, count }) => {
+              const [x, y] = getDistrict(districtId).label;
+              return (
+                <g key={districtId} data-trip-pin={districtId} data-count={count}>
+                  <circle cx={x} cy={y} r={PIN_RADIUS} />
+                  {count > 1 && (
+                    <text x={x} y={y} textAnchor="middle" dominantBaseline="central">
+                      {count}
+                    </text>
+                  )}
+                </g>
+              );
+            })}
           </g>
         )}
         {keyboardFocused && <path className="overlay-focus" d={keyboardFocused.d} />}

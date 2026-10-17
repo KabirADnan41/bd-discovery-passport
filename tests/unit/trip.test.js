@@ -19,6 +19,7 @@ import {
   removeStop,
   renameTrip,
   saveTrip,
+  tripMapData,
 } from '../../src/lib/trip';
 import { TRIP_KEY } from '../../src/lib/discoveryStorage';
 import { directionsUrl } from '../../src/lib/places';
@@ -371,6 +372,68 @@ describe('legDistancesKm', () => {
 
   it('does not change the stops it is given', () => {
     expectUnchanged([DHAKA, DARGAH], legDistancesKm);
+  });
+});
+
+describe('tripMapData', () => {
+  const SADARGHAT = place('1-sadarghat');
+  const BICHANAKANDI = place('54-bichanakandi');
+  const INANI_BEACH = place('45-inani-beach');
+  const BOGA_LAKE = place('40-boga-lake');
+
+  it('gives an empty trip no pins and an empty route for its one day', () => {
+    expect(tripMapData(createTrip())).toEqual({ pins: [], routes: [[]] });
+  });
+
+  it('pins a place at its district and a district at itself, once each, with how many stops it has', () => {
+    const { pins } = tripMapData(tripOf([DARGAH, DHAKA, BICHANAKANDI]));
+    expect(pins).toEqual([
+      { districtId: '54', count: 2 },
+      { districtId: '1', count: 1 },
+    ]);
+  });
+
+  it('counts a district stop and the places in that district on one pin, across days', () => {
+    const { pins } = tripMapData(tripOf([SYLHET, STAR_MOSQUE], [DARGAH, SADARGHAT, DHAKA]));
+    expect(pins).toEqual([
+      { districtId: '54', count: 2 },
+      { districtId: '1', count: 3 },
+    ]);
+  });
+
+  it('orders the pins by first appearance', () => {
+    const { pins } = tripMapData(tripOf([CHATTOGRAM], [DARGAH, DHAKA, STAR_MOSQUE]));
+    expect(pins.map(pin => pin.districtId)).toEqual(['43', '54', '1']);
+  });
+
+  it('gives each day its own route: its districts in stop order', () => {
+    const { routes } = tripMapData(tripOf([DHAKA, SYLHET, CHATTOGRAM], [INANI_BEACH, BOGA_LAKE]));
+    expect(routes).toEqual([['1', '54', '43'], ['45', '40']]);
+  });
+
+  it('collapses stops in the same district one after another, but keeps a return to it', () => {
+    const { routes } = tripMapData(tripOf([STAR_MOSQUE, SADARGHAT, SYLHET, DARGAH, place('1-national-martyrs-memorial')]));
+    expect(routes).toEqual([['1', '54', '1']]);
+  });
+
+  it('never joins one day to the next, even when a day ends in the district the next one starts in', () => {
+    const { routes } = tripMapData(tripOf([DHAKA, SYLHET], [DARGAH, CHATTOGRAM]));
+    expect(routes).toEqual([['1', '54'], ['54', '43']]);
+  });
+
+  it('gives a day with one district a pin and a route of one, too short to draw', () => {
+    const { pins, routes } = tripMapData(tripOf([DARGAH, BICHANAKANDI]));
+    expect(pins).toEqual([{ districtId: '54', count: 2 }]);
+    expect(routes).toEqual([['54']]);
+  });
+
+  it("keeps an empty day as an empty route, so a route's place in the list is its day", () => {
+    const { routes } = tripMapData(tripOf([DHAKA], [], [SYLHET, CHATTOGRAM]));
+    expect(routes).toEqual([['1'], [], ['54', '43']]);
+  });
+
+  it('does not change the trip it is given', () => {
+    expectUnchanged(tripOf([DHAKA, DARGAH], [CHATTOGRAM]), tripMapData);
   });
 });
 

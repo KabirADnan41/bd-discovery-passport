@@ -96,6 +96,21 @@ export function legDistancesKm(stops) {
   return towns.slice(1).map((town, i) => distanceKm(towns[i], town));
 }
 
+/**
+ * What the map draws for a trip, by district only: `pins` has one { districtId, count } per district with stops (count = how many
+ * stops), in order of first appearance; `routes` has one list per day of its districts in stop order, with repeats in a row
+ * collapsed. Days are never joined, and a route needs two districts to be drawn.
+ */
+export function tripMapData(trip) {
+  const counts = new Map();
+  const routes = trip.days.map(day => {
+    const ids = day.map(stop => districtOf(stop).id);
+    ids.forEach(id => counts.set(id, (counts.get(id) ?? 0) + 1));
+    return ids.filter((id, i) => id !== ids[i - 1]);
+  });
+  return { pins: [...counts].map(([districtId, count]) => ({ districtId, count })), routes };
+}
+
 /** The saved trip, keeping only valid stops within the limits, or a new trip. Never throws. */
 export function loadTrip(storage = getStorage()) {
   try {
