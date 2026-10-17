@@ -92,6 +92,7 @@ export function validate({ generated, enriched, sourceDistricts, sourceDivisions
 
   // --- places to go: 3 to 6 per district, every district, each with a stored id "<districtId>-<slug>" that is unique file-wide
   const PLACE_ID = /^(\d{1,2})-[a-z0-9]+(?:-[a-z0-9]+)*$/;
+  const MAX_PLACE_ID_LENGTH = 64; // MAX_TOKEN_LENGTH in src/lib/tripShare.js, not imported as this script runs in plain Node
   const placeIdOwners = new Map();
   for (const id of expected.keys()) {
     const list = places[id];
@@ -103,6 +104,7 @@ export function validate({ generated, enriched, sourceDistricts, sourceDivisions
       if (!idMatch) err(`${where}: id is missing or malformed, expected "${id}-<slug>" but found ${JSON.stringify(p.id)}`);
       else {
         if (idMatch[1] !== id) err(`${where}: id ${p.id} must start with its district id "${id}-"`);
+        if (p.id.length > MAX_PLACE_ID_LENGTH) err(`${where}: id ${p.id} is over ${MAX_PLACE_ID_LENGTH} characters, too long for a share link`);
         if (placeIdOwners.has(p.id)) err(`${where}: id ${p.id} is already used by ${placeIdOwners.get(p.id)}`);
         else placeIdOwners.set(p.id, where);
       }

@@ -10,7 +10,7 @@ export const MAX_DAYS = 10;
 export const MAX_STOPS_PER_DAY = 10; // so a day's Maps link has at most 8 waypoints
 export const MAX_NAME_LENGTH = 60;
 
-const PLACE_ID = /^(\d+)-[a-z0-9]+(?:-[a-z0-9]+)*$/; // "<districtId>-<slug>", e.g. "54-shah-jalal-dargah"
+export const PLACE_ID = /^(\d+)-[a-z0-9]+(?:-[a-z0-9]+)*$/; // "<districtId>-<slug>", e.g. "54-shah-jalal-dargah"
 
 const isValidStop = stop =>
   typeof stop?.id === 'string' && // RegExp#exec would turn ['1-x'] into '1-x' and let an array through

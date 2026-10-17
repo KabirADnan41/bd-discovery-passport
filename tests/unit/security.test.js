@@ -227,4 +227,12 @@ describe('map data validator', () => {
     const errors = validate(bad).join('\n');
     expect(errors).toMatch(new RegExp(`places 1\\[1\\]: id ${shared} is already used by places 1\\[0\\]`));
   });
+
+  it('catches a place id over 64 characters, too long for a share link', () => {
+    const bad = inputs();
+    const long = `1-${'a'.repeat(63)}`; // well formed, 65 characters
+    bad.places['1'][0].id = long;
+    const errors = validate(bad).join('\n');
+    expect(errors).toMatch(new RegExp(`places 1\\[0\\]: id ${long} is over 64 characters`));
+  });
 });

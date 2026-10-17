@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { formatBn, getDistrict } from '../../lib/districtData';
 import { loadPlaces } from '../../lib/places';
 import { addDay, dayDirectionsUrl, locationOf, moveStop, pruneUnknownPlaces, removeDay, removeStop } from '../../lib/trip';
 import { dropTarget } from '../../lib/tripReorder';
+import { SHARE_PARAM, encodeTripShare } from '../../lib/tripShare';
+import SharedTripNotice from './SharedTripNotice';
 
 const BUTTON = 'btn btn-quiet min-h-11 px-4 text-[0.88rem] aria-disabled:opacity-45';
 const keyOf = stop => `${stop.kind}-${stop.id}`; // unique within a trip, and safe in an element id
@@ -10,6 +13,8 @@ const stopCount = trip => trip.days.flat().length;
 const samePlace = (a, b) => a?.day === b?.day && a?.index === b?.index; // two { day, index }, either of which may be missing
 // What every move announces, from a Move button or a drag.
 const movedMessage = (names, to) => `Moved ${names.en} to day ${to.day + 1}, stop ${to.index + 1}.`;
+// The link "Share trip" gives: this page with the trip's ids and nothing else from the address (no `district`, no other `trip`).
+const shareLink = trip => `${window.location.origin}${window.location.pathname}?${SHARE_PARAM}=${encodeTripShare(trip)}`;
 
 /** What a stop shows: a place's English and Bengali names and its district, or a district's own names. */
 function namesOf(stop, placesById) {
@@ -151,9 +156,11 @@ function useStopDrag(trip, onEdit) {
 
 /**
  * The trip planner. GameBoard owns the trip; `onEdit(nextTrip, announcement, focusId)` saves and announces every change,
- * and `onShowOnMap(dayNumber)` takes a phone down to the map.
+ * `onShowOnMap(dayNumber)` takes a phone down to the map and `onAnnounce(message)` says anything else. `shared` is a shared
+ * trip link GameBoard has checked ({ ok, trip }, or null), previewed above the planner until onSaveShared, onReplaceShared
+ * (which asks first) or onDismissShared.
  */
-export default function TripPanel({ trip, onEdit, onClear, onShowOnMap }) {
+export default function TripPanel({ trip, onEdit, onClear, onShowOnMap, onAnnounce, shared, onSaveShared, onReplaceShared, onDismissShared }) {
   const [placesById, setPlacesById] = useState(null); // null while loading, false if the data could not load
   useEffect(() => {
     loadPlaces().then(all => setPlacesById(new Map(Object.values(all).flat().map(p => [p.id, p]))), () => setPlacesById(false));
@@ -167,101 +174,139 @@ export default function TripPanel({ trip, onEdit, onClear, onShowOnMap }) {
   }, [placesById, trip, onEdit]);
 
   const { drag, gripProps } = useStopDrag(trip, onEdit);
+  const [linkShown, setLinkShown] = useState(false); // after a copy fails, the link shows in a field instead
+  const linkRef = useRef(null);
   const stops = trip.days.flat();
   const withDay = addDay(trip);
+  // A shared trip's days in local names, by id, once the places have loaded; its own text is never shown. Null for a link
+  // that is not valid.
+  const sharedDays = placesById && shared?.ok ? shared.trip.days.map(day => day.map(stop => namesOf(stop, placesById).en)) : null;
+
+  // Where the browser has no clipboard or refuses, the link shows in a field, selected, to copy by hand.
+  const shareTrip = async () => {
+    try {
+      await navigator.clipboard.writeText(shareLink(trip));
+      onAnnounce('Trip link copied.');
+    } catch {
+      flushSync(() => setLinkShown(true)); // the field is on screen before it is selected
+      linkRef.current?.focus();
+      linkRef.current?.select();
+      onAnnounce('Copy the trip link below.');
+    }
+  };
 
   return (
-    <section aria-labelledby="trip-title">
-      <h2 id="trip-title" tabIndex={-1} className="flex flex-wrap items-baseline gap-x-3 text-h2">
-        Your trip
-        <span lang="bn" className="font-normal text-ink-3">
-          আপনার ভ্রমণ
-        </span>
-      </h2>
-      {placesById === null && <p className="mt-3 text-[0.9rem] text-ink-3">Loading your trip…</p>}
-      {placesById === false && <p className="mt-3 text-[0.9rem] text-ink-3">Places could not load.</p>}
-      {placesById && stops.length === 0 && (
-        <p className="mt-3 max-w-[46ch] text-[1.0625rem] leading-relaxed text-ink-2">
-          Your trip is empty. Open a district and choose “Add to trip” on a place to start.
-        </p>
+    <>
+      {shared && placesById && (
+        <SharedTripNotice
+          days={sharedDays}
+          replaces={stops.length > 0}
+          onSave={onSaveShared}
+          onReplace={onReplaceShared}
+          onDismiss={onDismissShared}
+        />
       )}
-      {placesById && stops.length > 0 && (
-        <>
-          {trip.days.map((day, d) => {
-            const url = dayDirectionsUrl(day, stop => locationOf(stop, placesById));
-            // The drop line, on the rows as they stand (the held stop still in its place): on the top edge of the row the stop
-            // would land before, on the bottom edge of the last row, or under the heading of an empty day.
-            const before = drag?.to?.day === d ? drag.to.index + (d === drag.from.day && drag.to.index >= drag.from.index ? 1 : 0) : -1;
-            const dropAt = i => (i === before ? 'before' : i === day.length - 1 && before === day.length ? 'after' : undefined);
-            return (
-              <section key={d} className="trip-day mt-7" data-drop={day.length === 0 && before === 0 ? 'start' : undefined}>
-                <h3 className="mb-2 flex items-baseline gap-2 border-b border-rule-strong pb-2 text-h3">
-                  Day {d + 1}
-                  <span lang="bn" className="font-normal text-ink-3">
-                    দিন {formatBn(d + 1)}
-                  </span>
-                </h3>
-                {day.length > 0 && (
-                  <ol>
-                    {day.map((stop, i) => {
-                      const at = stops.indexOf(stop);
-                      const neighbour = stops[at + 1] ?? stops[at - 1];
-                      return (
-                        <Stop
-                          key={keyOf(stop)}
-                          trip={trip}
-                          day={d}
-                          index={i}
-                          names={namesOf(stop, placesById)}
-                          focusAfterRemove={neighbour ? `trip-remove-${keyOf(neighbour)}` : 'trip-title'}
-                          onEdit={onEdit}
-                          gripProps={gripProps}
-                          lifted={samePlace(drag?.from, { day: d, index: i })}
-                          drop={dropAt(i)}
-                        />
-                      );
-                    })}
-                  </ol>
-                )}
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {url && (
-                    <a className={BUTTON} href={url} target="_blank" rel="noopener noreferrer">
-                      Directions
-                      <svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6">
-                        <path d="M8 2h4v4M12 2 6 8M10 9v3H2V4h3" />
-                      </svg>
-                      <span className="sr-only"> for day {d + 1} in Google Maps (opens in a new tab)</span>
-                    </a>
-                  )}
+      <section aria-labelledby="trip-title">
+        <h2 id="trip-title" tabIndex={-1} className="flex flex-wrap items-baseline gap-x-3 text-h2">
+          Your trip
+          <span lang="bn" className="font-normal text-ink-3">
+            আপনার ভ্রমণ
+          </span>
+        </h2>
+        {placesById === null && <p className="mt-3 text-[0.9rem] text-ink-3">Loading your trip…</p>}
+        {placesById === false && <p className="mt-3 text-[0.9rem] text-ink-3">Places could not load.</p>}
+        {placesById && stops.length === 0 && (
+          <p className="mt-3 max-w-[46ch] text-[1.0625rem] leading-relaxed text-ink-2">
+            Your trip is empty. Open a district and choose “Add to trip” on a place to start.
+          </p>
+        )}
+        {placesById && stops.length > 0 && (
+          <>
+            {trip.days.map((day, d) => {
+              const url = dayDirectionsUrl(day, stop => locationOf(stop, placesById));
+              // The drop line, on the rows as they stand (the held stop still in its place): on the top edge of the row the stop
+              // would land before, on the bottom edge of the last row, or under the heading of an empty day.
+              const before = drag?.to?.day === d ? drag.to.index + (d === drag.from.day && drag.to.index >= drag.from.index ? 1 : 0) : -1;
+              const dropAt = i => (i === before ? 'before' : i === day.length - 1 && before === day.length ? 'after' : undefined);
+              return (
+                <section key={d} className="trip-day mt-7" data-drop={day.length === 0 && before === 0 ? 'start' : undefined}>
+                  <h3 className="mb-2 flex items-baseline gap-2 border-b border-rule-strong pb-2 text-h3">
+                    Day {d + 1}
+                    <span lang="bn" className="font-normal text-ink-3">
+                      দিন {formatBn(d + 1)}
+                    </span>
+                  </h3>
                   {day.length > 0 && (
-                    // phones only: from the desktop's two columns the map is already in view. The wrapper does the hiding, as .btn's
-                    // own display would win over lg:hidden on the button itself.
-                    <div className="lg:hidden">
+                    <ol>
+                      {day.map((stop, i) => {
+                        const at = stops.indexOf(stop);
+                        const neighbour = stops[at + 1] ?? stops[at - 1];
+                        return (
+                          <Stop
+                            key={keyOf(stop)}
+                            trip={trip}
+                            day={d}
+                            index={i}
+                            names={namesOf(stop, placesById)}
+                            focusAfterRemove={neighbour ? `trip-remove-${keyOf(neighbour)}` : 'trip-title'}
+                            onEdit={onEdit}
+                            gripProps={gripProps}
+                            lifted={samePlace(drag?.from, { day: d, index: i })}
+                            drop={dropAt(i)}
+                          />
+                        );
+                      })}
+                    </ol>
+                  )}
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {url && (
+                      <a className={BUTTON} href={url} target="_blank" rel="noopener noreferrer">
+                        Directions
+                        <svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6">
+                          <path d="M8 2h4v4M12 2 6 8M10 9v3H2V4h3" />
+                        </svg>
+                        <span className="sr-only"> for day {d + 1} in Google Maps (opens in a new tab)</span>
+                      </a>
+                    )}
+                    {day.length > 0 && (
+                      // phones only: from the desktop's two columns the map is already in view. The wrapper does the hiding, as .btn's
+                      // own display would win over lg:hidden on the button itself.
+                      <div className="lg:hidden">
+                        <TripButton
+                          id={`trip-show-map-${d + 1}`}
+                          label="Show on map"
+                          fullLabel={`Show on map: day ${d + 1}`}
+                          onPress={() => onShowOnMap(d + 1)}
+                        />
+                      </div>
+                    )}
+                    {day.length === 0 && trip.days.length > 1 && (
                       <TripButton
-                        id={`trip-show-map-${d + 1}`}
-                        label="Show on map"
-                        fullLabel={`Show on map: day ${d + 1}`}
-                        onPress={() => onShowOnMap(d + 1)}
+                        label="Remove day"
+                        fullLabel={`Remove day ${d + 1}`}
+                        onPress={() => onEdit(removeDay(trip, d), `Removed day ${d + 1}.`, 'trip-title')}
                       />
-                    </div>
-                  )}
-                  {day.length === 0 && trip.days.length > 1 && (
-                    <TripButton
-                      label="Remove day"
-                      fullLabel={`Remove day ${d + 1}`}
-                      onPress={() => onEdit(removeDay(trip, d), `Removed day ${d + 1}.`, 'trip-title')}
-                    />
-                  )}
-                </div>
-              </section>
-            );
-          })}
-          <div className="mt-8 flex flex-wrap gap-2">
-            <TripButton label="Add a day" disabled={withDay === trip} onPress={() => onEdit(withDay, `Added day ${withDay.days.length}.`)} />
-            <TripButton label="Clear trip" onPress={onClear} />
-          </div>
-        </>
-      )}
-    </section>
+                    )}
+                  </div>
+                </section>
+              );
+            })}
+            <div className="mt-8 flex flex-wrap gap-2">
+              <TripButton label="Add a day" disabled={withDay === trip} onPress={() => onEdit(withDay, `Added day ${withDay.days.length}.`)} />
+              <TripButton label="Clear trip" onPress={onClear} />
+              <TripButton label="Share trip" onPress={shareTrip} />
+            </div>
+            {linkShown && (
+              <div className="mt-4 grid gap-1.5">
+                <label htmlFor="trip-share-link" className="text-[0.9rem] font-medium">
+                  Trip link
+                </label>
+                <input ref={linkRef} id="trip-share-link" className="field-input" readOnly value={shareLink(trip)} />
+              </div>
+            )}
+          </>
+        )}
+      </section>
+    </>
   );
 }

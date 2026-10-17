@@ -8,6 +8,8 @@ import { usePassportSync } from '../../hooks/usePassportSync';
 import { DISTRICT_IDS, FEATURED_IDS, MAP, TOTAL_DISTRICTS, getDistrict, getDistrictDetails } from '../../lib/districtData';
 import { clearQuizBest, loadDiscovered, loadQuizBest, saveQuizBest } from '../../lib/discoveryStorage';
 import { addDay, addStop, clearTrip, createTrip, hasStop, loadTrip, saveTrip, tripMapData } from '../../lib/trip';
+import { SHARE_PARAM, decodeTripShare } from '../../lib/tripShare';
+import { loadPlaces } from '../../lib/places';
 import { ROUND_SIZE, createRound, feedbackText, guess, next, promptText, quizMarks, totalScore } from '../../lib/quiz';
 import { clearStamps, errorMessage } from '../../lib/authClient';
 import BangladeshMap from '../map/BangladeshMap';
@@ -30,6 +32,8 @@ const isKeyboard = e => e.detail === 0; // click events synthesized from Enter/S
 const focusMap = () => document.querySelector('[data-district-id][tabindex="0"]')?.focus(); // the map's single tab stop
 const placeStop = id => ({ kind: 'place', id }); // how a place is stored in a trip
 const MAP_SECTION_ID = 'map-section'; // where a phone's "Show on map" goes
+// The `trip` parameters in the address: a shared trip link has exactly one (see tripShare.js).
+const sharedLinkValues = () => new URLSearchParams(window.location.search).getAll(SHARE_PARAM);
 
 // Scrolls an element to the top of the screen (without animation if the user prefers reduced motion), then focuses it, with no second scroll.
 function scrollToAndFocus(element) {
@@ -60,11 +64,13 @@ export default function GameBoard() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [resetState, setResetState] = useState({ open: false, busy: false, error: '' });
   const [round, setRound] = useState(null); // the quiz round; null means explore or plan mode
-  const [planMode, setPlanMode] = useState(false); // the trip planner; never on during a quiz round
+  const [planMode, setPlanMode] = useState(() => sharedLinkValues().length > 0); // the trip planner, which a shared trip link opens; never on during a quiz round
   const [quizBest, setQuizBest] = useState(null);
   const [trip, setTrip] = useState(() => loadTrip()); // read once; nothing is written until the first stop is added
   const [mapReturnDay, setMapReturnDay] = useState(null); // phones: the day whose "Show on map" button the user jumped from, until they go back to it
   const [clearOpen, setClearOpen] = useState(false);
+  const [replaceOpen, setReplaceOpen] = useState(false);
+  const [shared, setShared] = useState(null); // a shared trip link once checked: { ok: true, trip } or { ok: false }; null if none
   const [asking, setAsking] = useState('passport'); // what the one ConfirmDialog asks about; it outlives `open`, so a closing dialog keeps its words
   const quizMode = round !== null;
   const mode = quizMode ? 'quiz' : planMode ? 'plan' : 'explore';
@@ -146,6 +152,36 @@ export default function GameBoard() {
     tripFocusRef.current = 'trip-title'; // the button that opened the dialog goes with the stops
   };
 
+  // A shared trip link is only previewed until the user chooses. After Save, Replace or Dismiss it has done its job: only
+  // `trip` leaves the address (a passport page's `district` stays), so a reload offers nothing.
+  const closeSharedTrip = () => {
+    setShared(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete(SHARE_PARAM);
+    window.history.replaceState(null, '', url);
+  };
+
+  // The decoded trip goes to editTrip exactly as it was checked: nothing cleans, merges or prunes it on the way.
+  const saveSharedTrip = () => {
+    editTrip(shared.trip, 'Saved the shared trip.', 'trip-title'); // the notice and its buttons go, so focus goes to the heading
+    closeSharedTrip();
+  };
+
+  const askToReplaceTrip = () => {
+    setAsking('replace');
+    setReplaceOpen(true);
+  };
+
+  const confirmReplace = () => {
+    setReplaceOpen(false);
+    saveSharedTrip();
+  };
+
+  const dismissSharedTrip = () => {
+    closeSharedTrip();
+    document.getElementById('trip-title')?.focus(); // the planner's heading stays while the notice goes
+  };
+
   // On a phone the map sits below the planner: "Show on map" jumps to it and remembers the day, so "Back to day" can return to that button.
   // The button is on screen before the scroll: added after it, above the map, it would make the browser scroll on to keep the map still.
   const showDayOnMap = day => {
@@ -221,6 +257,17 @@ export default function GameBoard() {
     document.title = selectedId ? `${getDistrict(selectedId).name} | Bangladesh Discovery Passport` : 'Bangladesh Discovery Passport';
   }, [selectedId]);
 
+  // A shared trip link is read once, on arrival, and is untrusted. Two or more `trip` parameters are ambiguous, so none is
+  // used; a single one is checked whole against the local place ids (tripShare.js). Opening a link stores nothing.
+  useEffect(() => {
+    const values = sharedLinkValues();
+    if (!values.length) return;
+    loadPlaces().then(
+      all => setShared(values.length === 1 ? decodeTripShare(values[0], new Set(Object.values(all).flat().map(p => p.id))) : { ok: false }),
+      () => {}, // the planner says the places could not load; the link stays in the address, for a reload to try again
+    );
+  }, []);
+
   // After a keyboard activation, move focus into the passport page.
   useEffect(() => {
     if (selectedId && focusCardRef.current) {
@@ -255,11 +302,11 @@ export default function GameBoard() {
 
   // Escape closes the passport page, unless a layer above it (menu or dialog) is open and handles Escape itself.
   useEffect(() => {
-    if (!selectedId || menuOpen || resetState.open || clearOpen || authMode || deleteOpen) return undefined;
+    if (!selectedId || menuOpen || resetState.open || clearOpen || replaceOpen || authMode || deleteOpen) return undefined;
     const onKey = e => e.key === 'Escape' && handleClose();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedId, menuOpen, resetState.open, clearOpen, authMode, deleteOpen, handleClose]);
+  }, [selectedId, menuOpen, resetState.open, clearOpen, replaceOpen, authMode, deleteOpen, handleClose]);
 
   const backToGuest = () => {
     close(); // the open page belongs to the account; don't carry it into the guest passport
@@ -336,6 +383,15 @@ export default function GameBoard() {
       cancelLabel: 'Keep my trip',
       onConfirm: confirmClear,
       onCancel: () => setClearOpen(false),
+    },
+    replace: {
+      open: replaceOpen,
+      title: 'Replace your trip?',
+      body: 'Your current trip will be replaced by the shared one on this browser. It cannot be undone.',
+      confirmLabel: 'Replace my trip',
+      cancelLabel: 'Keep my trip',
+      onConfirm: confirmReplace,
+      onCancel: () => setReplaceOpen(false),
     },
     passport: {
       open: resetState.open,
@@ -451,7 +507,17 @@ export default function GameBoard() {
                   onClearBest={clearBest}
                 />
               ) : (
-                <TripPanel trip={trip} onEdit={editTrip} onClear={askToClearTrip} onShowOnMap={showDayOnMap} />
+                <TripPanel
+                  trip={trip}
+                  onEdit={editTrip}
+                  onClear={askToClearTrip}
+                  onShowOnMap={showDayOnMap}
+                  onAnnounce={setAnnouncement}
+                  shared={shared}
+                  onSaveShared={saveSharedTrip}
+                  onReplaceShared={askToReplaceTrip}
+                  onDismissShared={dismissSharedTrip}
+                />
               )}
             </div>
           )}
