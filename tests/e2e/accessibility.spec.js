@@ -32,6 +32,17 @@ for (const theme of ['light', 'dark']) {
       expect(await scan(page)).toEqual([]);
     });
 
+    test('plan mode with a few stops', async ({ page }) => {
+      // a place without a Bengali name, a move that cannot happen (Move up on the first stop) and an empty day
+      const place = id => ({ kind: 'place', id });
+      const trip = { name: '', days: [[place('54-bichanakandi'), place('54-keane-bridge')], [place('54-lalakhal')], []] };
+      await page.addInitScript(t => localStorage.setItem('bd-discovery-passport:trip:v1', t), JSON.stringify(trip));
+      await page.goto('/');
+      await page.locator('.mode-switch').getByText('Plan').click();
+      await expect(page.getByRole('button', { name: 'Remove: Lalakhal' })).toBeVisible();
+      expect(await scan(page)).toEqual([]);
+    });
+
     test('menu and sign-up dialog', async ({ page }) => {
       await page.goto('/');
       await page.getByRole('button', { name: 'Menu' }).click();

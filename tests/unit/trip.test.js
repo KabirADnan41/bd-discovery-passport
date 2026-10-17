@@ -6,6 +6,7 @@ import {
   MAX_STOPS_PER_DAY,
   addDay,
   addStop,
+  clearTrip,
   createTrip,
   dayDirectionsUrl,
   hasStop,
@@ -50,6 +51,9 @@ function memoryStorage(initial = {}) {
     getItem: key => (key in data ? data[key] : null),
     setItem: (key, value) => {
       data[key] = String(value);
+    },
+    removeItem: key => {
+      delete data[key];
     },
   };
 }
@@ -449,5 +453,26 @@ describe('saveTrip and loadTrip', () => {
 
   it('turns a name of the wrong type into an empty name and keeps at least one day', () => {
     expect(loadTrip(saved({ name: 7, days: [] }))).toEqual(createTrip());
+  });
+});
+
+describe('clearTrip', () => {
+  it('removes the saved trip, so the next load starts a fresh one', () => {
+    const storage = memoryStorage({ other: 'kept' });
+    saveTrip(tripOf([DHAKA]), storage);
+    clearTrip(storage);
+    expect(storage.data).toEqual({ other: 'kept' });
+    expect(loadTrip(storage)).toEqual(createTrip());
+  });
+
+  it('never throws, even when storage is missing or throws', () => {
+    const blocked = {
+      ...throwingStorage,
+      removeItem() {
+        throw new Error('blocked');
+      },
+    };
+    expect(() => clearTrip(blocked)).not.toThrow();
+    expect(() => clearTrip(null)).not.toThrow();
   });
 });

@@ -6,7 +6,7 @@ import { usePresence } from '../../hooks/usePresence';
 import { usePassportSync } from '../../hooks/usePassportSync';
 import { DISTRICT_IDS, FEATURED_IDS, MAP, TOTAL_DISTRICTS, getDistrict, getDistrictDetails } from '../../lib/districtData';
 import { clearQuizBest, loadDiscovered, loadQuizBest, saveQuizBest } from '../../lib/discoveryStorage';
-import { addDay, addStop, hasStop, loadTrip, saveTrip } from '../../lib/trip';
+import { addDay, addStop, clearTrip, createTrip, hasStop, loadTrip, saveTrip } from '../../lib/trip';
 import { ROUND_SIZE, createRound, feedbackText, guess, next, promptText, quizMarks, totalScore } from '../../lib/quiz';
 import { clearStamps, errorMessage } from '../../lib/authClient';
 import BangladeshMap from '../map/BangladeshMap';
@@ -16,6 +16,7 @@ import DistrictIndex from '../district/DistrictIndex';
 import PassportStamp from '../district/PassportStamp';
 import DiscoveryProgress, { DiscoveryLedger } from './DiscoveryProgress';
 import QuizPanel from './QuizPanel';
+import TripPanel from '../trip/TripPanel';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import PassportMenu from '../account/PassportMenu';
 import AuthDialog from '../account/AuthDialog';
@@ -48,16 +49,21 @@ export default function GameBoard() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [resetState, setResetState] = useState({ open: false, busy: false, error: '' });
-  const [round, setRound] = useState(null); // the quiz round; null means explore mode
+  const [round, setRound] = useState(null); // the quiz round; null means explore or plan mode
+  const [planMode, setPlanMode] = useState(false); // the trip planner; never on during a quiz round
   const [quizBest, setQuizBest] = useState(null);
   const [trip, setTrip] = useState(() => loadTrip()); // read once; nothing is written until the first stop is added
+  const [clearOpen, setClearOpen] = useState(false);
+  const [asking, setAsking] = useState('passport'); // what the one ConfirmDialog asks about; it outlives `open`, so a closing dialog keeps its words
   const quizMode = round !== null;
+  const mode = quizMode ? 'quiz' : planMode ? 'plan' : 'explore';
   const marks = useMemo(() => (round ? quizMarks(round) : undefined), [round]);
   const headingRef = useRef(null);
   const sheetRef = useRef(null);
   const mastheadRef = useRef(null);
   const returnFocusRef = useRef(null);
   const focusCardRef = useRef(false);
+  const tripFocusRef = useRef(null); // the id to focus once a trip edit has rendered
 
   const handleActivate = useCallback(
     (id, via) => {
@@ -85,6 +91,24 @@ export default function GameBoard() {
 
   const isInTrip = placeId => hasStop(trip, placeStop(placeId));
 
+  // Every trip edit ends here. A refused change is the same trip, so nothing is saved, announced or focused.
+  // A trip left with no stops is forgotten, not saved, so no empty days outlive it (the planner shows days only when there are stops).
+  const editTrip = useCallback(
+    (nextTrip, message, focusId) => {
+      if (nextTrip === trip) return;
+      if (nextTrip.days.some(day => day.length > 0)) {
+        setTrip(nextTrip);
+        saveTrip(nextTrip);
+      } else {
+        clearTrip();
+        setTrip(createTrip());
+      }
+      if (message) setAnnouncement(message);
+      tripFocusRef.current = focusId;
+    },
+    [trip],
+  );
+
   // The next trip is worked out here, not in a state updater, so each click saves and announces exactly once.
   const handleAddToTrip = place => {
     const stop = placeStop(place.id);
@@ -95,9 +119,20 @@ export default function GameBoard() {
       setAnnouncement('Your trip is full.');
       return;
     }
-    setTrip(nextTrip);
-    saveTrip(nextTrip);
-    setAnnouncement(`Added ${place.name.en} to your trip.`);
+    editTrip(nextTrip, `Added ${place.name.en} to your trip.`);
+  };
+
+  const askToClearTrip = () => {
+    setAsking('trip');
+    setClearOpen(true);
+  };
+
+  const confirmClear = () => {
+    clearTrip();
+    setClearOpen(false);
+    setTrip(createTrip());
+    setAnnouncement('Trip cleared.');
+    tripFocusRef.current = 'trip-title'; // the button that opened the dialog goes with the stops
   };
 
   // Quiz mode: choosing a district is a guess. It never opens a passport page or adds a stamp.
@@ -113,6 +148,7 @@ export default function GameBoard() {
 
   const startRound = () => {
     close();
+    setPlanMode(false);
     const r = createRound(DISTRICT_IDS);
     setRound(r);
     setAnnouncement(promptText(r));
@@ -133,7 +169,17 @@ export default function GameBoard() {
 
   const backToExplore = () => {
     setRound(null); // abandons a round without asking
+    setPlanMode(false);
     setAnnouncement('Explore mode.');
+  };
+
+  // Plan mode is explore mode with the planner as its side panel. On desktop the planner and an open passport page share
+  // one column, so an open page closes and the planner shows.
+  const startPlan = () => {
+    close();
+    setRound(null); // abandons a round without asking, as explore does
+    setPlanMode(true);
+    setAnnouncement('Plan mode.');
   };
 
   const clearBest = () => {
@@ -159,6 +205,14 @@ export default function GameBoard() {
     }
   }, [selectedId]);
 
+  // A planner edit can replace the focused button (a moved stop re-renders, a removed one is gone), so focus moves by id once
+  // the trip has rendered. GameBoard's effects run after its children's, so after "Clear trip" the dialog has closed by now.
+  useEffect(() => {
+    const id = tripFocusRef.current;
+    tripFocusRef.current = null;
+    if (id) document.getElementById(id)?.focus();
+  }, [trip]);
+
   // On small screens the page is a bottom sheet: scroll so the chosen district stays visible above it.
   useEffect(() => {
     if (!selectedId || !window.matchMedia('(max-width: 1023px)').matches) return;
@@ -177,11 +231,11 @@ export default function GameBoard() {
 
   // Escape closes the passport page, unless a layer above it (menu or dialog) is open and handles Escape itself.
   useEffect(() => {
-    if (!selectedId || menuOpen || resetState.open || authMode || deleteOpen) return undefined;
+    if (!selectedId || menuOpen || resetState.open || clearOpen || authMode || deleteOpen) return undefined;
     const onKey = e => e.key === 'Escape' && handleClose();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedId, menuOpen, resetState.open, authMode, deleteOpen, handleClose]);
+  }, [selectedId, menuOpen, resetState.open, clearOpen, authMode, deleteOpen, handleClose]);
 
   const backToGuest = () => {
     close(); // the open page belongs to the account; don't carry it into the guest passport
@@ -242,9 +296,36 @@ export default function GameBoard() {
   const details = shownId ? getDistrictDetails(shownId) : null;
   const recent = discovered.slice(-6).reverse();
   const guestCount = signedIn ? 0 : discovered.length;
+  // The mode's panel holds the desktop right column: always in a quiz, and in plan mode while no passport page is open.
+  const panelHoldsColumn = quizMode || (planMode && !selectedId);
+
+  // What the one ConfirmDialog shows for each question it can ask.
+  const dialogs = {
+    trip: {
+      open: clearOpen,
+      title: 'Clear your trip?',
+      body: 'This removes every stop and day from this browser. It cannot be undone.',
+      confirmLabel: 'Clear trip',
+      cancelLabel: 'Keep my trip',
+      onConfirm: confirmClear,
+      onCancel: () => setClearOpen(false),
+    },
+    passport: {
+      open: resetState.open,
+      title: 'Reset your passport?',
+      body: `This removes all ${discovered.length} stamps ${signedIn ? 'from your account' : 'from this browser'}. It cannot be undone.`,
+      confirmLabel: 'Clear all stamps',
+      cancelLabel: 'Keep my stamps',
+      busy: resetState.busy,
+      error: resetState.error,
+      onConfirm: confirmReset,
+      onCancel: () => setResetState({ open: false, busy: false, error: '' }),
+    },
+  };
+  const { body, ...dialog } = dialogs[asking];
 
   return (
-    <div className="relative min-h-[100dvh] bg-canvas text-ink" data-mode={quizMode ? 'quiz' : 'explore'} style={{ '--masthead-h': MASTHEAD_H }}>
+    <div className="relative min-h-[100dvh] bg-canvas text-ink" data-mode={mode} style={{ '--masthead-h': MASTHEAD_H }}>
       <div className="paper-grain" aria-hidden="true" />
       <a
         href="#district-index"
@@ -269,9 +350,9 @@ export default function GameBoard() {
           </div>
           <fieldset className="mode-switch col-span-2 row-start-2 pb-2 lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:pb-0">
             <legend className="sr-only">Mode</legend>
-            <div className="grid grid-cols-2 gap-1 lg:w-[16rem]">
+            <div className="grid grid-cols-3 gap-1 lg:w-[21rem]">
               <label className="theme-option">
-                <input type="radio" name="mode" checked={!quizMode} onChange={backToExplore} className="sr-only" />
+                <input type="radio" name="mode" checked={mode === 'explore'} onChange={backToExplore} className="sr-only" />
                 <span className="px-4 leading-tight">
                   Explore
                   <span lang="bn" className="text-[0.75rem] leading-[1.3] font-normal">
@@ -288,6 +369,15 @@ export default function GameBoard() {
                   </span>
                 </span>
               </label>
+              <label className="theme-option">
+                <input type="radio" name="mode" checked={planMode} onChange={startPlan} className="sr-only" />
+                <span className="px-4 leading-tight">
+                  Plan
+                  <span lang="bn" className="text-[0.75rem] leading-[1.3] font-normal">
+                    পরিকল্পনা
+                  </span>
+                </span>
+              </label>
             </div>
           </fieldset>
           <div className="col-start-2 row-start-1 flex items-center gap-3 justify-self-end sm:gap-5 lg:col-start-3">
@@ -301,7 +391,10 @@ export default function GameBoard() {
               onOpenAuth={setAuthMode}
               onSignOut={handleSignOut}
               onDeleteAccount={() => setDeleteOpen(true)}
-              onReset={() => setResetState({ open: true, busy: false, error: '' })}
+              onReset={() => {
+                setAsking('passport');
+                setResetState({ open: true, busy: false, error: '' });
+              }}
             />
           </div>
         </div>
@@ -311,24 +404,28 @@ export default function GameBoard() {
         <div
           className={`mx-auto flex max-w-[1400px] flex-col lg:grid lg:min-h-[calc(100dvh-var(--masthead-h))] lg:grid-cols-[minmax(0,1fr)_minmax(360px,440px)] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(360px,500px)] ${GUTTERS}`}
         >
-          {/* on phones the quiz prompt sits above the map (first in the DOM too, so focus order matches), so the question
-              stays in view while you tap; on desktop it moves to the right column */}
-          {quizMode && (
-            <div className="pt-4 lg:order-last lg:flex lg:min-h-0 lg:flex-col lg:justify-center lg:py-5">
-              <QuizPanel
-                round={round}
-                best={quizBest}
-                onNext={nextPrompt}
-                onPlayAgain={() => {
-                  startRound();
-                  focusMap();
-                }}
-                onExplore={() => {
-                  backToExplore();
-                  focusMap();
-                }}
-                onClearBest={clearBest}
-              />
+          {/* on phones the quiz prompt or the planner sits above the map (first in the DOM too, so focus order matches), so
+              the question stays in view while you tap; on desktop it moves to the right column */}
+          {(quizMode || planMode) && (
+            <div className={`pt-4 lg:order-last lg:flex lg:min-h-0 lg:flex-col lg:justify-center lg:py-5 ${panelHoldsColumn ? '' : 'lg:hidden'}`}>
+              {quizMode ? (
+                <QuizPanel
+                  round={round}
+                  best={quizBest}
+                  onNext={nextPrompt}
+                  onPlayAgain={() => {
+                    startRound();
+                    focusMap();
+                  }}
+                  onExplore={() => {
+                    backToExplore();
+                    focusMap();
+                  }}
+                  onClearBest={clearBest}
+                />
+              ) : (
+                <TripPanel trip={trip} onEdit={editTrip} onClear={askToClearTrip} />
+              )}
             </div>
           )}
 
@@ -344,8 +441,9 @@ export default function GameBoard() {
             <MapLegend quiz={quizMode} className="mt-3" />
           </div>
 
-          {/* in quiz mode this column holds only a closing phone sheet, so on desktop it leaves the grid to the quiz panel */}
-          <div className={quizMode ? 'lg:hidden' : 'lg:flex lg:min-h-0 lg:flex-col lg:justify-center lg:py-5'}>
+          {/* in quiz mode this column holds only a closing phone sheet, so on desktop it leaves the grid to the quiz panel;
+              in plan mode it does so too, unless a passport page is open in the planner's place */}
+          <div className={panelHoldsColumn ? 'lg:hidden' : 'lg:flex lg:min-h-0 lg:flex-col lg:justify-center lg:py-5'}>
             {details && (
               <DistrictCard
                 details={details}
@@ -360,7 +458,7 @@ export default function GameBoard() {
               />
             )}
 
-            <div className={`pt-6 pb-10 lg:py-0 ${selectedId ? 'lg:hidden' : ''}`} hidden={quizMode}>
+            <div className={`pt-6 pb-10 lg:py-0 ${selectedId ? 'lg:hidden' : ''}`} hidden={quizMode || planMode}>
               <h2 className="text-display text-balance">Explore Bangladesh, one district at a time.</h2>
               <p lang="bn" className="mt-4 text-[1.45rem] leading-[1.3] font-medium text-balance text-ink-2 sm:text-[1.65rem]">
                 একটি একটি জেলা করে বাংলাদেশকে জানুন।
@@ -457,18 +555,8 @@ export default function GameBoard() {
 
       <AuthDialog mode={authMode} guestCount={guestCount} onSwitchMode={setAuthMode} onSubmit={handleAuth} onClose={() => setAuthMode(null)} />
       <DeleteAccountDialog open={deleteOpen} username={account.username} onDelete={handleDelete} onClose={() => setDeleteOpen(false)} />
-      <ConfirmDialog
-        open={resetState.open}
-        title="Reset your passport?"
-        confirmLabel="Clear all stamps"
-        cancelLabel="Keep my stamps"
-        busy={resetState.busy}
-        error={resetState.error}
-        onConfirm={confirmReset}
-        onCancel={() => setResetState({ open: false, busy: false, error: '' })}
-      >
-        This removes all {discovered.length} stamps {signedIn ? 'from your account' : 'from this browser'}. It cannot be undone.
-      </ConfirmDialog>
+      {/* one ConfirmDialog asks both questions, as its title id must be unique in the page */}
+      <ConfirmDialog {...dialog}>{body}</ConfirmDialog>
     </div>
   );
 }

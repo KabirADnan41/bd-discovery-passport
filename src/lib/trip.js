@@ -117,3 +117,12 @@ export function saveTrip(trip, storage = getStorage()) {
     // quota or privacy errors: the plan lasts for this visit only
   }
 }
+
+/** Forgets the saved trip ("Clear trip" in the planner). Never throws. */
+export function clearTrip(storage = getStorage()) {
+  try {
+    storage?.removeItem(TRIP_KEY);
+  } catch {
+    // ignore
+  }
+}

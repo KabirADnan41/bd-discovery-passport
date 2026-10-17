@@ -114,12 +114,15 @@
     color var(--dur-hover) ease,
     transform 160ms var(--ease-out);
 }
-.btn:active:not(:disabled) {
+.btn:active:not(:disabled):not([aria-disabled='true']) {
   transform: translateY(1px) scale(0.98);
 }
 .btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+.btn[aria-disabled='true'] {
+  cursor: default;
 }
 .btn-quiet {
   border: 1px solid var(--rule-strong);
@@ -666,7 +669,7 @@
   .stamp-impact {
     animation: fade-in 200ms var(--ease-out) both;
   }
-  .btn:active:not(:disabled) {
+  .btn:active:not(:disabled):not([aria-disabled='true']) {
     transform: none;
   }
 }
