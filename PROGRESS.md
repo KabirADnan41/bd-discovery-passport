@@ -4,17 +4,20 @@
 > This file is the handoff: what is done, which skill and approach each task used, what is left and with which
 > skills, the approach audit, and how to run everything. Updated at every milestone.
 
-**Last updated:** 2026-10-05, milestone 31: **v2 round built, reviewed and tested** (quiz mode, places to go with Directions
-links, free-plan firewall, redesign). QA, reviews, fixes and docs are done; the leak scan is next, then commit, push and live
-deploy. Today's work is uncommitted and not yet deployed; local `main` and `origin/main` are both at `2fa34e3`.
-Previous: milestone 29 (2026-09-28), **LIVE at https://bd-discovery-passport.pages.dev**, production verified (headers, API smoke
+**Last updated:** 2026-10-06, milestone 33: launch video made (`brag-output/brag.mp4`, local only, see #52); **trip planner**
+planned and green-lit by the owner (browser-only, free tier); Phase 0a (stored place IDs) and the Phase 1 trip logic were built by
+two agents and verified (157 unit tests pass) before the owner's 15:00 stop. **Resume at section 7.** Nothing committed or pushed.
+Previous: milestone 32 (2026-10-05), **v2 round LIVE** (quiz mode, places to go with Directions links, free-plan
+firewall, redesign). Leak scan passed with notes; commit `10df59c` pushed to `main` and deployed to
+https://bd-discovery-passport.pages.dev. Live check: new bundle served, PUT on the API returns 405, 0 console errors, places
+with Directions links and the quiz work.
+Earlier: milestone 29 (2026-09-28), **LIVE at https://bd-discovery-passport.pages.dev**, production verified (headers, API smoke
 test, real browser with 0 CSP violations and 0 errors, LCP 520 ms desktop / 2.45 s Slow-4G phone), pushed to github.com/KabirADnan41/bd-discovery-passport (**public**).
 
 Skill status words (from the brief): **APPLIED** (actually used and changed the work), **AVAILABLE** (installed, not yet
 used), **NOT NEEDED** (considered, deliberately skipped, with reason), **UNAVAILABLE** (cannot be used in this session).
 
-**Rough completion of the v2 round: about 90%.** Features, security, the redesign, the places data review, QA, reviews, fixes
-and docs are done; the leak scan and the ship (commit, push, deploy) are still to do. (v1 reached about 97% at milestone 29:
+**Rough completion of the v2 round: about 98%.** Everything is built, reviewed, tested, pushed and live; only optional work is left. (v1 reached about 97% at milestone 29:
 live, only optional work left.)
 
 ---
@@ -59,10 +62,12 @@ live, only optional work left.)
 | Places to go + Directions links (334 places, all 64 districts) | DONE: data review finished, 32 corrections, 0 dropped; a random sample of 30 found 1 error (3.3%), fixed (#47) |
 | Design brief for the redesign | DONE (Fable) |
 | Redesign implementation | DONE (#46) |
-| Tests at last check | Lint clean, 97 unit pass (5 files), `validate:data` OK, build OK (main JS 139.73 kB gzip; places chunk 41.59 kB gzip, lazy); E2E 47 passed, 7 skipped (designed mobile skips), 0 failed |
+| Tests at last check | **2026-10-06: 157 unit pass (6 files), `validate:data` OK, project code lint-clean (section 7).** Before that (v2): Lint clean, 97 unit pass (5 files), `validate:data` OK, build OK (main JS 139.73 kB gzip; places chunk 41.59 kB gzip, lazy); E2E 47 passed, 7 skipped (designed mobile skips), 0 failed |
 | QA, reviews (code, security, simplicity), fixes, docs | DONE (#48 to #51) |
-| Leak scan | **NEXT** (section 3) |
-| Commit, push, live deploy of the v2 round | TO DO: owner approved them for the end, after tests and the leak scan pass |
+| Leak scan | DONE: pass with notes; 4 local paths and the D1 id copy removed from docs; old history kept as is (owner's choice) |
+| Commit, push, live deploy of the v2 round | DONE (milestone 32): commit `10df59c` pushed and deployed |
+| Launch video (2026-10-06) | DONE: `brag-output/brag.mp4` (23 s, 1920×1080, music), poster `brag.jpg`, `share-copy.txt`. Local only: `brag-output/` is untracked and not in `.gitignore`; `brag-output/work/frames/` (224 MB) can be deleted |
+| **Trip planner round (2026-10-06)** | **IN PROGRESS**: plan green-lit; Phase 0a and Phase 1 logic built by agents; **resume at section 7** |
 
 ---
 
@@ -121,6 +126,8 @@ live, only optional work left.)
 | 49 | Reviews (Phase K) | Code, security and simplicity reviewers, in parallel | **Code review:** 4 findings (HIGH: a quiz guess after the round ended crashed; MED: the pre-filter counted `GET /api/me`, so users behind carrier-grade NAT could hit false 429s; LOW: honeypot; LOW: phone quiz tab order). **Security review:** 5 findings (MED: IPv6 not grouped, now per /64 for rate limits; LOW: honeypot renamed from the autofill-prone `website` to `hp_note`; LOW: burst race, accepted and documented; LOW: privacy retention wording; 1 info); `npm audit` 0. **Simplicity review:** 9 suggestions, 8 applied (PlacesToGo live flag, `--color-on-cover`, `POINTS[0]`, merged quiz tests, authClient default, quiz state from the marks, unused `quiz-*` CSS, impossible validator guards, an unused middleware parameter); skipped on purpose: merging `.link` (not identical) and removing the pulse animation. |
 | 50 | Fixes (Phase L) | Fix agent | All review and QA findings fixed. Among them: the pre-filter counts only non-GET requests and groups IPv6 by /64, and a login blocked by the per-username limit no longer writes a `login:ip` row. Not changed on purpose: `useAccount` handling of 429, because `/api/me` can no longer get a 429 from our code, and Cloudflare's own daily-limit 429 correctly shows "Accounts are unavailable". |
 | 51 | Docs (milestone 31) | none (docs agent) | PROGRESS.md brought up to date (the GitHub repo is public, not private); README, `docs/architecture.md`, `docs/data-sources.md`, `docs/security.md`, `docs/design-research.md` and `docs/deployment.md` now cover the quiz, places with Directions links, the redesign and the free-plan firewall. |
+| 52 | Launch video (2026-10-06) | `brag` → `brag-slim` (**APPLIED**; the Opus route) | Inspection agent, then two agents in parallel. **Visuals:** a Vite harness in `brag-output/work/harness/` renders the real map, passport card, stamp, quiz panel and progress components with the app's CSS; every frame is a pure function of time (`__setTime(t)`, CSS animations paused and seeked); Playwright captured 690 frames, ffmpeg encoded them. **Audio:** a dependency-free Node synth (`work/audio/score.mjs`), 120 BPM, D major pentatonic, cues locked to the picture; −15.8 LUFS, −3.7 dBTP. The poster is the 3.2 s hook frame, baked in as frame 0. Output: `brag-output/brag.mp4`, `brag.jpg`, `share-copy.txt`, `brag-plan.md` (untracked). |
+| 53 | Trip planner plan (2026-10-06) | none (main session) | Planned with the owner, then trimmed to free-tier-only (no account sync), plus PDF download and the Bengali pipeline. Decisions and phases: section 7. |
 
 ---
 
@@ -134,9 +141,9 @@ live, only optional work left.)
 | 3 | QA | QA agent | **DONE** (#48): 8 of 8 random Directions links correct, 4 suspect links fixed |
 | 4 | Reviews | Code, security and simplicity reviewers, in parallel | **DONE** (#49) |
 | 5 | Fixes | Fix agent | **DONE** (#50) |
-| 6 | Leak scan | Leak-scan agent | **NEXT.** Must pass before anything is published; the GitHub repo is public |
+| 6 | Leak scan | Leak-scan agent | DONE: pass with notes, doc fixes applied. Run it again before every push; the GitHub repo is public |
 | 7 | Docs | Docs agent | **DONE** (#51) |
-| 8 | Commit, push, deploy | Main session | Owner approved, at the end, after tests and the leak scan pass. Redeploy: `npm run build` + `npx wrangler pages deploy dist --project-name bd-discovery-passport --branch main` |
+| 8 | Commit, push, deploy | Main session | DONE: commit `10df59c` pushed and deployed, live verified. Redeploy: `npm run build` + `npx wrangler pages deploy dist --project-name bd-discovery-passport --branch main` |
 
 ### Needs you (owner actions; nothing above waits on them)
 | # | Task | What you do | Note |
@@ -233,3 +240,71 @@ npx playwright test             # E2E (starts wrangler itself if nothing is runn
 
 Local secret: `.dev.vars` contains `AUTH_PEPPER=<random>` (gitignored; regenerate with
 `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`).
+
+---
+
+## 7. Trip planner round (started 2026-10-06, milestone 33): resume here
+
+The owner green-lit this plan on 2026-10-06 at 14:19 (device clock, UTC+6) and stopped at 15:00 for another project.
+Nothing was committed or pushed.
+
+### Decisions (owner, 2026-10-06; do not re-litigate)
+- **Browser-only, free tier:** no new `/api` endpoints, no D1 tables, no new server writes. Trips live in localStorage
+  (`bd-discovery-passport:trip:v1`). Moving a trip to another device = share link. Account sync for trips is dropped.
+- **Shape:** a trip is a list of days; at most 10 days and 10 stops per day (each day's Google Maps link then has at most
+  8 waypoints). A stop is a place or a whole district and appears once per trip.
+- **Place IDs:** stored in `src/data/places.json` as `<districtId>-<slug>` (e.g. `54-shah-jalal-dargah`), never computed at runtime.
+- **Directions:** one no-key Google Maps link per day (`origin`, `destination`, `waypoints`). Places use name + address (same
+  format as the existing Directions link); districts use the district town's `lat,lon`. Distances are straight-line between
+  district towns and are labelled that way.
+- **PDF:** "Download PDF" lays the trip out as A4 pages in the browser, captures each page as an image with a library that lets the
+  browser draw the text (SVG foreignObject, e.g. modern-screenshot; not html2canvas, which can break Bengali), and puts the images
+  in a PDF (e.g. jsPDF) with clickable link areas over the Directions links. Lazy-loaded on click. Keep a "Print / Save as PDF"
+  fallback on the same layout (real, accessible text). The CSP already allows `data:` images.
+- **Bengali notes (Phase 0b):** a one-time data step, never per visitor. Claude writes the English, Gemini translates it to Bengali,
+  then Gemini re-audits in a fresh pass (back-translation to English; Claude compares the meaning; a script checks that numbers,
+  dates and place names match the existing `name.bn`). Flagged items go back to Gemini. Results are saved as `note.bn` (and
+  Bengali categories) in places.json. Addresses stay English because the Directions links use them. About 40 requests, free tier.
+  Needs the key in the `GEMINI_API_KEY` user environment variable and the owner's yes for that run (global rule).
+- **Gemini at runtime is ruled out:** the key cannot sit in the browser, the free quota is shared by all visitors, it would add
+  server load, and free-tier prompts may be used by Google.
+
+### Phases
+| Phase | What | State |
+|---|---|---|
+| 0a | Stored place IDs, validator rule, validator tests | **DONE** (Agent A, verified): 334 ids, all unique, `id` first key in each place (diff = 334 added lines only); validator rule in `scripts/validate-map-data.mjs` (format, district prefix, unique file-wide); 3 new cases in `tests/unit/security.test.js` that fail without the rule. Examples: `1-star-mosque`, `54-bichanakandi` |
+| 0b | Bengali notes via Gemini (see decisions) | TO DO: needs the owner action below and a yes for the run |
+| 1 logic | `src/lib/trip.js` + `tests/unit/trip.test.js`: model, limits, per-day Directions URL, distances, hardened storage | **DONE** (Agent B, test-first, verified): `trip.js` 118 lines of pure functions (`createTrip`, `hasStop`, `addStop`, `removeStop`, `moveStop`, `addDay`, `removeDay`, `renameTrip`, `pruneUnknownPlaces`, `locationOf`, `dayDirectionsUrl`, `legDistancesKm`, `loadTrip`, `saveTrip`); 57 tests. Small edits: `TRIP_KEY` + exported `getStorage` in `discoveryStorage.js`; `DIRECTIONS_URL` + `placeLocation` exported from `places.js` (same link output). Not yet used by any UI, so nothing is stored yet |
+| 1 UI | "Add to trip" on places and district pages; Plan / পরিকল্পনা mode (reorder by drag and by up/down buttons); map pins + route line; per-day Directions links; privacy-notice row for the new storage key (strictly necessary, no banner); E2E + axe in both themes | TO DO |
+| 2 | Suggestions: nearby places (same and neighbouring districts); route through neighbouring districts | TO DO |
+| 3 | Share by link (`?trip=…`, no server) | TO DO |
+| 4 | Download PDF (page images + link areas) and Print / Save as PDF | TO DO |
+
+### Owner actions
+1. **Gemini key:** a key was pasted into the chat on 2026-10-06, so it now sits in local session logs on this shared PC. Delete it
+   in Google AI Studio, create a new one, and set it yourself as the user environment variable `GEMINI_API_KEY` (Windows: System
+   Properties → Environment Variables → New). Never paste it into chat or files. Check that its project shows the free tier
+   (no billing). Then say yes for the Phase 0b run.
+
+### State at the 15:00 stop (verified by the main session, 14:34 to 14:35)
+- `npm test`: **157 passed** (6 files; was 97, plus 3 validator and 57 trip tests). `npm run validate:data`: OK.
+- `npm run lint`: the project code is clean; the 30 errors all come from the untracked `brag-output/` video scripts
+  (`npx eslint . --ignore-pattern "brag-output/**"` passes). Owner decision pending: add `brag-output/` to `.gitignore` and the
+  ESLint ignores, or delete `brag-output/work/` once the video is final.
+- Build and E2E not run: no UI changed yet.
+- `node_modules` was found empty at 14:22 (some dependencies had been deleted, the owner confirmed); restored with `npm ci` from the
+  lockfile at 14:28 (265 packages, no tracked file changed).
+- Uncommitted working tree: `PROGRESS.md`, `scripts/validate-map-data.mjs`, `src/data/places.json`, `src/lib/discoveryStorage.js`,
+  `src/lib/places.js`, `tests/unit/security.test.js` (modified); `src/lib/trip.js`, `tests/unit/trip.test.js`, `brag-output/` (new).
+- Notes for the UI: `legDistancesKm` reuses the quiz's `distanceKm`, so legs are rounded to 10 km (show "about"); call
+  `renameTrip` on submit or blur, not on every keystroke (it trims); build links with
+  `dayDirectionsUrl(day, s => locationOf(s, placesById))` once places.json has loaded.
+- Process: owner's rules applied (`karpathy-guidelines` **APPLIED**: simple code, surgical edits); two agents in parallel, one task
+  each; heavy jobs one at a time.
+
+### Next steps (in order; heavy jobs one at a time)
+1. DONE 2026-10-17: `brag-output/` is ignored by ESLint and git, so `npm run lint` is green. Work moved to the local branch
+   `feat/trip-planner`; the short current state now lives in `docs/ai/CURRENT.md` (map of the code: `docs/ai/INDEX.md`).
+2. Code review of the trip-planner diff (code-reviewer agent); fix the findings.
+3. Phase 1 UI, then Phase 3, Phase 2, Phase 0b (after the owner action) and Phase 4.
+4. Reviews (code, security, simplicity), docs, leak scan. Commit, push and deploy only with the owner's yes.
