@@ -23,3 +23,6 @@ coverage/
 /.vscode/
 /skill_review.md
 /.gstack/
+
+# Launch-video output from /brag (local only; work/ holds ~224 MB of frames)
+/brag-output/
