@@ -23,8 +23,8 @@ const next = page => page.getByRole('button', { name: 'Next' });
 
 test('quiz: find districts, get a hint after a miss, finish with a summary and no stamps', async ({ page, isMobile }) => {
   await page.goto('/');
-  await page.locator('.mode-switch').getByText('Quiz').click();
-  await expect(page.getByRole('radio', { name: 'Quiz' })).toBeChecked();
+  await page.getByRole('tab', { name: /^Quiz/ }).click();
+  await expect(page.getByRole('tab', { name: /^Quiz/ })).toHaveAttribute('aria-selected', 'true');
   await expect(page.locator('#district-index')).toHaveCount(0);
 
   // 1: a find on the first try scores 10 and marks the district
@@ -81,17 +81,17 @@ test('quiz: find districts, get a hint after a miss, finish with a summary and n
   expect(await page.evaluate(() => localStorage.getItem('bd-discovery-passport:quiz-best'))).toBeNull();
 
   await page.getByRole('button', { name: 'Back to explore' }).click();
-  await expect(page.getByRole('radio', { name: 'Explore' })).toBeChecked();
+  await expect(page.getByRole('tab', { name: /^Explore/ })).toHaveAttribute('aria-selected', 'true');
   await expect(page.locator('#district-index')).toBeVisible();
 });
 
 test('starting a quiz closes an open passport page; switching to explore abandons the round', async ({ page }) => {
   await page.goto('/?district=54'); // an open passport page closes when the quiz starts
-  await page.locator('.mode-switch').getByText('Quiz').click();
+  await page.getByRole('tab', { name: /^Quiz/ }).click();
   await expect(page.getByRole('dialog', { name: 'Sylhet' })).toHaveCount(0);
   await expect(page.locator('.quiz-progress')).toContainText('Question 1 of 10');
-  await page.locator('.mode-switch').getByText('Explore').click();
+  await page.getByRole('tab', { name: /^Explore/ }).click();
   await expect(page.locator('.quiz')).toHaveCount(0);
-  await page.locator('.mode-switch').getByText('Quiz').click();
+  await page.getByRole('tab', { name: /^Quiz/ }).click();
   await expect(page.locator('.quiz-progress')).toContainText('Question 1 of 10');
 });

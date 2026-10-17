@@ -25,8 +25,8 @@ async function startWithTrip(page, days, path = '/') {
 }
 
 const openPlanner = async page => {
-  await page.locator('.mode-switch').getByText('Plan').click();
-  await expect(page.getByRole('radio', { name: 'Plan' })).toBeChecked();
+  await page.getByRole('tab', { name: /^Plan/ }).click();
+  await expect(page.getByRole('tab', { name: /^Plan/ })).toHaveAttribute('aria-selected', 'true');
 };
 const planner = page => page.getByRole('region', { name: /^Your trip/ });
 const heading = page => planner(page).getByRole('heading', { name: /^Your trip/ });
@@ -257,12 +257,12 @@ test('a stop cannot move into a full day, and a trip of ten days cannot add anot
 });
 
 test('quiz and plan switch like quiz and explore: plan ends a round, quiz starts one', async ({ page }) => {
-  await page.locator('.mode-switch').getByText('Quiz').click();
+  await page.getByRole('tab', { name: /^Quiz/ }).click();
   await expect(page.locator('.quiz-progress')).toContainText('Question 1 of 10');
   await openPlanner(page);
   await expect(page.locator('.quiz')).toHaveCount(0);
   await expect(heading(page)).toBeVisible();
-  await page.locator('.mode-switch').getByText('Quiz').click();
+  await page.getByRole('tab', { name: /^Quiz/ }).click();
   await expect(page.locator('.quiz-progress')).toContainText('Question 1 of 10');
   await expect(planner(page)).toHaveCount(0);
 });

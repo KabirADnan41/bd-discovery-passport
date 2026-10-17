@@ -31,8 +31,8 @@ async function startPlanning(page, days) {
   return saved;
 }
 const openPlanner = async page => {
-  await page.locator('.mode-switch').getByText('Plan').click();
-  await expect(page.getByRole('radio', { name: 'Plan' })).toBeChecked();
+  await page.getByRole('tab', { name: /^Plan/ }).click();
+  await expect(page.getByRole('tab', { name: /^Plan/ })).toHaveAttribute('aria-selected', 'true');
 };
 const planner = page => page.getByRole('region', { name: /^Your trip/ });
 const dayOf = (page, n) => planner(page).locator('section', { has: page.getByRole('heading', { name: new RegExp(`^Day ${n}(?!\\d)`) }) });

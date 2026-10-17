@@ -24,8 +24,8 @@ async function startWithTrip(page, days) {
   await page.goto('/');
 }
 const openPlanner = async page => {
-  await page.locator('.mode-switch').getByText('Plan').click();
-  await expect(page.getByRole('radio', { name: 'Plan' })).toBeChecked();
+  await page.getByRole('tab', { name: /^Plan/ }).click();
+  await expect(page.getByRole('tab', { name: /^Plan/ })).toHaveAttribute('aria-selected', 'true');
 };
 const overlay = page => page.locator('.trip-overlay');
 const pinOf = (page, districtId) => overlay(page).locator(`[data-trip-pin="${districtId}"]`);
@@ -83,12 +83,12 @@ test('Explore and Quiz never show the trip on the map, and Plan shows it only wh
 
   await openPlanner(page);
   await expect(overlay(page)).toHaveCount(1);
-  await page.locator('.mode-switch').getByText('Explore').click();
+  await page.getByRole('tab', { name: /^Explore/ }).click();
   await expect(overlay(page)).toHaveCount(0);
 
   await openPlanner(page);
   await expect(overlay(page)).toHaveCount(1);
-  await page.locator('.mode-switch').getByText('Quiz').click();
+  await page.getByRole('tab', { name: /^Quiz/ }).click();
   await expect(page.locator('.quiz-progress')).toContainText('Question 1 of 10');
   await expect(overlay(page)).toHaveCount(0);
 

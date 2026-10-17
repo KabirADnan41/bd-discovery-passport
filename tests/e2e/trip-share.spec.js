@@ -29,8 +29,8 @@ async function saveLocalTrip(page, days) {
   return saved;
 }
 const openPlanner = async page => {
-  await page.locator('.mode-switch').getByText('Plan').click();
-  await expect(page.getByRole('radio', { name: 'Plan' })).toBeChecked();
+  await page.getByRole('tab', { name: /^Plan/ }).click();
+  await expect(page.getByRole('tab', { name: /^Plan/ })).toHaveAttribute('aria-selected', 'true');
 };
 const planner = page => page.getByRole('region', { name: /^Your trip/ });
 const notice = page => page.getByRole('region', { name: 'A shared trip' });
@@ -86,7 +86,7 @@ test('if the copy fails, the same link shows in a read-only field, selected, and
 
 test('a valid link with no trip here opens a preview in Plan mode, stores nothing, and Save this trip keeps exactly it', async ({ page }) => {
   await page.goto(`/?trip=${SHARED}`);
-  await expect(page.getByRole('radio', { name: 'Plan' })).toBeChecked();
+  await expect(page.getByRole('tab', { name: /^Plan/ })).toHaveAttribute('aria-selected', 'true');
   await expect(notice(page).getByRole('listitem')).toHaveText(SHARED_LINES); // local names, never text from the link
   expect(await rawTrip(page)).toBeNull();
   await expect(page.locator('.trip-overlay')).toHaveCount(0); // the map shows only a trip that is kept here
@@ -143,7 +143,7 @@ test('Dismiss leaves the trip here alone and takes only the link out of the addr
   const saved = await saveLocalTrip(page, LOCAL_DAYS);
   await page.goto(`/?trip=${SHARED}`);
   await expect(notice(page).getByRole('listitem')).toHaveText(SHARED_LINES);
-  await page.locator('.mode-switch').getByText('Explore').click(); // the link stays on offer until a choice is made
+  await page.getByRole('tab', { name: /^Explore/ }).click(); // the link stays on offer until a choice is made
   await openPlanner(page);
   await expect(notice(page).getByRole('listitem')).toHaveText(SHARED_LINES);
   await notice(page).getByRole('button', { name: 'Dismiss' }).click();
@@ -175,7 +175,7 @@ test('a malformed or ambiguous link says it is not valid, shows nothing from it 
   for (const [what, value] of malformed) {
     await test.step(what, async () => {
       await page.goto(`/?trip=${value}`);
-      await expect(page.getByRole('radio', { name: 'Plan' })).toBeChecked();
+      await expect(page.getByRole('tab', { name: /^Plan/ })).toHaveAttribute('aria-selected', 'true');
       await expect(notice(page)).toContainText(INVALID);
       await expect(notice(page).getByRole('button')).toHaveText(['Dismiss']);
       await expect(notice(page).getByRole('listitem')).toHaveCount(0);

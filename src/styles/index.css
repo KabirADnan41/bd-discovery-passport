@@ -628,6 +628,59 @@
   outline-offset: 2px;
 }
 
+/* Mode tabs: three equal columns, and one indicator as wide as a column that slides under the selected tab (the tablist sets
+   --active-index). Only transform and colour move. */
+.mode-tabs {
+  --mode-tabs-gap: 0.25rem;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--mode-tabs-gap);
+}
+.mode-tabs-indicator {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc((100% - 2 * var(--mode-tabs-gap)) / 3);
+  border-radius: calc(var(--radius-control) - 3px);
+  background: var(--text-primary);
+  transform: translateX(calc(var(--active-index) * (100% + var(--mode-tabs-gap))));
+  transition: transform var(--dur-reveal) var(--ease-out);
+}
+.mode-tab {
+  position: relative; /* paints over the indicator */
+  display: flex;
+  min-height: 44px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: calc(var(--radius-control) - 3px);
+  font-size: 0.9rem;
+  font-weight: 540;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color var(--dur-reveal) var(--ease-out);
+}
+.mode-tab:hover {
+  color: var(--text-primary);
+}
+.mode-tab[aria-selected='true'] {
+  color: var(--surface-paper);
+}
+.mode-tab:focus-visible {
+  outline-offset: 2px; /* the ring fits the gap between tabs */
+}
+/* High-contrast themes drop author backgrounds, which would hide the indicator: use the theme's own selection colours. */
+@media (forced-colors: active) {
+  .mode-tabs-indicator {
+    forced-color-adjust: none;
+    background: Highlight;
+  }
+  .mode-tab[aria-selected='true'] {
+    forced-color-adjust: none;
+    color: HighlightText;
+  }
+}
+
 /* ------------------------------------------------------------------ passport stamp */
 .stamp {
   color: var(--accent-stamp);
@@ -727,6 +780,10 @@
   }
   .stamp-impact {
     animation: fade-in 200ms var(--ease-out) both;
+  }
+  .mode-tab,
+  .mode-tabs-indicator {
+    transition: none;
   }
   .btn:active:not(:disabled):not([aria-disabled='true']) {
     transform: none;

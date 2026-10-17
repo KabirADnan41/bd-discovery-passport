@@ -32,8 +32,27 @@ const isKeyboard = e => e.detail === 0; // click events synthesized from Enter/S
 const focusMap = () => document.querySelector('[data-district-id][tabindex="0"]')?.focus(); // the map's single tab stop
 const placeStop = id => ({ kind: 'place', id }); // how a place is stored in a trip
 const MAP_SECTION_ID = 'map-section'; // where a phone's "Show on map" goes
+const MODES = [
+  { id: 'explore', label: 'Explore', bn: 'ঘুরে দেখুন' },
+  { id: 'quiz', label: 'Quiz', bn: 'কুইজ' },
+  { id: 'plan', label: 'Plan', bn: 'পরিকল্পনা' },
+];
+const MODE_PANEL_ID = 'mode-panel'; // the one tabpanel, which holds whichever mode is chosen
+const modeTabId = id => `mode-tab-${id}`;
 // The `trip` parameters in the address: a shared trip link has exactly one (see tripShare.js).
 const sharedLinkValues = () => new URLSearchParams(window.location.search).getAll(SHARE_PARAM);
+
+// The mode tabs activate manually: arrow keys, Home and End only move focus, and Enter, Space or a click chooses. Passing over
+// Quiz on the way to Plan therefore starts no round.
+function moveTabFocus(e) {
+  if (e.altKey || e.ctrlKey || e.metaKey) return; // the browser's own shortcuts, such as Alt+Left for back
+  const tabs = [...e.currentTarget.querySelectorAll('[role="tab"]')];
+  const at = tabs.indexOf(e.target);
+  const to = { ArrowRight: at + 1, ArrowLeft: at - 1, Home: 0, End: tabs.length - 1 }[e.key];
+  if (at < 0 || to === undefined) return;
+  e.preventDefault();
+  tabs[(to + tabs.length) % tabs.length].focus();
+}
 
 // Scrolls an element to the top of the screen (without animation if the user prefers reduced motion), then focuses it, with no second scroll.
 function scrollToAndFocus(element) {
@@ -242,6 +261,10 @@ export default function GameBoard() {
     setAnnouncement('Plan mode.');
   };
 
+  const startMode = { explore: backToExplore, quiz: startRound, plan: startPlan };
+  // Choosing the mode you are already in does nothing, so a click on Quiz cannot restart the round.
+  const chooseMode = id => id !== mode && startMode[id]();
+
   const clearBest = () => {
     clearQuizBest();
     setQuizBest(null);
@@ -431,38 +454,35 @@ export default function GameBoard() {
               বাংলাদেশ আবিষ্কারের পাসপোর্ট
             </p>
           </div>
-          <fieldset className="mode-switch col-span-2 row-start-2 pb-2 lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:pb-0">
-            <legend className="sr-only">Mode</legend>
-            <div className="grid grid-cols-3 gap-1 lg:w-[21rem]">
-              <label className="theme-option">
-                <input type="radio" name="mode" checked={mode === 'explore'} onChange={backToExplore} className="sr-only" />
-                <span className="px-4 leading-tight">
-                  Explore
+          <div className="col-span-2 row-start-2 pb-2 lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:pb-0">
+            <div
+              role="tablist"
+              aria-label="Mode"
+              className="mode-tabs lg:w-[21rem]"
+              style={{ '--active-index': MODES.findIndex(m => m.id === mode) }}
+              onKeyDown={moveTabFocus}
+            >
+              <span className="mode-tabs-indicator" />
+              {MODES.map(({ id, label, bn }) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  id={modeTabId(id)}
+                  aria-selected={mode === id}
+                  aria-controls={MODE_PANEL_ID}
+                  tabIndex={mode === id ? 0 : -1}
+                  className="mode-tab px-4 leading-tight"
+                  onClick={() => chooseMode(id)}
+                >
+                  {label}
                   <span lang="bn" className="text-[0.75rem] leading-[1.3] font-normal">
-                    ঘুরে দেখুন
+                    {bn}
                   </span>
-                </span>
-              </label>
-              <label className="theme-option">
-                <input type="radio" name="mode" checked={quizMode} onChange={startRound} className="sr-only" />
-                <span className="px-4 leading-tight">
-                  Quiz
-                  <span lang="bn" className="text-[0.75rem] leading-[1.3] font-normal">
-                    কুইজ
-                  </span>
-                </span>
-              </label>
-              <label className="theme-option">
-                <input type="radio" name="mode" checked={planMode} onChange={startPlan} className="sr-only" />
-                <span className="px-4 leading-tight">
-                  Plan
-                  <span lang="bn" className="text-[0.75rem] leading-[1.3] font-normal">
-                    পরিকল্পনা
-                  </span>
-                </span>
-              </label>
+                </button>
+              ))}
             </div>
-          </fieldset>
+          </div>
           <div className="col-start-2 row-start-1 flex items-center gap-3 justify-self-end sm:gap-5 lg:col-start-3">
             <DiscoveryProgress count={discovered.length} total={TOTAL_DISTRICTS} />
             <PassportMenu
@@ -485,6 +505,9 @@ export default function GameBoard() {
 
       <main className="relative z-[1]">
         <div
+          id={MODE_PANEL_ID}
+          role="tabpanel"
+          aria-labelledby={modeTabId(mode)}
           className={`mx-auto flex max-w-[1400px] flex-col lg:grid lg:min-h-[calc(100dvh-var(--masthead-h))] lg:grid-cols-[minmax(0,1fr)_minmax(360px,440px)] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(360px,500px)] ${GUTTERS}`}
         >
           {/* on phones the quiz prompt or the planner sits above the map (first in the DOM too, so focus order matches), so

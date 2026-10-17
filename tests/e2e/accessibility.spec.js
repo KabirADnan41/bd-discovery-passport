@@ -26,7 +26,7 @@ for (const theme of ['light', 'dark']) {
 
     test('quiz mode after a guess', async ({ page }) => {
       await page.goto('/');
-      await page.locator('.mode-switch').getByText('Quiz').click();
+      await page.getByRole('tab', { name: /^Quiz/ }).click();
       await page.locator('[data-district-id="17"]').click();
       await expect(page.locator('.quiz-feedback')).toBeVisible();
       expect(await scan(page)).toEqual([]);
@@ -38,7 +38,7 @@ for (const theme of ['light', 'dark']) {
       const trip = { name: '', days: [[place('54-bichanakandi'), place('54-keane-bridge')], [place('54-lalakhal')], []] };
       await page.addInitScript(t => localStorage.setItem('bd-discovery-passport:trip:v1', t), JSON.stringify(trip));
       await page.goto('/');
-      await page.locator('.mode-switch').getByText('Plan').click();
+      await page.getByRole('tab', { name: /^Plan/ }).click();
       await expect(page.getByRole('button', { name: 'Remove: Lalakhal' })).toBeVisible();
       expect(await scan(page)).toEqual([]);
     });
