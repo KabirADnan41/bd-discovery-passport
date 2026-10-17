@@ -10,7 +10,7 @@ For the site owner and future maintainers. How the site is protected, what was r
 | `/api/*` (Pages Functions) | Public: sign-up, sign-in, sign-out, "who am I", add/reset stamps, delete account |
 | D1 database | Reachable only from the Functions via the `DB` binding, never directly from the internet |
 | Secrets | `AUTH_PEPPER` (Cloudflare secret; `.dev.vars` locally, gitignored) |
-| Browser storage | `localStorage`: guest stamp ids, theme, the quiz best score and the trip plan's stop ids (written only after the first "Add to trip"; never sent to the server) only. One HttpOnly session cookie after sign-in |
+| Browser storage | `localStorage` only: guest stamp ids, theme, the quiz best score and the trip plan (its own key, holding the trip `{ name, days }`: stop ids only, and the name is empty today). The trip is written only after the first "Add to trip" and never sent to the server. One HttpOnly session cookie after sign-in |
 | Shared trip links | A `?trip=` link holds place and district ids only. It is untrusted: checked whole against the local data before any of it is used, rejected (never repaired) if anything is wrong, and only previewed until the user saves it; no text from the link is shown |
 | Third parties | None at runtime: no analytics, ads, CDNs, fonts or auth SDKs. A place's Directions link opens Google Maps in a new tab only when the user chooses it; no map is embedded |
 
@@ -20,9 +20,9 @@ For the site owner and future maintainers. How the site is protected, what was r
 |---|---|---|
 | **Spoofing** | Guessing a password; stealing a session | Browser PBKDF2-SHA256 600k + server HMAC with a secret pepper; failed-guess limits per user+network and per user; 256-bit session tokens, stored only as SHA-256; `__Host-` HttpOnly Secure SameSite=Strict cookie |
 | **Tampering** | Forged requests from another site; injected content | Origin check + JSON-only on state changes (CSRF); parameterised SQL everywhere; content validator rejects markup; district ids whitelisted 1 to 64; a shared trip link is validated whole and only previewed until saved |
-| **Repudiation** | Low stakes (a game) | No audit log by design (privacy); sessions expire in 30 days |
+| **Repudiation** | Low stakes (a game) | No audit log by design (privacy); sessions expire in 30 days. Unexpected API errors are logged as one JSON line with the event, method, route, error name, a short message with quoted values blanked and the Cloudflare ray id, never bodies, cookies, tokens, keys or IP addresses |
 | **Information disclosure** | Leaked database; account enumeration | Database holds no passwords, emails or raw IPs; identical sign-in error for wrong password and unknown user; `no-store` on API responses; strict CSP |
-| **Denial of service** | Lockout flooding; storage fill; big bodies; write-quota floods | Only *failed* guesses count, per network, so an attacker can't lock the owner out elsewhere; max 10 sessions per user; 2 KB body cap checked from `Content-Length`; the free-plan firewall (section 5); Cloudflare free-plan limits fail closed instead of billing |
+| **Denial of service** | Lockout flooding; storage fill; big bodies; write-quota floods | Only *failed* guesses count, per network, so an attacker can't lock the owner out elsewhere; max 10 sessions per user; 2 KB body cap checked from `Content-Length` and again after reading; the free-plan firewall (section 5); Cloudflare free-plan limits fail closed instead of billing |
 | **Elevation of privilege** | Acting on another account | Every API route derives the user from the session cookie, never from the request body |
 
 ## 3. Secure development lifecycle (mapped to *Security Engineering* §27.5.3)
@@ -32,7 +32,7 @@ For the site owner and future maintainers. How the site is protected, what was r
 | Requirements | Zero budget, small audience, no personal data beyond a username; guests need no account |
 | Design | Threat model above; attack surface kept same-origin; *Privacy's Blueprint* (Hartzog) standards: no deceptive, abusive or dangerous design (opt-in merges on sign-in, unticked consent box, no confirmshaming) |
 | Implementation | Exact-pinned dependencies (3 runtime), lockfile, ESLint with the React Compiler rules, no `dangerouslySetInnerHTML`/`eval`, no inline scripts or styles |
-| Verification | Unit tests (auth helpers, validators, storage hardening, token contrast), API smoke test (29 checks incl. CSRF, rate limits, 413), E2E that fails on any CSP violation, axe WCAG 2.2 AA scans, code review (10 findings fixed), security review (3 findings fixed) |
+| Verification | Unit tests (auth helpers, validators, storage hardening, token contrast; state-changing requests: exact Origin, JSON-only and the body cap with or without `Content-Length`; sessions: expiry to the second, token format, hashed storage, the 10-session cap; guess limits shared by sign-in and account deletion, unknown usernames, per-network sign-up and sign-in budgets; the error log line), API smoke test (52 checks incl. CSRF, rate limits, 413, account data following the session, GET changing nothing, account deletion ending other sessions, the session cap, no password key or verifier in any response), `npm run check:dist` after every build (no source maps, no server-only code in the browser bundle), E2E that fails on any CSP violation, axe WCAG 2.2 AA scans, code review (10 findings fixed), security review (3 findings fixed) |
 | Release | This document's incident-response plan; secrets set with `wrangler pages secret put`, never committed |
 
 ### Reviews performed
