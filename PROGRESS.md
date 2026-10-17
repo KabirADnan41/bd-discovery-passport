@@ -280,6 +280,19 @@ Nothing was committed or pushed.
 | 3 | Share by link (`?trip=…`, no server) | TO DO |
 | 4 | Download PDF (page images + link areas) and Print / Save as PDF | TO DO |
 
+### Agent pattern per slice (owner, 2026-10-17; global CLAUDE.md §4)
+| Slice | Implementation | Verification |
+|---|---|---|
+| Trip domain logic | implementation agent (done) | Fable review |
+| Add-to-trip UI | implementation agent | main-session review |
+| Trip state integration | implementation agent | focused reviewer |
+| Share-link parser | implementation agent | reviewer (parsing untrusted URL data) |
+| PDF layout | implementation agent | browser QA, not another coding agent |
+| Final combined diff | | one focused code review |
+
+At most 2 active agents, no recursion, the main session verifies every report against the repository, one local
+checkpoint commit per green slice.
+
 ### Owner actions
 1. **Gemini key:** a key was pasted into the chat on 2026-10-06, so it now sits in local session logs on this shared PC. Delete it
    in Google AI Studio, create a new one, and set it yourself as the user environment variable `GEMINI_API_KEY` (Windows: System
