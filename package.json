@@ -13,6 +13,7 @@
     "build:map": "node scripts/build-district-map.mjs",
     "validate:data": "node scripts/validate-map-data.mjs",
     "build": "npm run validate:data && vite build",
+    "check:dist": "node scripts/check-dist.mjs",
     "preview": "wrangler pages dev --port 8788 --ip 127.0.0.1",
     "lint": "eslint .",
     "test": "vitest run",
