@@ -143,6 +143,7 @@ live, only optional work left.)
 | 56 | Trip planner foundation (`feat/trip-planner`, 2026-10-17) | `karpathy-guidelines` (**APPLIED** as the simplicity rule in every brief) | Each slice: implementation agent → machine checks → review → main-session diff check and rerun → local commit. Fable review of the trip logic (2 findings, each reproduced by a failing test, fixed in `63b431f`). "Add to trip" on places (`b37b2f3`; accessible names start with the visible words, WCAG 2.5.3). Planner screen in Plan mode (`b944637`; fresh-context review approved; 1 medium (empty trip kept stray days) and 1 low (duplicated dialog) fixed). Checks at `b944637`: lint, 161 unit, build, full E2E desktop + mobile green. |
 | 57 | Map slice started (`feat/trip-map`, 2026-10-17) | none | Branched from `feat/trip-planner` (`341b678`). Owner's spec: district-level pins at each district's existing `label` anchor (no invented coordinates; several stops in one district share one pin with a count), one dashed route per day (never joined across days), labelled "approximate", phone "Show on map" / "Back to day N" (no modal, no second map). The implementation agent was stopped at the session close just before its final checks: its work is saved as an unverified WIP commit and pushed with the branch (section 7). |
 | 58 | Map slice verified (`feat/trip-map`, 2026-10-17 evening) | none (main-session verification, following the owner's resume steps) | Reviewed the `wip(trip-map)` diff: `BangladeshMap.jsx` only gained `PIN_RADIUS`, the optional `tripMap` prop and the non-interactive `.trip-overlay` group (aria-hidden, `pointer-events: none`, drawn under the keyboard focus outline). No handler, tabindex or keyboard change, so no extra reviewer. Checks, one at a time: lint exit 0; Vitest 171/171; build OK; `trip-map.spec.js` 13 passed + 3 by-design skips (desktop + mobile); planner + discovery + accessibility + quiz on desktop 41/41; planner + discovery on mobile 23 passed + 4 by-design skips; `trip.spec.js` 12/12. The tests pin each pin to its district's own `label` anchor and check each day's route points and the day break. Visual check of the built site on desktop and phone, light and dark: no issues. GitHub CI green on `feat/trip-map` (`2898e2a`) and `feat/trip-planner` (`341b678`). No fixes needed. |
+| 59 | Drag to reorder (`feat/trip-drag-reorder`, 2026-10-17) | none (one implementation agent, Opus; main-session verification) | `a4a4979`. A pointer-only grip per stop (`aria-hidden`, never focused); Move up / Move down stay the keyboard baseline. A drop reuses `moveStop()` unchanged and saves through `onEdit` with the shared "Moved …" message (`movedMessage`) and no focus change. Pure `dropTarget()` in `src/lib/tripReorder.js` (9 unit tests) turns the pointer height into moveStop's final `{ day, index }`; rows are measured once, in page coordinates. The held stop lifts in place; the drop line is a shadow (no layout shift) and only shows where `moveStop` would accept. Escape / pointercancel drop nothing. No auto-scroll (`ponytail:` note). Main-session checks, one at a time: lint exit 0; Vitest 180/180; build OK; `trip-drag.spec.js` 14 passed + 2 by-design skips (mobile test uses real touch through CDP); planner + trip-map on both projects 44 passed + 4 known skips; trip + accessibility + discovery on desktop 29/29; visual check desktop + phone, light + dark. Low note, not changed: `measureDays` uses a document-wide query (fine while there is one planner). Not tested: Safari, Firefox, a real iOS device. |
 
 ---
 
@@ -346,10 +347,9 @@ the planner branch; independent additions (sharing, PDF, refactors) get their ow
 - **Branch:** `feat/trip-map` at `e2c2ae5`, pushed with the owner's yes (GitHub matches). No code changed since the
   `wip(trip-map)` commit: it passed every check as it was.
 - **Map slice:** done and verified (#58). Ready for the owner's review.
-- **Now:** roadmap step 3, drag to reorder, on `feat/trip-drag-reorder` (from `feat/trip-map` @ `e2c2ae5`). One implementation
-  agent; it reuses `moveStop()` unchanged, keeps Move up / Move down as the keyboard baseline (the drag handle is pointer-only
-  and hidden from assistive tech), adds a pure, unit-tested drop-position helper, and does not auto-scroll. The owner is asked
-  again before this branch is pushed. Merging into `main` and deploying wait for the owner's yes.
+- **Step 3, drag to reorder:** done and verified on `feat/trip-drag-reorder` (from `feat/trip-map` @ `e2c2ae5`), commit
+  `a4a4979` (#59). Local only: **waiting for the owner's yes to push this branch.** Merging into `main` and deploying wait
+  for the owner's yes.
 - **Notes for later (unchanged, not bugs):** "In your trip" looks like "Add to trip" apart from its label; phone browsers
   may honour only 3 Maps waypoints; `legDistancesKm` rounds to 10 km.
 
@@ -396,7 +396,8 @@ the planner branch; independent additions (sharing, PDF, refactors) get their ow
       2026-10-17, `b944637`).
    2. Map: pins for the stops and a route line derived from the trip (DONE 2026-10-17 on `feat/trip-map`: verified with no
       fixes needed; awaiting the owner's review).
-   3. Drag to reorder, reusing `moveStop()` (no separate reorder logic).
+   3. Drag to reorder, reusing `moveStop()` (no separate reorder logic) (DONE 2026-10-17 on `feat/trip-drag-reorder`,
+      `a4a4979`; local, awaiting the owner's push decision).
    4. Share by link: `?trip=…`; validate the untrusted data, reject malformed or oversized payloads.
    5. Suggestions: nearby places and neighbouring-district route ideas.
    6. Bengali enrichment: optional, only with a fresh Gemini key and the owner's yes for that run.
