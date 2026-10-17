@@ -72,13 +72,27 @@ points on try 1, 2 or 3, then the answer is shown for 0, with a distance and dir
 stamps or opens passport pages, and it hides tooltips and the gazetteer. The best score is kept in `localStorage`
 (`bd-discovery-passport:quiz-best`).
 
-**Trip planner (in progress).** Each place on a passport page has an "Add to trip" button (`DistrictCard`). The trip
-(`src/lib/trip.js`: days of up to 10 stops, each stop once per trip) lives in `GameBoard` state. It is read from
+**Trip planner.** Each place on a passport page has an "Add to trip" button (`DistrictCard`). The trip
+(`src/lib/trip.js`: up to 10 days of up to 10 stops, each stop once per trip) lives in `GameBoard` state. It is read from
 `localStorage` once and written only by edits (`bd-discovery-passport:trip:v1`); a trip left with no stops is removed
 (`clearTrip`). The third mode, **Plan**, shows `src/components/trip/TripPanel.jsx` where Quiz shows its panel: days and
-stops, move up/down across days, remove, add or remove a day, one Directions link per day, and "Clear trip" (one shared
-`ConfirmDialog` with the passport reset). Stale stops are pruned only inside the planner. Browser-only by design: no API and
-no D1. Map pins, sharing and the PDF come in later slices.
+stops, Move up/down (also across days) or a drag by the grip (`src/lib/tripReorder.js` finds the drop position; the grip is
+pointer-only and the Move buttons are the keyboard way), remove, add or remove a day, one Directions link per day, and "Clear
+trip" (one shared `ConfirmDialog` with the passport reset). Stale stops are pruned only inside the planner. Browser-only by
+design: no API and no D1.
+
+In Plan mode the map draws the trip by district (`tripMapData`): one pin per district at its label point, numbered when it
+holds several stops, and a dashed line per day through its districts in stop order. Days are never joined, the line is
+approximate (district to district, not roads), and places get no invented coordinates. On a phone the planner comes first,
+and each day's "Show on map" jumps to the map and back.
+
+**Sharing a trip.** "Share trip" copies a link to the page with the trip's ids in one `trip` parameter
+(`src/lib/tripShare.js`, format v1: days joined by `_`, stops by `.`, only `[a-z0-9._-]`): never names, and nothing else from
+the address. An incoming link is untrusted. It must be the only `trip` parameter, and the whole value is checked before any
+of it is used (length, characters, days, stops, known ids, duplicates); a bad link is rejected, never repaired. Names come
+from the local place data. Opening a link stores nothing: the planner previews it until "Save this trip", a confirmed
+"Replace my trip" or "Dismiss", and then only `trip` leaves the address. The map data check keeps place ids to 64
+characters, so any trip fits a link.
 
 ## Design system
 
@@ -107,3 +121,6 @@ drops movement. Contrast is enforced by `tests/unit/contrast.test.js`.
 | Keyboard map access | Roving tabindex, arrow keys and the gazetteer | 64 tab stops | One tab stop into the map |
 | Policy pages | Static HTML in the Vite build | React routes; a CMS | Fast, readable without JavaScript, versioned with the code |
 | Privacy defaults | Opt-in merge on sign-in; nothing stored on the server for guests | Always merge | Protective defaults on shared devices |
+| Trip storage | `localStorage` only | Saving trips in D1 with the account | No server load and no new personal data; a link can carry a trip to another device |
+| Trip on the map | District pins and approximate day lines | Pins at each place; road routes from a routing API | The place data has no coordinates and routing APIs bill; each day's Directions link gives real routes |
+| Sharing a trip | Ids in the link, checked whole on arrival | A short-link service; shared trips stored on a server | No server or database; the same trip always gives the same link; only local place data is ever shown |

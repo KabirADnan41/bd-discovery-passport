@@ -11,6 +11,7 @@ For the site owner and future maintainers. How the site is protected, what was r
 | D1 database | Reachable only from the Functions via the `DB` binding, never directly from the internet |
 | Secrets | `AUTH_PEPPER` (Cloudflare secret; `.dev.vars` locally, gitignored) |
 | Browser storage | `localStorage`: guest stamp ids, theme, the quiz best score and the trip plan's stop ids (written only after the first "Add to trip"; never sent to the server) only. One HttpOnly session cookie after sign-in |
+| Shared trip links | A `?trip=` link holds place and district ids only. It is untrusted: checked whole against the local data before any of it is used, rejected (never repaired) if anything is wrong, and only previewed until the user saves it; no text from the link is shown |
 | Third parties | None at runtime: no analytics, ads, CDNs, fonts or auth SDKs. A place's Directions link opens Google Maps in a new tab only when the user chooses it; no map is embedded |
 
 ## 2. Threat model (STRIDE, per *Security Engineering* 3rd ed., §27.3.5)
@@ -18,7 +19,7 @@ For the site owner and future maintainers. How the site is protected, what was r
 | Threat | Example | Mitigation |
 |---|---|---|
 | **Spoofing** | Guessing a password; stealing a session | Browser PBKDF2-SHA256 600k + server HMAC with a secret pepper; failed-guess limits per user+network and per user; 256-bit session tokens, stored only as SHA-256; `__Host-` HttpOnly Secure SameSite=Strict cookie |
-| **Tampering** | Forged requests from another site; injected content | Origin check + JSON-only on state changes (CSRF); parameterised SQL everywhere; content validator rejects markup; district ids whitelisted 1 to 64 |
+| **Tampering** | Forged requests from another site; injected content | Origin check + JSON-only on state changes (CSRF); parameterised SQL everywhere; content validator rejects markup; district ids whitelisted 1 to 64; a shared trip link is validated whole and only previewed until saved |
 | **Repudiation** | Low stakes (a game) | No audit log by design (privacy); sessions expire in 30 days |
 | **Information disclosure** | Leaked database; account enumeration | Database holds no passwords, emails or raw IPs; identical sign-in error for wrong password and unknown user; `no-store` on API responses; strict CSP |
 | **Denial of service** | Lockout flooding; storage fill; big bodies; write-quota floods | Only *failed* guesses count, per network, so an attacker can't lock the owner out elsewhere; max 10 sessions per user; 2 KB body cap checked from `Content-Length`; the free-plan firewall (section 5); Cloudflare free-plan limits fail closed instead of billing |
