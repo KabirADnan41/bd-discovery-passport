@@ -37,8 +37,9 @@ describe('encodeTripShare', () => {
     expect(encodeTripShare(trip)).toBe('54-bichanakandi.54-lalakhal.1_45-inani-beach');
   });
 
-  it('keeps empty days as empty segments, so day numbers survive', () => {
-    expect(encodeTripShare(tripOf([place('1-star-mosque')], [], [district('54')]))).toBe('1-star-mosque__54');
+  it('leaves out empty days, which carry nothing to share', () => {
+    expect(encodeTripShare(tripOf([place('1-star-mosque')], [], [district('54')]))).toBe('1-star-mosque_54');
+    expect(encodeTripShare(tripOf([place('1-star-mosque')], []))).toBe('1-star-mosque');
   });
 
   it('never puts the trip name or any other text in the link', () => {
@@ -75,14 +76,12 @@ describe('decodeTripShare accepts', () => {
     });
   });
 
-  it('empty days in the middle or at the end', () => {
-    expect(decodeTripShare('1-star-mosque__54', KNOWN)).toEqual({ ok: true, trip: tripOf([place('1-star-mosque')], [], [district('54')]) });
-    expect(decodeTripShare('54_', KNOWN)).toEqual({ ok: true, trip: tripOf([district('54')], []) });
-  });
-
-  it('whatever it encodes', () => {
-    const trip = tripOf([district('64')], [place('43-patenga-sea-beach'), place('54-lalakhal')], []);
-    expect(decodeTripShare(encodeTripShare(trip), KNOWN)).toEqual({ ok: true, trip });
+  it('whatever it encodes, with any empty days left out', () => {
+    const trip = tripOf([district('64')], [], [place('43-patenga-sea-beach'), place('54-lalakhal')], []);
+    expect(decodeTripShare(encodeTripShare(trip), KNOWN)).toEqual({
+      ok: true,
+      trip: tripOf([district('64')], [place('43-patenga-sea-beach'), place('54-lalakhal')]),
+    });
   });
 
   it(`exactly ${MAX_DAYS} days, and exactly ${MAX_STOPS_PER_DAY} stops in a day`, () => {
@@ -122,7 +121,7 @@ describe('decodeTripShare rejects', () => {
   });
 
   it('an empty or malformed stop, or an unknown district', () => {
-    for (const value of ['0', '01', '65', '99', '54-', '-1', '54--x', 'x-54', '054-x', '1-star-mosque..1', '.1', '1.', '1-star-mosque.', '__proto__']) {
+    for (const value of ['0', '01', '65', '99', '54-', '-1', '54--x', 'x-54', '054-x', '1-star-mosque..1', '.1', '1.', '1-star-mosque.', '1._54']) {
       rejects(value, 'bad-stop');
     }
   });
@@ -142,8 +141,8 @@ describe('decodeTripShare rejects', () => {
     rejects('54-lalakhal_1.54-lalakhal', 'duplicate');
   });
 
-  it('days with no stops at all', () => {
-    for (const value of ['_', '__', '_'.repeat(MAX_DAYS - 1)]) rejects(value, 'no-stops');
+  it('empty days, including stray "_" at the start or end', () => {
+    for (const value of ['_', '__', '_54', '54_', '1-star-mosque__54', '_'.repeat(MAX_DAYS - 1), '__proto__']) rejects(value, 'empty-day');
   });
 
   it('never throws, whatever it is given', () => {
