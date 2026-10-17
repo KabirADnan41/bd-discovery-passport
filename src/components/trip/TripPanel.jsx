@@ -2,10 +2,14 @@ import { useEffect, useState } from 'react';
 import { formatBn, getDistrict } from '../../lib/districtData';
 import { loadPlaces } from '../../lib/places';
 import { addDay, dayDirectionsUrl, locationOf, moveStop, pruneUnknownPlaces, removeDay, removeStop } from '../../lib/trip';
+import { dropTarget } from '../../lib/tripReorder';
 
 const BUTTON = 'btn btn-quiet min-h-11 px-4 text-[0.88rem] aria-disabled:opacity-45';
 const keyOf = stop => `${stop.kind}-${stop.id}`; // unique within a trip, and safe in an element id
 const stopCount = trip => trip.days.flat().length;
+const samePlace = (a, b) => a?.day === b?.day && a?.index === b?.index; // two { day, index }, either of which may be missing
+// What every move announces, from a Move button or a drag.
+const movedMessage = (names, to) => `Moved ${names.en} to day ${to.day + 1}, stop ${to.index + 1}.`;
 
 /** What a stop shows: a place's English and Bengali names and its district, or a district's own names. */
 function namesOf(stop, placesById) {
@@ -41,39 +45,108 @@ function TripButton({ id, label, fullLabel, disabled = false, onPress }) {
   );
 }
 
-/** One stop and its buttons. Focus follows by id: a moved stop keeps its button, a removed one hands over to `focusAfterRemove`. */
-function Stop({ trip, day, index, names, focusAfterRemove, onEdit }) {
+/**
+ * One stop, its grip and its buttons. Focus follows by id: a moved stop keeps its button, a removed one hands over to
+ * `focusAfterRemove`. `lifted` marks the stop being dragged, and `drop` ('before' or 'after') the edge where a drop line shows.
+ */
+function Stop({ trip, day, index, names, focusAfterRemove, onEdit, gripProps, lifted, drop }) {
   const key = keyOf(trip.days[day][index]);
   const moveButton = (step, label) => {
     const to = moveTarget(trip.days, day, index, step);
     const next = moveStop(trip, { day, index }, to);
     const id = `trip-${step < 0 ? 'up' : 'down'}-${key}`;
-    const message = `Moved ${names.en} to day ${to.day + 1}, stop ${to.index + 1}.`;
-    return <TripButton id={id} label={label} fullLabel={`${label}: ${names.en}`} disabled={next === trip} onPress={() => onEdit(next, message, id)} />;
+    return (
+      <TripButton id={id} label={label} fullLabel={`${label}: ${names.en}`} disabled={next === trip} onPress={() => onEdit(next, movedMessage(names, to), id)} />
+    );
   };
   return (
-    <li className="border-t border-rule py-3.5 first:border-t-0 first:pt-1">
-      <p className="flex flex-wrap items-baseline gap-x-2 leading-snug">
-        <span className="text-[1.08rem] font-semibold">{names.en}</span>
-        {names.bn && (
-          <span lang="bn" className="text-ink-2">
-            {names.bn}
-          </span>
-        )}
-      </p>
-      {names.district && <p className="mt-0.5 text-[0.85rem] text-ink-3">{names.district}</p>}
-      <div className="mt-2 flex flex-wrap gap-2">
-        {moveButton(-1, 'Move up')}
-        {moveButton(1, 'Move down')}
-        <TripButton
-          id={`trip-remove-${key}`}
-          label="Remove"
-          fullLabel={`Remove: ${names.en}`}
-          onPress={() => onEdit(removeStop(trip, day, index), `Removed ${names.en} from your trip.`, focusAfterRemove)}
-        />
+    <li className="trip-stop flex gap-2 border-t border-rule py-3.5 first:border-t-0 first:pt-1" data-lifted={lifted || undefined} data-drop={drop}>
+      {/* pointers only: Move up and Move down are the way for keyboards and screen readers, so the grip is hidden and never focused */}
+      <span className="trip-grip flex h-11 w-6 shrink-0 justify-center pt-1" aria-hidden="true" {...gripProps({ day, index }, names)}>
+        <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
+          {[2, 8, 14].map(cy => (
+            <g key={cy}>
+              <circle cx="2" cy={cy} r="1.5" />
+              <circle cx="8" cy={cy} r="1.5" />
+            </g>
+          ))}
+        </svg>
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="flex flex-wrap items-baseline gap-x-2 leading-snug">
+          <span className="text-[1.08rem] font-semibold">{names.en}</span>
+          {names.bn && (
+            <span lang="bn" className="text-ink-2">
+              {names.bn}
+            </span>
+          )}
+        </p>
+        {names.district && <p className="mt-0.5 text-[0.85rem] text-ink-3">{names.district}</p>}
+        <div className="mt-2 flex flex-wrap gap-2">
+          {moveButton(-1, 'Move up')}
+          {moveButton(1, 'Move down')}
+          <TripButton
+            id={`trip-remove-${key}`}
+            label="Remove"
+            fullLabel={`Remove: ${names.en}`}
+            onPress={() => onEdit(removeStop(trip, day, index), `Removed ${names.en} from your trip.`, focusAfterRemove)}
+          />
+        </div>
       </div>
     </li>
   );
+}
+
+// Each day's block and its stop rows, top to bottom, as dropTarget takes them. In page coordinates, so a wheel scroll in the
+// middle of a drag does not move the target.
+const span = el => {
+  const { top, bottom } = el.getBoundingClientRect();
+  return { top: top + window.scrollY, bottom: bottom + window.scrollY };
+};
+const measureDays = () => [...document.querySelectorAll('.trip-day')].map(day => ({ ...span(day), rows: [...day.querySelectorAll('.trip-stop')].map(span) }));
+
+/**
+ * Drag to reorder, for pointers: a stop is held by its grip and dropped where moveStop puts it, saved through onEdit with the
+ * Move buttons' announcement but no focus id, so focus stays where it was. `drag` is { pointerId, from, names, days, to } while a
+ * stop is held, `to` being null unless a drop there would move it. Escape or a cancelled pointer drops nothing.
+ * ponytail: no auto-scroll while dragging; a long move uses the Move buttons.
+ */
+function useStopDrag(trip, onEdit) {
+  const [drag, setDrag] = useState(null);
+  const dragging = drag !== null;
+  useEffect(() => {
+    if (!dragging) return undefined;
+    const onKey = e => e.key === 'Escape' && setDrag(null);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [dragging]);
+
+  // The move a drop here would make, or null: off the days, back on its own place, or refused (into a full day).
+  const moveAt = e => {
+    const to = dropTarget(drag.days, e.pageY, drag.from);
+    return to && !samePlace(to, drag.from) && moveStop(trip, drag.from, to) !== trip ? to : null;
+  };
+  const holds = e => drag?.pointerId === e.pointerId;
+  const gripProps = (from, names) => ({
+    onPointerDown: e => {
+      if (!e.isPrimary || e.button !== 0) return; // one stop at a time, by the main button or the first finger
+      e.currentTarget.setPointerCapture(e.pointerId);
+      setDrag({ pointerId: e.pointerId, from, names, days: measureDays(), to: null });
+    },
+    onPointerMove: e => {
+      if (!holds(e)) return;
+      const to = moveAt(e);
+      if (!samePlace(to, drag.to)) setDrag({ ...drag, to });
+    },
+    onPointerUp: e => {
+      if (!holds(e)) return;
+      const to = moveAt(e);
+      setDrag(null);
+      if (to) onEdit(moveStop(trip, drag.from, to), movedMessage(drag.names, to));
+    },
+    onPointerCancel: e => holds(e) && setDrag(null),
+  });
+  return { drag, gripProps };
 }
 
 /**
@@ -93,6 +166,7 @@ export default function TripPanel({ trip, onEdit, onClear, onShowOnMap }) {
     if (stopCount(pruned) < stopCount(trip)) onEdit(pruned);
   }, [placesById, trip, onEdit]);
 
+  const { drag, gripProps } = useStopDrag(trip, onEdit);
   const stops = trip.days.flat();
   const withDay = addDay(trip);
 
@@ -115,8 +189,12 @@ export default function TripPanel({ trip, onEdit, onClear, onShowOnMap }) {
         <>
           {trip.days.map((day, d) => {
             const url = dayDirectionsUrl(day, stop => locationOf(stop, placesById));
+            // The drop line, on the rows as they stand (the held stop still in its place): on the top edge of the row the stop
+            // would land before, on the bottom edge of the last row, or under the heading of an empty day.
+            const before = drag?.to?.day === d ? drag.to.index + (d === drag.from.day && drag.to.index >= drag.from.index ? 1 : 0) : -1;
+            const dropAt = i => (i === before ? 'before' : i === day.length - 1 && before === day.length ? 'after' : undefined);
             return (
-              <section key={d} className="mt-7">
+              <section key={d} className="trip-day mt-7" data-drop={day.length === 0 && before === 0 ? 'start' : undefined}>
                 <h3 className="mb-2 flex items-baseline gap-2 border-b border-rule-strong pb-2 text-h3">
                   Day {d + 1}
                   <span lang="bn" className="font-normal text-ink-3">
@@ -137,6 +215,9 @@ export default function TripPanel({ trip, onEdit, onClear, onShowOnMap }) {
                           names={namesOf(stop, placesById)}
                           focusAfterRemove={neighbour ? `trip-remove-${keyOf(neighbour)}` : 'trip-title'}
                           onEdit={onEdit}
+                          gripProps={gripProps}
+                          lifted={samePlace(drag?.from, { day: d, index: i })}
+                          drop={dropAt(i)}
                         />
                       );
                     })}

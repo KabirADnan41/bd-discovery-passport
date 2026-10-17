@@ -380,6 +380,41 @@
   font-weight: 700;
 }
 
+/* Drag to reorder in the planner (pointers only; the Move buttons are the keyboard way). Nothing here changes the layout:
+   the held stop lifts in its place, and the drop line is a shadow on the edge where the stop would land. */
+.trip-grip {
+  color: var(--text-muted);
+  cursor: grab;
+  touch-action: none; /* a finger on the grip drags the stop, not the page */
+  user-select: none;
+}
+.trip-grip:hover,
+.trip-stop[data-lifted] .trip-grip {
+  color: var(--text-primary);
+}
+.trip-stop[data-lifted] {
+  position: relative; /* above its neighbours' rules */
+  z-index: 1;
+  border-top-color: transparent;
+  border-radius: var(--radius-control);
+  background: var(--surface-paper);
+  box-shadow:
+    0 0 0 8px var(--surface-paper),
+    var(--shadow-paper);
+}
+.trip-stop[data-lifted] .trip-grip {
+  cursor: grabbing;
+}
+.trip-stop[data-drop='before'] {
+  box-shadow: inset 0 3px 0 var(--accent-river);
+}
+.trip-stop[data-drop='after'] {
+  box-shadow: inset 0 -3px 0 var(--accent-river);
+}
+.trip-day[data-drop] > h3 {
+  box-shadow: 0 3px 0 var(--accent-river);
+}
+
 /* hatch pattern colours (pattern content is in the SVG defs) */
 .hatch-bg {
   fill: var(--map-locked);
