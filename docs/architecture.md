@@ -78,7 +78,7 @@ stamps or opens passport pages, and it hides tooltips and the gazetteer. The bes
 (`clearTrip`). The third mode, **Plan**, shows `src/components/trip/TripPanel.jsx` where Quiz shows its panel: days and
 stops, move up/down across days, remove, add or remove a day, one Directions link per day, and "Clear trip" (one shared
 `ConfirmDialog` with the passport reset). Stale stops are pruned only inside the planner. Browser-only by design: no API and
-no D1. Map pins, sharing and the PDF come in later slices (`PROGRESS.md` section 7).
+no D1. Map pins, sharing and the PDF come in later slices.
 
 ## Design system
 

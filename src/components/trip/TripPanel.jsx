@@ -114,7 +114,7 @@ const measureDays = () => [...document.querySelectorAll('.trip-day')].map(day =>
  * Drag to reorder, for pointers: a stop is held by its grip and dropped where moveStop puts it, saved through onEdit with the
  * Move buttons' announcement but no focus id, so focus stays where it was. `drag` is { pointerId, from, names, days, to } while a
  * stop is held, `to` being null unless a drop there would move it. Escape or a cancelled pointer drops nothing.
- * ponytail: no auto-scroll while dragging; a long move uses the Move buttons.
+ * Limitation: no auto-scroll while dragging; a long move uses the Move buttons.
  */
 function useStopDrag(trip, onEdit) {
   const [drag, setDrag] = useState(null);
