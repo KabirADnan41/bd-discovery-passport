@@ -203,4 +203,28 @@ describe('map data validator', () => {
     expect(errors).toMatch(/places 1\[2\]: source url must be https/);
     expect(errors).not.toMatch(/places 22/);
   });
+
+  it('catches a place with a missing or malformed id', () => {
+    const bad = inputs();
+    delete bad.places['1'][0].id;
+    bad.places['1'][1].id = '1-Not A Slug';
+    const errors = validate(bad).join('\n');
+    expect(errors).toMatch(/places 1\[0\]: id is missing or malformed.*but found undefined/);
+    expect(errors).toMatch(/places 1\[1\]: id is missing or malformed.*but found "1-Not A Slug"/);
+  });
+
+  it('catches a place id that starts with another district', () => {
+    const bad = inputs();
+    bad.places['2'][0].id = '3-wrong-district';
+    const errors = validate(bad).join('\n');
+    expect(errors).toMatch(/places 2\[0\]: id 3-wrong-district must start with its district id "2-"/);
+  });
+
+  it('catches two places that share an id', () => {
+    const bad = inputs();
+    const shared = bad.places['1'][0].id;
+    bad.places['1'][1].id = shared;
+    const errors = validate(bad).join('\n');
+    expect(errors).toMatch(new RegExp(`places 1\\[1\\]: id ${shared} is already used by places 1\\[0\\]`));
+  });
 });

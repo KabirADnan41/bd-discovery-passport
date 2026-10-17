@@ -1,8 +1,9 @@
-// Only harmless game state is stored: the list of discovered district ids and the best quiz score. Nothing personal.
+// Only harmless game state is stored: discovered district ids, the best quiz score and the trip plan's stop ids. Nothing personal.
 export const STORAGE_KEY = 'bd-discovery-passport:v1';
 export const QUIZ_BEST_KEY = 'bd-discovery-passport:quiz-best';
+export const TRIP_KEY = 'bd-discovery-passport:trip:v1';
 
-function getStorage() {
+export function getStorage() {
   try {
     return window.localStorage;
   } catch {

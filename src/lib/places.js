@@ -1,6 +1,9 @@
+export const DIRECTIONS_URL = 'https://www.google.com/maps/dir/?api=1';
+export const placeLocation = (name, address) => `${name}, ${address}, Bangladesh`;
+
 /** Google Maps directions to a place, via Google's public Maps URL (no script, no API key). */
 export function directionsUrl(name, address) {
-  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${name}, ${address}, Bangladesh`)}`;
+  return `${DIRECTIONS_URL}&destination=${encodeURIComponent(placeLocation(name, address))}`;
 }
 
 let placesPromise = null;

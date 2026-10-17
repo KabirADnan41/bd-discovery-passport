@@ -90,13 +90,22 @@ export function validate({ generated, enriched, sourceDistricts, sourceDivisions
     });
   }
 
-  // --- places to go: 3 to 6 per district, every district
+  // --- places to go: 3 to 6 per district, every district, each with a stored id "<districtId>-<slug>" that is unique file-wide
+  const PLACE_ID = /^(\d{1,2})-[a-z0-9]+(?:-[a-z0-9]+)*$/;
+  const placeIdOwners = new Map();
   for (const id of expected.keys()) {
     const list = places[id];
     if (!Array.isArray(list)) { err(`places: district ${id} is missing`); continue; }
     if (list.length < 3 || list.length > 6) err(`places ${id}: needs 3 to 6 places, found ${list.length}`);
     list.forEach((p, i) => {
       const where = `places ${id}[${i}]`;
+      const idMatch = typeof p.id === 'string' ? PLACE_ID.exec(p.id) : null;
+      if (!idMatch) err(`${where}: id is missing or malformed, expected "${id}-<slug>" but found ${JSON.stringify(p.id)}`);
+      else {
+        if (idMatch[1] !== id) err(`${where}: id ${p.id} must start with its district id "${id}-"`);
+        if (placeIdOwners.has(p.id)) err(`${where}: id ${p.id} is already used by ${placeIdOwners.get(p.id)}`);
+        else placeIdOwners.set(p.id, where);
+      }
       noMarkup(p.name?.en, `${where}.name.en`);
       if (p.name?.bn !== undefined) noMarkup(p.name.bn, `${where}.name.bn`);
       noMarkup(p.category, `${where}.category`);
