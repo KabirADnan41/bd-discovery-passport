@@ -1,32 +1,24 @@
 # Current work
 
-- **Branch:** `feat/trip-planner` (local, created 2026-10-17 from `main` to hold the uncommitted trip-planner work; nothing
-  committed or pushed yet).
-- **Objective:** Trip planner Phase 1. The logic is done (`src/lib/trip.js`, 57 tests); the UI is next. Plan and decisions:
-  `PROGRESS.md` section 7.
-- **Relevant files:** `src/lib/trip.js`, `tests/unit/trip.test.js`, `src/lib/places.js`, `src/lib/discoveryStorage.js`,
-  `src/components/district/DistrictCard.jsx`, `src/components/game/GameBoard.jsx`, `src/components/map/BangladeshMap.jsx`.
-- **Checks (2026-10-17):** lint clean (`brag-output/` now ignored by ESLint and git), unit 159/159, `validate:data` OK,
-  build OK. E2E not run since v2 (no visible change yet).
-- **Trip-logic review (Fable, 2026-10-17): APPROVE.** Fixed: MEDIUM (an array place id passed validation and later crashed
-  `districtOf`) and LOW (a `|` in a location split the waypoints), each with a failing test first. Not done (optional test
-  ideas, no current risk): "loadTrip limits count only kept stops" and a load → save → load fixpoint test. For browser QA
-  later: Google may honour only 3 waypoints in a phone browser; on most phones the link opens the Maps app instead.
-- **Done 2026-10-17: "Add to trip" on places.** One button per place (not landmarks or culture), visible "Add to trip" /
-  "In your trip", accessible name `Add to trip: {place}` / `In your trip: {place}` (WCAG 2.5.3: the visible words come
-  first). Saved only after the first add; a full last day starts a new day; a full trip says "Your trip is full.".
-  Privacy notice: new storage row and intro line. Checks: lint, unit 159/159, build, `trip.spec.js` 12/12 (desktop +
-  mobile), discovery + accessibility 21/21 (desktop).
-  - Noted for later, not bugs: "In your trip" looks like "Add to trip" apart from its label (polish slice); "Reset passport"
-    does not clear the trip (the planner screen gets its own clear); the button shows only for places with an address
-    (all 334 have one).
-- **In progress: the planner screen** (owner's go, 2026-10-17). A third mode, Explore / Quiz / Plan (পরিকল্পনা), swaps
-  the side panel to `src/components/trip/TripPanel.jsx`, the way Quiz swaps in `QuizPanel`. Scope: days and stops, up/down
-  (crossing days), remove, add a day, remove an empty day, one Directions link per day, empty state, "Clear trip" (confirm,
-  then `clearTrip()` removes the storage key). Stale stops are pruned only inside the planner. Out of scope: pins, route
-  line, drag, sharing, suggestions, distances, PDF. Agent pattern: implementation agent (Opus), then a focused reviewer
-  for the trip-state integration, then main-session verification and a local commit. Full roadmap: `PROGRESS.md` §7.
-- **Blockers / owner decisions:** a new Gemini key in `GEMINI_API_KEY` before Phase 0b (Bengali notes). Local checkpoint
-  commits on this branch are approved (17 Oct 2026).
-- **Standing rules:** trips stay browser-only; no push, deploy or publish without the owner's yes; free tier only; no
-  Firecrawl until the owner says the credits renewed.
+Only the current state lives here; the history is in `PROGRESS.md` section 7.
+
+- **Branch:** `feat/trip-planner` (local, 11 commits ahead of `main` after this docs commit; nothing pushed or merged).
+- **Objective:** finish the trip planner, one verified slice at a time (owner's 8-step roadmap, `PROGRESS.md` §7).
+  Done: place ids, trip logic, "Add to trip" on places, the planner screen (Plan mode, `b944637`).
+- **Relevant files:** `src/lib/trip.js`, `src/components/trip/TripPanel.jsx`, `src/components/game/GameBoard.jsx`
+  (`editTrip`), `src/components/district/DistrictCard.jsx`, `src/components/map/BangladeshMap.jsx` (next slice),
+  `tests/unit/trip.test.js`, `tests/e2e/trip.spec.js`, `tests/e2e/planner.spec.js`.
+- **Checks (2026-10-17, after `b944637`):** lint clean; unit 161/161; `validate:data` OK; build OK; full Playwright suite
+  on desktop + mobile with 1 worker: green (90 passed; `accounts.spec.js` 4 passed after re-creating the local D1;
+  skips are by design).
+- **Next step:** roadmap step 2, map pins for the stops and a route line derived from the trip (needs the owner's go).
+- **Open product call:** on phones the planner sits above the map, so a long trip pushes the map down. Recommendation: keep
+  it, and add a "Show on map" link with the pins in step 2.
+- **Notes for later (not bugs):** "In your trip" looks like "Add to trip" apart from its label (polish slice); phone
+  browsers may honour only 3 Maps waypoints (browser QA); a trip stored as all-empty days before `b944637` would still load
+  with empty days (no such data exists in production); optional test ideas from the trip-logic review.
+- **Environment:** if `accounts.spec.js` fails with "no such table", run `npm run db:migrate:local` (the local D1 was
+  recreated on 2026-10-17).
+- **Blockers:** none for step 2. A new Gemini key (`GEMINI_API_KEY`) is needed only for the optional Bengali notes.
+- **Standing rules:** trips stay browser-only; local commits on this branch are fine; no push, PR, merge to `main`, tag,
+  release or deploy without the owner's yes; free tier only; no Firecrawl until the owner says the credits renewed.

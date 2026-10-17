@@ -15,10 +15,10 @@ system), `docs/security.md` (threat model, firewall), `docs/data-sources.md` (ma
 | Services | Not separated yet: `server/auth.js` mixes crypto, sessions, rate limits and stamps (`getDiscovered`, `addStamps`). |
 | Repositories / adapters | Not separated yet: D1 `prepare()` calls are in `server/auth.js` and in `functions/api/{account,passport}.js` and `functions/api/auth/*.js`. Schema: `migrations/0001_init.sql`. |
 | Routes | `functions/api/**` (Cloudflare Pages Functions): `me`, `passport`, `account`, `auth/{signup,login,logout}`. |
-| Client gates / navigation | `src/components/game/GameBoard.jsx` (Explore / Quiz switch, `?district=` deep link), `src/lib/mapNavigation.js` (arrow keys). No sidebar or page shell. |
+| Client gates / navigation | `src/components/game/GameBoard.jsx` (Explore / Quiz / Plan switch, `?district=` deep link), `src/lib/mapNavigation.js` (arrow keys). No sidebar or page shell. |
 | Passport state (client) | `src/hooks/useDiscoveryState.js` (reducer, source `pending` / `guest` / `account`), `src/hooks/usePassportSync.js`. |
 | Map data and geometry | Sources `data/source/`, pipeline `scripts/build-district-map.mjs`, output `src/generated/districtPaths.generated.json`, content `src/data/districts.enriched.json`, places `src/data/places.json` (334, lazy-loaded, ids `<districtId>-<slug>`). Accessors: `src/lib/districtData.js`, `src/lib/places.js`. |
-| Trip planner (in progress) | `src/lib/trip.js` (pure functions + localStorage), `tests/unit/trip.test.js`. Browser-only by owner decision: no API, no D1. |
+| Trip planner (in progress) | Logic: `src/lib/trip.js` (pure functions + localStorage), `tests/unit/trip.test.js`. UI: "Add to trip" in `src/components/district/DistrictCard.jsx`, the planner `src/components/trip/TripPanel.jsx` (Plan mode), trip state and edits in `GameBoard.jsx` (`editTrip`). E2E: `tests/e2e/trip.spec.js`, `tests/e2e/planner.spec.js`. Browser-only by owner decision: no API, no D1. |
 | Tests | `tests/unit/*.test.js` (Vitest), `tests/api/smoke.mjs` (needs `npm run dev:full`), `tests/e2e/*.spec.js` (Playwright + axe + CSP, heavy). |
 
 ## Checks (cheapest first)

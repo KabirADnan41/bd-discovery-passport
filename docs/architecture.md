@@ -74,8 +74,11 @@ stamps or opens passport pages, and it hides tooltips and the gazetteer. The bes
 
 **Trip planner (in progress).** Each place on a passport page has an "Add to trip" button (`DistrictCard`). The trip
 (`src/lib/trip.js`: days of up to 10 stops, each stop once per trip) lives in `GameBoard` state. It is read from
-`localStorage` once and written only when a stop is added (`bd-discovery-passport:trip:v1`). Browser-only by design: no
-API and no D1. The planner screen, sharing and the PDF come in later slices (`PROGRESS.md` section 7).
+`localStorage` once and written only by edits (`bd-discovery-passport:trip:v1`); a trip left with no stops is removed
+(`clearTrip`). The third mode, **Plan**, shows `src/components/trip/TripPanel.jsx` where Quiz shows its panel: days and
+stops, move up/down across days, remove, add or remove a day, one Directions link per day, and "Clear trip" (one shared
+`ConfirmDialog` with the passport reset). Stale stops are pruned only inside the planner. Browser-only by design: no API and
+no D1. Map pins, sharing and the PDF come in later slices (`PROGRESS.md` section 7).
 
 ## Design system
 

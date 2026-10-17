@@ -276,7 +276,7 @@ Nothing was committed or pushed.
 | 0a | Stored place IDs, validator rule, validator tests | **DONE** (Agent A, verified): 334 ids, all unique, `id` first key in each place (diff = 334 added lines only); validator rule in `scripts/validate-map-data.mjs` (format, district prefix, unique file-wide); 3 new cases in `tests/unit/security.test.js` that fail without the rule. Examples: `1-star-mosque`, `54-bichanakandi` |
 | 0b | Bengali notes via Gemini (see decisions) | TO DO: needs the owner action below and a yes for the run |
 | 1 logic | `src/lib/trip.js` + `tests/unit/trip.test.js`: model, limits, per-day Directions URL, distances, hardened storage | **DONE** (Agent B, test-first, verified): `trip.js` 118 lines of pure functions (`createTrip`, `hasStop`, `addStop`, `removeStop`, `moveStop`, `addDay`, `removeDay`, `renameTrip`, `pruneUnknownPlaces`, `locationOf`, `dayDirectionsUrl`, `legDistancesKm`, `loadTrip`, `saveTrip`); 57 tests. Small edits: `TRIP_KEY` + exported `getStorage` in `discoveryStorage.js`; `DIRECTIONS_URL` + `placeLocation` exported from `places.js` (same link output). Not yet used by any UI, so nothing is stored yet |
-| 1 UI | "Add to trip" on places and district pages; Plan / পরিকল্পনা mode (reorder by drag and by up/down buttons); map pins + route line; per-day Directions links; privacy-notice row for the new storage key (strictly necessary, no banner); E2E + axe in both themes | **IN PROGRESS**: "Add to trip" on places DONE 2026-10-17 (implementation agent, main-session review, `tests/e2e/trip.spec.js` 12/12 desktop + mobile, privacy row + intro). Next: the planner screen |
+| 1 UI | "Add to trip" on places and district pages; Plan / পরিকল্পনা mode (reorder by drag and by up/down buttons); map pins + route line; per-day Directions links; privacy-notice row for the new storage key (strictly necessary, no banner); E2E + axe in both themes | **IN PROGRESS**: "Add to trip" on places DONE 2026-10-17 (implementation agent, main-session review, `tests/e2e/trip.spec.js` 12/12 desktop + mobile, privacy row + intro). Planner screen (Plan mode, `TripPanel`) DONE 2026-10-17 (`b944637`: implementation agent, fresh-context review approve, 1 medium + 1 low fixed; full E2E green). Next: map pins and route line |
 | 2 | Suggestions: nearby places (same and neighbouring districts); route through neighbouring districts | TO DO |
 | 3 | Share by link (`?trip=…`, no server) | TO DO |
 | 4 | Download PDF (page images + link areas) and Print / Save as PDF | TO DO |
@@ -321,7 +321,8 @@ checkpoint commit per green slice.
    `feat/trip-planner`; the short current state now lives in `docs/ai/CURRENT.md` (map of the code: `docs/ai/INDEX.md`).
 2. DONE 2026-10-17: Fable review of the trip logic (2 findings fixed) and "Add to trip" on places.
 3. Owner's roadmap (2026-10-17), one verified slice at a time on `feat/trip-planner`:
-   1. Planner screen: days, stops, remove, up/down, one Google Maps link per day, empty state, clear trip (IN PROGRESS).
+   1. Planner screen: days, stops, remove, up/down, one Google Maps link per day, empty state, clear trip (DONE
+      2026-10-17, `b944637`).
    2. Map: pins for the stops and a route line derived from the trip.
    3. Drag to reorder, reusing `moveStop()` (no separate reorder logic).
    4. Share by link: `?trip=…`; validate the untrusted data, reject malformed or oversized payloads.
