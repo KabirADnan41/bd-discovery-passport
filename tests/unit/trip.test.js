@@ -316,13 +316,18 @@ describe('dayDirectionsUrl', () => {
     expect(url).toContain(`waypoints=${encodeURIComponent(names.a)}%7C${encodeURIComponent(names.d)}`);
   });
 
-  it('encodes apostrophes, commas, spaces and pipes so the query cannot break', () => {
-    const url = dayDirectionsUrl(stops(['a', 'c', 'b']), nameOf);
+  it('encodes apostrophes, commas and spaces so the query cannot break', () => {
+    const url = dayDirectionsUrl(stops(['a', 'd', 'b']), nameOf);
     const query = url.slice(MAPS.length);
     expect(query).not.toMatch(/[ ,|#?]/);
     expect(query.split('&').filter(Boolean)).toHaveLength(3);
     const params = new URL(url).searchParams;
-    expect([params.get('origin'), params.get('waypoints'), params.get('destination')]).toEqual([names.a, names.c, names.b]);
+    expect([params.get('origin'), params.get('waypoints'), params.get('destination')]).toEqual([names.a, names.d, names.b]);
+  });
+
+  it('turns a | inside a location into a space, so it cannot split the waypoints', () => {
+    const waypoints = new URL(dayDirectionsUrl(stops(['a', 'c', 'd', 'b']), nameOf)).searchParams.get('waypoints');
+    expect(waypoints.split('|')).toEqual([names.c.replace('|', ' '), names.d]);
   });
 
   it(`has at most ${MAX_STOPS_PER_DAY - 2} waypoints for a full day`, () => {
@@ -417,6 +422,14 @@ describe('saveTrip and loadTrip', () => {
       days: [[DHAKA, district('99'), place('99-nowhere'), place('54 bad'), 'Sylhet', null, { ...DARGAH, extra: true }], 'not a day', [DHAKA, SYLHET]],
     });
     expect(loadTrip(storage)).toEqual({ name: 'Mixed', days: [[DHAKA, DARGAH], [SYLHET]] });
+  });
+
+  it('drops stops whose id is not a string, so later calls cannot crash', () => {
+    const fresh = createTrip();
+    expect(addStop(fresh, place(['1-star-mosque']))).toBe(fresh);
+    const trip = loadTrip(saved({ days: [[place(['1-star-mosque']), place(1), place(null), district(['1']), DHAKA]] }));
+    expect(trip.days).toEqual([[DHAKA]]);
+    expect(() => legDistancesKm(trip.days[0])).not.toThrow();
   });
 
   it('enforces the day, stop and name limits', () => {

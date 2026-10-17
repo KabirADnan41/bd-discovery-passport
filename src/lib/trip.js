@@ -13,7 +13,8 @@ export const MAX_NAME_LENGTH = 60;
 const PLACE_ID = /^(\d+)-[a-z0-9]+(?:-[a-z0-9]+)*$/; // "<districtId>-<slug>", e.g. "54-shah-jalal-dargah"
 
 const isValidStop = stop =>
-  (stop?.kind === 'district' && DISTRICT_IDS.has(stop.id)) || (stop?.kind === 'place' && DISTRICT_IDS.has(PLACE_ID.exec(stop.id)?.[1]));
+  typeof stop?.id === 'string' && // RegExp#exec would turn ['1-x'] into '1-x' and let an array through
+  ((stop.kind === 'district' && DISTRICT_IDS.has(stop.id)) || (stop.kind === 'place' && DISTRICT_IDS.has(PLACE_ID.exec(stop.id)?.[1])));
 const districtOf = stop => getDistrict(stop.kind === 'place' ? stop.id.split('-')[0] : stop.id);
 const isIndex = (list, index) => Number.isInteger(index) && index >= 0 && index < list.length;
 const withDay = (trip, index, day) => ({ ...trip, days: trip.days.map((d, i) => (i === index ? day : d)) });
@@ -83,7 +84,7 @@ export function locationOf(stop, placesById = new Map()) {
  */
 export function dayDirectionsUrl(stops, locate) {
   if (!stops.length) return null;
-  const [origin, ...rest] = stops.map(stop => encodeURIComponent(locate(stop)));
+  const [origin, ...rest] = stops.map(stop => encodeURIComponent(locate(stop).replaceAll('|', ' '))); // Maps splits waypoints on |
   if (!rest.length) return `${DIRECTIONS_URL}&destination=${origin}`;
   const waypoints = rest.length > 1 ? `&waypoints=${rest.slice(0, -1).join('%7C')}` : ''; // %7C is "|"
   return `${DIRECTIONS_URL}&origin=${origin}&destination=${rest.at(-1)}${waypoints}`;
