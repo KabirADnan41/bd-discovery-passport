@@ -4,7 +4,10 @@
 > This file is the handoff: what is done, which skill and approach each task used, what is left and with which
 > skills, the approach audit, and how to run everything. Updated at every milestone.
 
-**Last updated:** 2026-10-17 17:36 (UTC+6), milestone 34: the **trip-planner foundation is done** on the local branch
+**Last updated:** 2026-10-17 22:30 (UTC+6), milestone 35: the **map slice on `feat/trip-map` is verified** with no fixes
+needed (#58, section 7 "State after the map verification") and is **ready for the owner's review**. The verification is
+recorded in a local docs commit that is not pushed yet. Nothing merged or deployed.
+Previous: milestone 34 (2026-10-17 17:36): the **trip-planner foundation is done** on the local branch
 `feat/trip-planner` (12 commits, reviewed and fully tested: place ids, trip logic, "Add to trip", the Plan-mode planner screen)
 and was **pushed to GitHub as a branch on 2026-10-17 at the owner's request** (backup; not merged). The map slice (pins +
 district-level route) was mid-way on `feat/trip-map` when the session closed: its changes are saved as an **unverified WIP
@@ -73,7 +76,7 @@ live, only optional work left.)
 | Commit, push, live deploy of the v2 round | DONE (milestone 32): commit `10df59c` pushed and deployed |
 | Launch video (2026-10-06) | DONE: `brag-output/brag.mp4` (23 s, 1920×1080, music), poster `brag.jpg`, `share-copy.txt`. Local only: `brag-output/` is ignored by git and ESLint (since 2026-10-17); `brag-output/work/frames/` (224 MB) can be deleted |
 | Skills vetting and installs (2026-10-17) | DONE: 13 repos vetted read-only at pinned commits. Installed with the owner's yes: `context7` MCP, 24 agent-skills, 5 hyperframes skills (settings and hooks unchanged). Details: #54 and `skill_review.md` (local only) |
-| **Trip planner round (2026-10-06 →)** | **IN PROGRESS**: foundation done on `feat/trip-planner` (reviewed, tested, pushed as a branch on 2026-10-17); map slice saved as an unverified WIP commit on `feat/trip-map` (pushed); **resume at section 7** |
+| **Trip planner round (2026-10-06 →)** | **IN PROGRESS**: foundation done on `feat/trip-planner` (reviewed, tested, pushed as a branch on 2026-10-17); map slice verified on `feat/trip-map` (no fixes needed; ready for the owner's review); **resume at section 7** |
 
 ---
 
@@ -138,6 +141,7 @@ live, only optional work left.)
 | 55 | Owner rules updated (2026-10-17) | none | New global CLAUDE.md: branch-first work, feature-branch push rules (§2), token economy (§3), sub-agent orchestration (§4: one implementation agent per slice, fresh-context review when useful, at most 2 agents, no recursion), RED → GREEN → REFACTOR, AI-readable code. Model routing: Fable for code and architecture review only (weekly limit), Opus for hard bugs and fixes, Sonnet for routine work, Haiku for lookups. New `docs/ai/INDEX.md` (code map) and `docs/ai/CURRENT.md` (current state only). |
 | 56 | Trip planner foundation (`feat/trip-planner`, 2026-10-17) | `karpathy-guidelines` (**APPLIED** as the simplicity rule in every brief) | Each slice: implementation agent → machine checks → review → main-session diff check and rerun → local commit. Fable review of the trip logic (2 findings, each reproduced by a failing test, fixed in `63b431f`). "Add to trip" on places (`b37b2f3`; accessible names start with the visible words, WCAG 2.5.3). Planner screen in Plan mode (`b944637`; fresh-context review approved; 1 medium (empty trip kept stray days) and 1 low (duplicated dialog) fixed). Checks at `b944637`: lint, 161 unit, build, full E2E desktop + mobile green. |
 | 57 | Map slice started (`feat/trip-map`, 2026-10-17) | none | Branched from `feat/trip-planner` (`341b678`). Owner's spec: district-level pins at each district's existing `label` anchor (no invented coordinates; several stops in one district share one pin with a count), one dashed route per day (never joined across days), labelled "approximate", phone "Show on map" / "Back to day N" (no modal, no second map). The implementation agent was stopped at the session close just before its final checks: its work is saved as an unverified WIP commit and pushed with the branch (section 7). |
+| 58 | Map slice verified (`feat/trip-map`, 2026-10-17 evening) | none (main-session verification, following the owner's resume steps) | Reviewed the `wip(trip-map)` diff: `BangladeshMap.jsx` only gained `PIN_RADIUS`, the optional `tripMap` prop and the non-interactive `.trip-overlay` group (aria-hidden, `pointer-events: none`, drawn under the keyboard focus outline). No handler, tabindex or keyboard change, so no extra reviewer. Checks, one at a time: lint exit 0; Vitest 171/171; build OK; `trip-map.spec.js` 13 passed + 3 by-design skips (desktop + mobile); planner + discovery + accessibility + quiz on desktop 41/41; planner + discovery on mobile 23 passed + 4 by-design skips; `trip.spec.js` 12/12. The tests pin each pin to its district's own `label` anchor and check each day's route points and the day break. Visual check of the built site on desktop and phone, light and dark: no issues. GitHub CI green on `feat/trip-map` (`2898e2a`) and `feat/trip-planner` (`341b678`). No fixes needed. |
 
 ---
 
@@ -163,6 +167,7 @@ live, only optional work left.)
 | 3 | Marketing connectors (optional) | Sign in to Slack, Notion, Ahrefs and the others in claude.ai settings, only if you want them | Not used by this project |
 | 4 | Merge decision (later) | When the trip planner is finished and reviewed, say yes before anything is merged into `main` or deployed | `feat/trip-planner` and `feat/trip-map` were pushed as branches on 2026-10-17 at the owner's request (backup); `main` and the live site are unchanged |
 | 5 | New Gemini key | Delete the key pasted in chat, create a new one, set `GEMINI_API_KEY` yourself, check it is on the free tier | Only for the optional Bengali notes (section 7) |
+| 6 | Review the map slice | Try `feat/trip-map` locally (`npm run dev`, Plan mode) or on GitHub; then say whether the new local docs commit may be pushed and which slice comes next | Verified 2026-10-17 evening with no fixes needed (#58) |
 
 ### Optional extras
 | Task | Skill / approach | Note |
@@ -295,7 +300,7 @@ owner's request (backup); nothing merged or deployed.
 | 0a | Stored place IDs, validator rule, validator tests | **DONE** (Agent A, verified): 334 ids, all unique, `id` first key in each place (diff = 334 added lines only); validator rule in `scripts/validate-map-data.mjs` (format, district prefix, unique file-wide); 3 new cases in `tests/unit/security.test.js` that fail without the rule. Examples: `1-star-mosque`, `54-bichanakandi` |
 | 0b | Bengali notes via Gemini (see decisions) | TO DO: needs the owner action below and a yes for the run |
 | 1 logic | `src/lib/trip.js` + `tests/unit/trip.test.js`: model, limits, per-day Directions URL, distances, hardened storage | **DONE** (Agent B, test-first, verified): `trip.js` 118 lines of pure functions (`createTrip`, `hasStop`, `addStop`, `removeStop`, `moveStop`, `addDay`, `removeDay`, `renameTrip`, `pruneUnknownPlaces`, `locationOf`, `dayDirectionsUrl`, `legDistancesKm`, `loadTrip`, `saveTrip`); 57 tests. Small edits: `TRIP_KEY` + exported `getStorage` in `discoveryStorage.js`; `DIRECTIONS_URL` + `placeLocation` exported from `places.js` (same link output). Not yet used by any UI, so nothing is stored yet |
-| 1 UI | "Add to trip" on places and district pages; Plan / পরিকল্পনা mode (reorder by drag and by up/down buttons); map pins + route line; per-day Directions links; privacy-notice row for the new storage key (strictly necessary, no banner); E2E + axe in both themes | **IN PROGRESS**: "Add to trip" on places DONE 2026-10-17 (implementation agent, main-session review, `tests/e2e/trip.spec.js` 12/12 desktop + mobile, privacy row + intro). Planner screen (Plan mode, `TripPanel`) DONE 2026-10-17 (`b944637`: implementation agent, fresh-context review approve, 1 medium + 1 low fixed; full E2E green). Map pins + route: unverified WIP commit on `feat/trip-map` (pushed at the 2026-10-17 close) |
+| 1 UI | "Add to trip" on places and district pages; Plan / পরিকল্পনা mode (reorder by drag and by up/down buttons); map pins + route line; per-day Directions links; privacy-notice row for the new storage key (strictly necessary, no banner); E2E + axe in both themes | **IN PROGRESS**: "Add to trip" on places DONE 2026-10-17 (implementation agent, main-session review, `tests/e2e/trip.spec.js` 12/12 desktop + mobile, privacy row + intro). Planner screen (Plan mode, `TripPanel`) DONE 2026-10-17 (`b944637`: implementation agent, fresh-context review approve, 1 medium + 1 low fixed; full E2E green). Map pins + route: DONE and verified 2026-10-17 on `feat/trip-map` (no fixes needed; ready for the owner's review) |
 | 2 | Suggestions: nearby places (same and neighbouring districts); route through neighbouring districts | TO DO |
 | 3 | Share by link (`?trip=…`, no server) | TO DO |
 | 4 | Download PDF (page images + link areas) and Print / Save as PDF | TO DO |
@@ -336,7 +341,16 @@ the planner branch; independent additions (sharing, PDF, refactors) get their ow
    Properties → Environment Variables → New). Never paste it into chat or files. Check that its project shows the free tier
    (no billing). Then say yes for the Phase 0b run.
 
-### State at the 2026-10-17 close (17:36, UTC+6)
+### State after the map verification (2026-10-17 22:30, UTC+6)
+- **Branch:** `feat/trip-map`, local HEAD = the docs commit that records this verification (not pushed; GitHub has
+  `2898e2a`). No code changed since the `wip(trip-map)` commit: it passed every check as it was.
+- **Map slice:** done and verified (#58). Ready for the owner's review.
+- **Next (owner's choice):** push the new docs commit; then roadmap step 3 (drag to reorder, reusing `moveStop()`) on its
+  own branch per the branch plan. Merging into `main` and deploying wait for the owner's yes.
+- **Notes for later (unchanged, not bugs):** "In your trip" looks like "Add to trip" apart from its label; phone browsers
+  may honour only 3 Maps waypoints; `legDistancesKm` rounds to 10 km.
+
+### State at the 2026-10-17 close (17:36, UTC+6; historical, see above)
 - **Branches:** `main` = GitHub `main` = live site = `10df59c` (v2). `feat/trip-planner` = 12 commits on top (the
   foundation; code last verified at `b944637`, then docs only), **pushed to GitHub on 2026-10-17** at the owner's request
   (backup). `feat/trip-map` = branched from `feat/trip-planner` at `341b678`, plus the `wip(trip-map)` commit and this
@@ -377,8 +391,8 @@ the planner branch; independent additions (sharing, PDF, refactors) get their ow
 3. Owner's roadmap (2026-10-17), one verified slice at a time on feature branches (see the branch plan):
    1. Planner screen: days, stops, remove, up/down, one Google Maps link per day, empty state, clear trip (DONE
       2026-10-17, `b944637`).
-   2. Map: pins for the stops and a route line derived from the trip (IN PROGRESS on `feat/trip-map`: an unverified WIP
-      commit, see the close state above).
+   2. Map: pins for the stops and a route line derived from the trip (DONE 2026-10-17 on `feat/trip-map`: verified with no
+      fixes needed; awaiting the owner's review).
    3. Drag to reorder, reusing `moveStop()` (no separate reorder logic).
    4. Share by link: `?trip=…`; validate the untrusted data, reject malformed or oversized payloads.
    5. Suggestions: nearby places and neighbouring-district route ideas.
