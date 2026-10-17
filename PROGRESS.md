@@ -4,10 +4,15 @@
 > This file is the handoff: what is done, which skill and approach each task used, what is left and with which
 > skills, the approach audit, and how to run everything. Updated at every milestone.
 
-**Last updated:** 2026-10-06, milestone 33: launch video made (`brag-output/brag.mp4`, local only, see #52); **trip planner**
-planned and green-lit by the owner (browser-only, free tier); Phase 0a (stored place IDs) and the Phase 1 trip logic were built by
-two agents and verified (157 unit tests pass) before the owner's 15:00 stop. **Resume at section 7.** Nothing committed or pushed.
-Previous: milestone 32 (2026-10-05), **v2 round LIVE** (quiz mode, places to go with Directions links, free-plan
+**Last updated:** 2026-10-17 17:36 (UTC+6), milestone 34: the **trip-planner foundation is done** on the local branch
+`feat/trip-planner` (12 commits, reviewed and fully tested: place ids, trip logic, "Add to trip", the Plan-mode planner screen)
+and was **pushed to GitHub as a branch on 2026-10-17 at the owner's request** (backup; not merged). The map slice (pins +
+district-level route) was mid-way on `feat/trip-map` when the session closed: its changes are saved as an **unverified WIP
+commit**, and that branch was pushed too. **Resume at section 7, "State at the 2026-10-17 close".** Nothing merged or
+deployed: GitHub `main` and the live site are still v2 (`10df59c`).
+Previous: milestone 33 (2026-10-06): launch video made (`brag-output/brag.mp4`, local only, #52); trip planner planned; place ids
+and trip logic built.
+Earlier: milestone 32 (2026-10-05), **v2 round LIVE** (quiz mode, places to go with Directions links, free-plan
 firewall, redesign). Leak scan passed with notes; commit `10df59c` pushed to `main` and deployed to
 https://bd-discovery-passport.pages.dev. Live check: new bundle served, PUT on the API returns 405, 0 console errors, places
 with Directions links and the quiz work.
@@ -52,7 +57,7 @@ live, only optional work left.)
 | Deploy | **DONE**: https://bd-discovery-passport.pages.dev (Pages project + D1 in APAC + `AUTH_PEPPER` secret). Verified live with the API smoke test and a real browser |
 | GitHub | **DONE**: commit `2fa34e3` pushed to https://github.com/KabirADnan41/bd-discovery-passport (**public**, `main`; anything pushed is public, so the leak scan must pass before every push). CI (`.github/workflows/ci.yml`) runs on each push; check the Actions tab |
 | Security scan (`claude-security`) | NOT RUN: this session has no Workflow tool (enable Dynamic workflows in /config, then restart) |
-| **User rule** | Never commit or push without asking (saved to memory). GitHub is optional: Cloudflare direct upload works without it |
+| **Owner rules (updated 2026-10-17)** | Local commits on feature branches are fine; push, PR, merge to `main`, tag, release and deploy each need the owner's explicit yes for that action (global CLAUDE.md §1-§2). Free tier only; no Firecrawl until the owner says the credits renewed. GitHub is optional: Cloudflare direct upload works without it |
 | **v2 round (milestones 30 and 31, 2026-10-05)** | **About 90%** (done items: section 2, rows 37 to 51; remaining: leak scan, then commit, push and deploy, section 3) |
 | Project cleanup (stray folder, project skills, MCP scope, `.vscode/`, headroom and PostgreSQL leftovers) | DONE, verified. One owner action left: the empty PostgreSQL 16 install needs an admin shell (section 3) |
 | Security audit (read-only) | DONE: 0 npm vulnerabilities; no secrets in tracked files, history or build output; high finding F1 fixed; F2 accepted as residual risk |
@@ -62,12 +67,13 @@ live, only optional work left.)
 | Places to go + Directions links (334 places, all 64 districts) | DONE: data review finished, 32 corrections, 0 dropped; a random sample of 30 found 1 error (3.3%), fixed (#47) |
 | Design brief for the redesign | DONE (Fable) |
 | Redesign implementation | DONE (#46) |
-| Tests at last check | **2026-10-06: 157 unit pass (6 files), `validate:data` OK, project code lint-clean (section 7).** Before that (v2): Lint clean, 97 unit pass (5 files), `validate:data` OK, build OK (main JS 139.73 kB gzip; places chunk 41.59 kB gzip, lazy); E2E 47 passed, 7 skipped (designed mobile skips), 0 failed |
+| Tests at last check | **2026-10-17 at `b944637` (`feat/trip-planner`): lint clean, 161 unit pass, `validate:data` and build OK, full Playwright suite on desktop + mobile (1 worker) green.** Before that (v2): Lint clean, 97 unit pass (5 files), `validate:data` OK, build OK (main JS 139.73 kB gzip; places chunk 41.59 kB gzip, lazy); E2E 47 passed, 7 skipped (designed mobile skips), 0 failed |
 | QA, reviews (code, security, simplicity), fixes, docs | DONE (#48 to #51) |
 | Leak scan | DONE: pass with notes; 4 local paths and the D1 id copy removed from docs; old history kept as is (owner's choice) |
 | Commit, push, live deploy of the v2 round | DONE (milestone 32): commit `10df59c` pushed and deployed |
-| Launch video (2026-10-06) | DONE: `brag-output/brag.mp4` (23 s, 1920×1080, music), poster `brag.jpg`, `share-copy.txt`. Local only: `brag-output/` is untracked and not in `.gitignore`; `brag-output/work/frames/` (224 MB) can be deleted |
-| **Trip planner round (2026-10-06)** | **IN PROGRESS**: plan green-lit; Phase 0a and Phase 1 logic built by agents; **resume at section 7** |
+| Launch video (2026-10-06) | DONE: `brag-output/brag.mp4` (23 s, 1920×1080, music), poster `brag.jpg`, `share-copy.txt`. Local only: `brag-output/` is ignored by git and ESLint (since 2026-10-17); `brag-output/work/frames/` (224 MB) can be deleted |
+| Skills vetting and installs (2026-10-17) | DONE: 13 repos vetted read-only at pinned commits. Installed with the owner's yes: `context7` MCP, 24 agent-skills, 5 hyperframes skills (settings and hooks unchanged). Details: #54 and `skill_review.md` (local only) |
+| **Trip planner round (2026-10-06 →)** | **IN PROGRESS**: foundation done on `feat/trip-planner` (reviewed, tested, pushed as a branch on 2026-10-17); map slice saved as an unverified WIP commit on `feat/trip-map` (pushed); **resume at section 7** |
 
 ---
 
@@ -128,6 +134,10 @@ live, only optional work left.)
 | 51 | Docs (milestone 31) | none (docs agent) | PROGRESS.md brought up to date (the GitHub repo is public, not private); README, `docs/architecture.md`, `docs/data-sources.md`, `docs/security.md`, `docs/design-research.md` and `docs/deployment.md` now cover the quiz, places with Directions links, the redesign and the free-plan firewall. |
 | 52 | Launch video (2026-10-06) | `brag` → `brag-slim` (**APPLIED**; the Opus route) | Inspection agent, then two agents in parallel. **Visuals:** a Vite harness in `brag-output/work/harness/` renders the real map, passport card, stamp, quiz panel and progress components with the app's CSS; every frame is a pure function of time (`__setTime(t)`, CSS animations paused and seeked); Playwright captured 690 frames, ffmpeg encoded them. **Audio:** a dependency-free Node synth (`work/audio/score.mjs`), 120 BPM, D major pentatonic, cues locked to the picture; −15.8 LUFS, −3.7 dBTP. The poster is the 3.2 s hook frame, baked in as frame 0. Output: `brag-output/brag.mp4`, `brag.jpg`, `share-copy.txt`, `brag-plan.md` (untracked). |
 | 53 | Trip planner plan (2026-10-06) | none (main session) | Planned with the owner, then trimmed to free-tier-only (no account sync), plus PDF download and the Bengali pipeline. Decisions and phases: section 7. |
+| 54 | Skill and MCP vetting + installs (2026-10-17) | none (read-only vetting agents on pinned clones) | 13 repos checked for code execution, downloads, network calls, keys, Claude-config edits, obfuscation, prompt injection and reputation. Installed with the owner's yes: `context7` MCP `@upstash/context7-mcp@4.4.2` (user scope), 24 addyosmani `agent-skills` @ `aeac41d` (not `browser-testing-with-devtools`, not the plugin commands), 5 heygen `hyperframes` skills @ `fa93669` (telemetry disabled; no `media-use`). Declined: context-mode (edits Claude config, hooks every tool call), gbro-collage-broll (paid Gemini video), strix (needs Docker + a model key). Catalogue: `skill_review.md` (local only). |
+| 55 | Owner rules updated (2026-10-17) | none | New global CLAUDE.md: branch-first work, feature-branch push rules (§2), token economy (§3), sub-agent orchestration (§4: one implementation agent per slice, fresh-context review when useful, at most 2 agents, no recursion), RED → GREEN → REFACTOR, AI-readable code. Model routing: Fable for code and architecture review only (weekly limit), Opus for hard bugs and fixes, Sonnet for routine work, Haiku for lookups. New `docs/ai/INDEX.md` (code map) and `docs/ai/CURRENT.md` (current state only). |
+| 56 | Trip planner foundation (`feat/trip-planner`, 2026-10-17) | `karpathy-guidelines` (**APPLIED** as the simplicity rule in every brief) | Each slice: implementation agent → machine checks → review → main-session diff check and rerun → local commit. Fable review of the trip logic (2 findings, each reproduced by a failing test, fixed in `63b431f`). "Add to trip" on places (`b37b2f3`; accessible names start with the visible words, WCAG 2.5.3). Planner screen in Plan mode (`b944637`; fresh-context review approved; 1 medium (empty trip kept stray days) and 1 low (duplicated dialog) fixed). Checks at `b944637`: lint, 161 unit, build, full E2E desktop + mobile green. |
+| 57 | Map slice started (`feat/trip-map`, 2026-10-17) | none | Branched from `feat/trip-planner` (`341b678`). Owner's spec: district-level pins at each district's existing `label` anchor (no invented coordinates; several stops in one district share one pin with a count), one dashed route per day (never joined across days), labelled "approximate", phone "Show on map" / "Back to day N" (no modal, no second map). The implementation agent was stopped at the session close just before its final checks: its work is saved as an unverified WIP commit and pushed with the branch (section 7). |
 
 ---
 
@@ -151,6 +161,8 @@ live, only optional work left.)
 | 1 | Remove the empty PostgreSQL 16 install | In an Administrator PowerShell: `Remove-Item -LiteralPath 'C:\Program Files\PostgreSQL' -Recurse -Force; Remove-Item -LiteralPath 'HKLM:\SOFTWARE\PostgreSQL' -Recurse -Force` | Only default databases inside; needs an admin shell |
 | 2 | Pepper copy | Keep it only in your password manager | Losing it only matters if the site is ever rebuilt on a new project |
 | 3 | Marketing connectors (optional) | Sign in to Slack, Notion, Ahrefs and the others in claude.ai settings, only if you want them | Not used by this project |
+| 4 | Merge decision (later) | When the trip planner is finished and reviewed, say yes before anything is merged into `main` or deployed | `feat/trip-planner` and `feat/trip-map` were pushed as branches on 2026-10-17 at the owner's request (backup); `main` and the live site are unchanged |
+| 5 | New Gemini key | Delete the key pasted in chat, create a new one, set `GEMINI_API_KEY` yourself, check it is on the free tier | Only for the optional Bengali notes (section 7) |
 
 ### Optional extras
 | Task | Skill / approach | Note |
@@ -222,6 +234,12 @@ live, only optional work left.)
 - Docs never name the pepper backup location or home-folder paths (write `%USERPROFILE%`).
 - The GitHub repo (github.com/KabirADnan41/bd-discovery-passport) is **public**: anything pushed is public, so the leak scan must
   pass before every push.
+- Branches (2026-10-17): one feature branch per feature; never work on or push `main` directly. `feat/trip-map` depends on
+  `feat/trip-planner`. Each push needs the owner's yes for that branch; merging into `main` and pushing `main` need separate yeses.
+- Trip storage: `bd-discovery-passport:trip:v1`, written only by user edits; a trip left with no stops is removed (`clearTrip`);
+  stale stops are pruned only inside the planner. Trips are browser-only (no API, no D1).
+- Local D1: if `accounts.spec.js` fails with "no such table", run `npm run db:migrate:local` (recreated on 2026-10-17).
+- No Firecrawl until the owner says the free credits renewed (2026-10-17).
 
 ## 6. How to run
 
@@ -245,8 +263,9 @@ Local secret: `.dev.vars` contains `AUTH_PEPPER=<random>` (gitignored; regenerat
 
 ## 7. Trip planner round (started 2026-10-06, milestone 33): resume here
 
-The owner green-lit this plan on 2026-10-06 at 14:19 (device clock, UTC+6) and stopped at 15:00 for another project.
-Nothing was committed or pushed.
+Started 2026-10-06 (owner's green light at 14:19, UTC+6). On 2026-10-17 the foundation was finished on the local branch
+`feat/trip-planner` and the map slice was started on `feat/trip-map`. Both branches were pushed to GitHub on 2026-10-17 at the
+owner's request (backup); nothing merged or deployed.
 
 ### Decisions (owner, 2026-10-06; do not re-litigate)
 - **Browser-only, free tier:** no new `/api` endpoints, no D1 tables, no new server writes. Trips live in localStorage
@@ -276,7 +295,7 @@ Nothing was committed or pushed.
 | 0a | Stored place IDs, validator rule, validator tests | **DONE** (Agent A, verified): 334 ids, all unique, `id` first key in each place (diff = 334 added lines only); validator rule in `scripts/validate-map-data.mjs` (format, district prefix, unique file-wide); 3 new cases in `tests/unit/security.test.js` that fail without the rule. Examples: `1-star-mosque`, `54-bichanakandi` |
 | 0b | Bengali notes via Gemini (see decisions) | TO DO: needs the owner action below and a yes for the run |
 | 1 logic | `src/lib/trip.js` + `tests/unit/trip.test.js`: model, limits, per-day Directions URL, distances, hardened storage | **DONE** (Agent B, test-first, verified): `trip.js` 118 lines of pure functions (`createTrip`, `hasStop`, `addStop`, `removeStop`, `moveStop`, `addDay`, `removeDay`, `renameTrip`, `pruneUnknownPlaces`, `locationOf`, `dayDirectionsUrl`, `legDistancesKm`, `loadTrip`, `saveTrip`); 57 tests. Small edits: `TRIP_KEY` + exported `getStorage` in `discoveryStorage.js`; `DIRECTIONS_URL` + `placeLocation` exported from `places.js` (same link output). Not yet used by any UI, so nothing is stored yet |
-| 1 UI | "Add to trip" on places and district pages; Plan / পরিকল্পনা mode (reorder by drag and by up/down buttons); map pins + route line; per-day Directions links; privacy-notice row for the new storage key (strictly necessary, no banner); E2E + axe in both themes | **IN PROGRESS**: "Add to trip" on places DONE 2026-10-17 (implementation agent, main-session review, `tests/e2e/trip.spec.js` 12/12 desktop + mobile, privacy row + intro). Planner screen (Plan mode, `TripPanel`) DONE 2026-10-17 (`b944637`: implementation agent, fresh-context review approve, 1 medium + 1 low fixed; full E2E green). Next: map pins and route line |
+| 1 UI | "Add to trip" on places and district pages; Plan / পরিকল্পনা mode (reorder by drag and by up/down buttons); map pins + route line; per-day Directions links; privacy-notice row for the new storage key (strictly necessary, no banner); E2E + axe in both themes | **IN PROGRESS**: "Add to trip" on places DONE 2026-10-17 (implementation agent, main-session review, `tests/e2e/trip.spec.js` 12/12 desktop + mobile, privacy row + intro). Planner screen (Plan mode, `TripPanel`) DONE 2026-10-17 (`b944637`: implementation agent, fresh-context review approve, 1 medium + 1 low fixed; full E2E green). Map pins + route: unverified WIP commit on `feat/trip-map` (pushed at the 2026-10-17 close) |
 | 2 | Suggestions: nearby places (same and neighbouring districts); route through neighbouring districts | TO DO |
 | 3 | Share by link (`?trip=…`, no server) | TO DO |
 | 4 | Download PDF (page images + link areas) and Print / Save as PDF | TO DO |
@@ -317,30 +336,49 @@ the planner branch; independent additions (sharing, PDF, refactors) get their ow
    Properties → Environment Variables → New). Never paste it into chat or files. Check that its project shows the free tier
    (no billing). Then say yes for the Phase 0b run.
 
-### State at the 15:00 stop (verified by the main session, 14:34 to 14:35)
-- `npm test`: **157 passed** (6 files; was 97, plus 3 validator and 57 trip tests). `npm run validate:data`: OK.
-- `npm run lint`: the project code is clean; the 30 errors all come from the untracked `brag-output/` video scripts
-  (`npx eslint . --ignore-pattern "brag-output/**"` passes). Owner decision pending: add `brag-output/` to `.gitignore` and the
-  ESLint ignores, or delete `brag-output/work/` once the video is final.
-- Build and E2E not run: no UI changed yet.
-- `node_modules` was found empty at 14:22 (some dependencies had been deleted, the owner confirmed); restored with `npm ci` from the
-  lockfile at 14:28 (265 packages, no tracked file changed).
-- Uncommitted working tree: `PROGRESS.md`, `scripts/validate-map-data.mjs`, `src/data/places.json`, `src/lib/discoveryStorage.js`,
-  `src/lib/places.js`, `tests/unit/security.test.js` (modified); `src/lib/trip.js`, `tests/unit/trip.test.js`, `brag-output/` (new).
-- Notes for the UI: `legDistancesKm` reuses the quiz's `distanceKm`, so legs are rounded to 10 km (show "about"); call
-  `renameTrip` on submit or blur, not on every keystroke (it trims); build links with
-  `dayDirectionsUrl(day, s => locationOf(s, placesById))` once places.json has loaded.
-- Process: owner's rules applied (`karpathy-guidelines` **APPLIED**: simple code, surgical edits); two agents in parallel, one task
-  each; heavy jobs one at a time.
+### State at the 2026-10-17 close (17:36, UTC+6)
+- **Branches:** `main` = GitHub `main` = live site = `10df59c` (v2). `feat/trip-planner` = 12 commits on top (the
+  foundation; code last verified at `b944637`, then docs only), **pushed to GitHub on 2026-10-17** at the owner's request
+  (backup). `feat/trip-map` = branched from `feat/trip-planner` at `341b678`, plus the `wip(trip-map)` commit and this
+  handoff commit; also pushed. GitHub CI runs on both; the WIP branch may fail CI until the slice is finished.
+- **Map WIP on `feat/trip-map` (the `wip(trip-map)` commit, unverified):** `src/lib/trip.js` (`tripMapData`), `tests/unit/trip.test.js`,
+  `src/components/map/BangladeshMap.jsx` (trip overlay group), `src/components/map/MapLegend.jsx` (Plan legend),
+  `src/components/game/GameBoard.jsx`, `src/components/trip/TripPanel.jsx` (phone "Show on map"), `src/styles/index.css`
+  (`.trip-overlay`), new `tests/e2e/trip-map.spec.js`; about 217 lines added. The agent's last note: the visuals looked
+  right, including over a selected district; it was about to run its final checks.
+- **Resume the map slice:**
+  1. `git show --stat` and the diff of the `wip(trip-map)` commit on `feat/trip-map`. Confirm `BangladeshMap.jsx` only gained the optional overlay prop and a
+     non-interactive `<g className="trip-overlay" aria-hidden="true">` (no handler, tabindex or keyboard change). If it changed
+     more, use one fresh-context reviewer for map interaction and accessibility.
+  2. Run, one at a time: `npm run lint`; `npx vitest run`; `npm run build`;
+     `npx playwright test tests/e2e/trip-map.spec.js --workers=1`;
+     `npx playwright test tests/e2e/planner.spec.js tests/e2e/discovery.spec.js tests/e2e/accessibility.spec.js tests/e2e/quiz.spec.js --project=desktop --workers=1`;
+     `npx playwright test tests/e2e/planner.spec.js tests/e2e/discovery.spec.js --project=mobile --workers=1`.
+  3. Fix from the exact diagnostics (an implementation agent if it is more than a few lines), look at desktop and phone in
+     light and dark, then commit the fixes locally on top. Do not rewrite the pushed history (a force-push needs the owner's
+     yes); pushing the new commits needs the owner's yes too.
+  4. If the WIP looks wrong: `git revert` the `wip(trip-map)` commit locally and rerun the slice from the spec in #57.
+- **Decided:** on phones the planner comes first, with "Show on map" under it. Merging into `main` waits for the owner.
+- **Local only (deliberately not on GitHub):** `.dev.vars` (the secret pepper; a fresh local one can be generated, see section
+  6; the production pepper is in the owner's password manager); `/reference/` (copyrighted books, never publish);
+  `skill_review.md`, `docs/claude-skill-audit.md` and `.claude/` (local only by the owner's 2026-09-28 decision);
+  `brag-output/` (the launch video and its 224 MB of regenerable frames; the owner decides whether the video goes anywhere);
+  `node_modules/`, `dist/`, `.wrangler/`, `test-results/` (regenerate with `npm ci`, `npm run build`, `npm run db:migrate:local`).
+- **Notes for later (not bugs):** "In your trip" looks like "Add to trip" apart from its label (polish); phone browsers may
+  honour only 3 Maps waypoints (browser QA); `legDistancesKm` rounds to 10 km (say "about" if distances are shown); optional
+  test ideas from the trip-logic review.
+- **Process used:** one implementation agent per slice → machine checks → review (Fable for risky state, the main session for
+  plain UI) → main-session diff check and full rerun → local commit. `karpathy-guidelines` applied as the simplicity rule.
 
 ### Next steps (in order; heavy jobs one at a time)
 1. DONE 2026-10-17: `brag-output/` is ignored by ESLint and git, so `npm run lint` is green. Work moved to the local branch
    `feat/trip-planner`; the short current state now lives in `docs/ai/CURRENT.md` (map of the code: `docs/ai/INDEX.md`).
 2. DONE 2026-10-17: Fable review of the trip logic (2 findings fixed) and "Add to trip" on places.
-3. Owner's roadmap (2026-10-17), one verified slice at a time on `feat/trip-planner`:
+3. Owner's roadmap (2026-10-17), one verified slice at a time on feature branches (see the branch plan):
    1. Planner screen: days, stops, remove, up/down, one Google Maps link per day, empty state, clear trip (DONE
       2026-10-17, `b944637`).
-   2. Map: pins for the stops and a route line derived from the trip.
+   2. Map: pins for the stops and a route line derived from the trip (IN PROGRESS on `feat/trip-map`: an unverified WIP
+      commit, see the close state above).
    3. Drag to reorder, reusing `moveStop()` (no separate reorder logic).
    4. Share by link: `?trip=…`; validate the untrusted data, reject malformed or oversized payloads.
    5. Suggestions: nearby places and neighbouring-district route ideas.
