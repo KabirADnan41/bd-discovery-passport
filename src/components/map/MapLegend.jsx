@@ -1,6 +1,6 @@
 // Swatches reuse the map's own hatch pattern and tokens, so the key always matches the map.
 const Swatch = ({ children }) => (
-  <svg width="22" height="14" viewBox="0 0 22 14" aria-hidden="true" className="shrink-0">
+  <svg width="19" height="12" viewBox="0 0 22 14" aria-hidden="true" className="shrink-0">
     {children}
   </svg>
 );
@@ -52,12 +52,13 @@ const TRIP_ITEMS = [
 
 const ITEMS = { explore: EXPLORE_ITEMS, quiz: QUIZ_ITEMS, plan: [...EXPLORE_ITEMS, ...TRIP_ITEMS] };
 
-// One line of text under the map, not a box. `mode` is 'explore', 'quiz' or 'plan'.
+// A compact wrapping row of text under the map, not a box; on wide, short screens index.css stacks it in the atlas sheet's
+// gutter (.map-key). `mode` is 'explore', 'quiz' or 'plan'.
 export default function MapLegend({ mode = 'explore', className = '' }) {
   return (
-    <ul className={`flex w-full flex-wrap gap-x-5 gap-y-1.5 text-[0.85rem] text-ink-3 lg:justify-center ${className}`} aria-label="Map key">
+    <ul className={`map-key flex w-full flex-wrap gap-x-4 gap-y-1 text-[0.8rem] leading-snug text-ink-3 lg:justify-center ${className}`} aria-label="Map key">
       {ITEMS[mode].map(item => (
-        <li key={item.en} className="flex items-center gap-2">
+        <li key={item.en} className="flex items-center gap-1.5">
           <Swatch>{item.swatch}</Swatch>
           <span>
             {item.en}{' '}

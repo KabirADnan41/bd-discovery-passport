@@ -210,15 +210,143 @@
   text-decoration-color: currentColor;
 }
 
+/* ------------------------------------------------------------------ atlas: the map's sheet and the journal */
+/* Phones and tablets stack them: a quiz prompt or the planner above the map, the passport below it. From 1024px the map lies
+   on an atlas sheet with the journal beside it, and from 1280px the journal rests on the sheet's right edge. The overlap only
+   ever covers the sheet's right padding, which is wider than it, so no district is ever under the journal. */
+.atlas {
+  display: flex;
+  flex-direction: column;
+}
+.atlas-sheet {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-block: 1rem;
+}
+.atlas-key {
+  width: 100%;
+  margin-top: 0.75rem;
+}
+@media (min-width: 1024px) {
+  .atlas {
+    --sheet-gap: 0.5rem; /* between the masthead and the sheet, and under the sheet */
+    --sheet-pad-top: 0.25rem;
+    --sheet-pad-bottom: 0.625rem;
+    --key-h: 3.25rem; /* the key under the map: two rows of items */
+    --journal-offset: 1.5rem; /* the journal is laid a little below the sheet's top edge, not centred */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--journal-w);
+    column-gap: 0.75rem;
+    align-items: start;
+    padding-block: var(--sheet-gap);
+  }
+  .atlas-sheet {
+    grid-area: 1 / 1;
+    justify-content: center;
+    min-height: calc(100dvh - var(--masthead-h) - 1px - 2 * var(--sheet-gap));
+    padding: var(--sheet-pad-top) 0.5rem var(--sheet-pad-bottom);
+    overflow: clip; /* the graticule stops at the sheet's edge, like a printed neatline */
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-sheet);
+    background: var(--surface-sheet);
+    box-shadow: var(--elev-1);
+  }
+  .atlas-key {
+    margin-top: 0.5rem;
+  }
+  /* Only margins and placement here: the journals also take lg:hidden, which a display set here would override. */
+  .journal {
+    grid-area: 1 / 2;
+    margin-top: var(--journal-offset);
+  }
+}
+@media (min-width: 1280px) {
+  .atlas {
+    --journal-offset: 2.5rem;
+    grid-template-columns: minmax(0, 1fr) var(--journal-overlap) calc(var(--journal-w) - var(--journal-overlap));
+    column-gap: 0;
+  }
+  .atlas-sheet {
+    grid-column: 1 / 3;
+    padding-inline: 1.5rem calc(var(--journal-overlap) + 1.5rem); /* the journal covers the overlap; 1.5rem stays clear */
+  }
+  .journal {
+    grid-column: 2 / 4;
+    position: relative;
+    z-index: 1;
+  }
+}
+/* Where the screen's height is what limits the map (wide, short screens), the key moves from under the map into the sheet's
+   lower-left gutter, so the map gets all the height. Taller screens have height to spare: the key stays under the map and the
+   map takes the width. The gutter costs width, so a narrower screen switches at a lower height (about 875px at 1280 wide,
+   about 930px from 1366 up). */
+@media (min-width: 1280px) and (max-height: 860px), (min-width: 1366px) and (max-height: 920px) {
+  .atlas {
+    --key-h: 0rem;
+  }
+  .atlas-sheet {
+    display: grid;
+    grid-template-columns: 9.5rem minmax(0, 1fr);
+    align-items: center;
+    padding-left: 1rem;
+  }
+  .atlas-sheet > .map-canvas {
+    grid-area: 1 / 2;
+    justify-self: center;
+  }
+  .atlas-key {
+    grid-area: 1 / 1;
+    align-self: end;
+    margin: 0 0 1.5rem;
+  }
+  .atlas-key > p {
+    text-align: start;
+  }
+  .map-key {
+    flex-direction: column;
+    align-items: start;
+    row-gap: 0.625rem;
+  }
+  .map-key > li {
+    align-items: start;
+  }
+  .map-key svg {
+    margin-top: 0.2em;
+  }
+  .map-key [lang='bn'] {
+    display: block;
+  }
+}
+
 /* ------------------------------------------------------------------ map */
 .map-canvas {
   position: relative;
   aspect-ratio: var(--map-ratio);
   width: 100%;
 }
+/* Phones: the map runs edge to edge (the section keeps its gutters for the key and the buttons). The land sits between x 70
+   and 930 of the 1000-wide viewBox, but MYANMAR runs on to about 1040 at the phone label size, so the map shifts left into the
+   empty strip west of the land (the coordinates are hidden on phones): about 12px stay clear of the land on the left and 6px
+   after the label on the right. */
+@media (max-width: 639px) {
+  .map-canvas {
+    align-self: start;
+    width: calc((100% + 2rem) * 0.985);
+    margin-left: -1rem;
+    translate: -3.8% 0;
+  }
+}
 @media (min-width: 1024px) {
   .map-canvas {
-    width: min(100%, calc((100dvh - var(--masthead-h) - 6.5rem) * var(--map-ratio))); /* room for a two-line legend */
+    /* as tall as the screen allows after the masthead (and its border), the sheet's gaps, border and padding, and the key */
+    width: min(
+      100%,
+      calc(
+        (100dvh - var(--masthead-h) - 1px - 2 * var(--sheet-gap) - 2px - var(--sheet-pad-top) - var(--sheet-pad-bottom) - var(--key-h)) *
+          var(--map-ratio)
+      )
+    );
   }
 }
 .map-svg {
@@ -227,6 +355,10 @@
   height: 100%;
   overflow: visible;
   touch-action: manipulation;
+}
+/* the 64 districts are one raised landmass: one filter on their group, one shadow along the coast */
+.map-land {
+  filter: var(--elev-land);
 }
 .district {
   cursor: pointer;
@@ -292,7 +424,7 @@
   stroke-width: 0.8;
 }
 .map-annotation {
-  fill: var(--text-muted);
+  fill: var(--map-coordinate);
   font-size: 15px;
   letter-spacing: 0.06em;
   pointer-events: none;
@@ -421,7 +553,7 @@
 }
 .hatch-line {
   stroke: var(--map-locked-hatch);
-  stroke-width: 1.1;
+  stroke-width: 0.8; /* a fine engraving, not a mesh */
 }
 
 /* ------------------------------------------------------------------ tooltip */
@@ -472,12 +604,38 @@
 .passport-enter {
   animation: page-in var(--dur-reveal) var(--ease-out);
 }
+
+/* A journal page lies on two more pages (--page-stack). Box shadows, so the page's own overflow does not clip them. */
+.journal-page {
+  border-radius: var(--radius-surface);
+  background: var(--surface-paper);
+  box-shadow: var(--page-stack), var(--elev-2);
+}
 @media (min-width: 1024px) {
   .passport {
-    max-height: calc(100dvh - var(--masthead-h) - 2.5rem);
+    max-height: calc(100dvh - var(--masthead-h) - 1px - var(--sheet-gap) - var(--journal-offset) - 1.25rem);
+    box-shadow: var(--page-stack), var(--elev-2);
   }
   .sheet[data-exiting='true'] {
     display: none; /* the desktop page is replaced in place, no exit needed */
+  }
+  /* the quiz prompt and the planner are journal pages too; their own content is unchanged */
+  .journal-panel {
+    padding: 1.5rem 1.75rem 1.75rem;
+    border-radius: var(--radius-surface);
+    background: var(--surface-paper);
+    box-shadow: var(--page-stack), var(--elev-2);
+  }
+  /* the quiz's green bar becomes the page's cover band, as on a passport page */
+  .journal-quiz {
+    padding: 0 0 1.5rem;
+  }
+  .journal-quiz > section > .cover {
+    border-radius: var(--radius-surface) var(--radius-surface) 0 0;
+    padding-inline: 1.75rem;
+  }
+  .journal-quiz > section > :not(.cover) {
+    margin-inline: 1.75rem;
   }
 }
 @media (max-width: 1023px) {
@@ -538,6 +696,7 @@
 .menu-popover {
   /* origin-aware: grows out of the Menu button in the top-right corner */
   transform-origin: top right;
+  box-shadow: var(--elev-3); /* above the journal's pages */
   opacity: 1;
   transform: scale(1);
   transition:
@@ -629,7 +788,8 @@
 }
 
 /* Mode tabs: three equal columns, and one indicator as wide as a column that slides under the selected tab (the tablist sets
-   --active-index). Only transform and colour move. */
+   --active-index). The indicator is an underline, as navigation is, so the modes never look like the theme switch in the menu
+   (a setting, drawn as a filled segment). Only transform and colour move. */
 .mode-tabs {
   --mode-tabs-gap: 0.25rem;
   position: relative;
@@ -641,8 +801,7 @@
   position: absolute;
   inset: 0 auto 0 0;
   width: calc((100% - 2 * var(--mode-tabs-gap)) / 3);
-  border-radius: calc(var(--radius-control) - 3px);
-  background: var(--text-primary);
+  border-bottom: 2px solid var(--text-primary);
   transform: translateX(calc(var(--active-index) * (100% + var(--mode-tabs-gap))));
   transition: transform var(--dur-reveal) var(--ease-out);
 }
@@ -656,28 +815,22 @@
   border-radius: calc(var(--radius-control) - 3px);
   font-size: 0.9rem;
   font-weight: 540;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   cursor: pointer;
   transition: color var(--dur-reveal) var(--ease-out);
 }
-.mode-tab:hover {
-  color: var(--text-primary);
-}
+.mode-tab:hover,
 .mode-tab[aria-selected='true'] {
-  color: var(--surface-paper);
+  color: var(--text-primary);
 }
 .mode-tab:focus-visible {
   outline-offset: 2px; /* the ring fits the gap between tabs */
 }
-/* High-contrast themes drop author backgrounds, which would hide the indicator: use the theme's own selection colours. */
+/* High-contrast themes recolour borders anyway; the theme's selection colour marks the chosen mode more clearly. */
 @media (forced-colors: active) {
   .mode-tabs-indicator {
     forced-color-adjust: none;
-    background: Highlight;
-  }
-  .mode-tab[aria-selected='true'] {
-    forced-color-adjust: none;
-    color: HighlightText;
+    border-bottom-color: Highlight;
   }
 }
 
@@ -692,6 +845,65 @@
 }
 .stamp-impact {
   animation: stamp-impact var(--dur-stamp) var(--ease-out) both;
+}
+/* The latest stamps lie in a pile: newest first and on top (the list sets --pile). Every stamp but the oldest has a slot 1rem
+   narrower than its button, so it overlaps the next one; on a narrow page the slots shrink further, never below a 44px target,
+   so the pile stays on one line. A focused stamp comes to the top so its ring shows. */
+.stamp-pile {
+  --stamp: 80px;
+  display: flex;
+}
+.stamp-pile > li {
+  position: relative;
+  z-index: var(--pile);
+  flex: 0 1 calc(var(--stamp) - 0.5rem); /* the button is the stamp plus 0.5rem of padding */
+  min-width: 2.75rem;
+}
+.stamp-pile > li:last-child {
+  flex: none;
+}
+.stamp-pile > li:has(:focus-visible) {
+  z-index: 7;
+}
+.stamp-pile svg {
+  width: var(--stamp);
+  height: var(--stamp);
+}
+@media (max-width: 639px) {
+  .stamp-pile {
+    --stamp: 4rem;
+  }
+}
+/* no stamps yet: where the first will land */
+.stamp-empty {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  border: 1.5px dashed color-mix(in srgb, var(--accent-stamp) 45%, transparent);
+  border-radius: 50%;
+}
+
+/* The ledger's ruler: one tick per district (the ruler sets --ticks), filled in discovery order. Every eighth mark is longer,
+   like the marks on a rule. */
+.ledger-ruler {
+  display: grid;
+  grid-template-columns: repeat(var(--ticks), minmax(0, 1fr));
+  align-items: end;
+  height: 0.875rem;
+  border-bottom: 1px solid var(--rule-strong);
+}
+.ledger-ruler > span {
+  justify-self: center;
+  width: 2px;
+  height: 45%;
+  background: color-mix(in srgb, var(--rule-strong) 55%, transparent);
+}
+.ledger-ruler > span:nth-child(8n) {
+  height: 75%;
+}
+.ledger-ruler > [data-filled] {
+  height: 100%;
+  background: var(--map-discovered);
 }
 
 /* theme switches are instant: no half-faded controls mid-switch */

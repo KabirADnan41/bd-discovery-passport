@@ -9,10 +9,11 @@ const PIN_RADIUS = 19; // viewBox units: with its outline a pin is about as wide
 
 const focusDistrict = id => document.getElementById(`district-${id}`)?.focus();
 
-// Fills never re-render on hover: only data-state / data-selected / tabIndex changes reach them.
+// Fills never re-render on hover: only data-state / data-selected / tabIndex changes reach them. The group is the land: it
+// carries the one landmass shadow (.map-land), so the overlays drawn above it stay crisp.
 const DistrictLayer = memo(function DistrictLayer({ discoveredSet, selectedId, tabbableId, marks, handlers }) {
   return (
-    <g>
+    <g className="map-land">
       {DISTRICTS.map(d => {
         const discovered = discoveredSet.has(d.id);
         return (

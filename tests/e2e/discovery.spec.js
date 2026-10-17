@@ -63,6 +63,8 @@ test('places to go load on card open with Google Maps directions in a new tab', 
   await expect(directions).toHaveAttribute('href', /^https:\/\/www\.google\.com\/maps\/dir\/\?api=1&destination=/);
   await expect(directions).toHaveAttribute('target', '_blank');
   await expect(directions).toHaveAttribute('rel', /noopener/);
+  // measured at rest: mid-entrance the page is still sliding in, and a translated box can measure a float rounding under its height
+  await page.waitForFunction(() => document.getAnimations().every(a => a.playState !== 'running'));
   expect((await directions.boundingBox()).height).toBeGreaterThanOrEqual(44);
 });
 
