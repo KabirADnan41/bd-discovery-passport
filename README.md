@@ -17,6 +17,9 @@ anyone else on your device and follows you to other devices.
 
 ## Run it
 
+Needs Node.js 22.13 or newer (the unit tests use Node's built-in SQLite); `npm install` stops with a clear message on
+older versions.
+
 ```bash
 npm install
 npm run dev                  # UI only: http://127.0.0.1:5173 (accounts show as unavailable)
