@@ -294,6 +294,23 @@ Nothing was committed or pushed.
 At most 2 active agents, no recursion, the main session verifies every report against the repository, one local
 checkpoint commit per green slice.
 
+### Branch plan (owner, 2026-10-17; global CLAUDE.md §2)
+```
+main
+├── feat/trip-planner        planner foundation: place ids, trip logic, Add to trip, planner screen (reviewed checkpoint)
+│     └── feat/trip-map      pins + district-level route (branched from feat/trip-planner, not from main)
+├── feat/trip-drag-reorder
+├── feat/share-trip
+├── feat/trip-suggestions
+├── feat/trip-pdf
+├── refactor/typed-core
+├── refactor/runtime-schemas
+└── refactor/server-boundaries
+```
+Each branch is pushed only after the owner's yes for that branch (leak scan first; the repo is public). Merging into
+`main` and pushing `main` need separate approval. While features are tightly coupled and unpublished they may build on
+the planner branch; independent additions (sharing, PDF, refactors) get their own branches.
+
 ### Owner actions
 1. **Gemini key:** a key was pasted into the chat on 2026-10-06, so it now sits in local session logs on this shared PC. Delete it
    in Google AI Studio, create a new one, and set it yourself as the user environment variable `GEMINI_API_KEY` (Windows: System
