@@ -5,8 +5,9 @@
 > skills, the approach audit, and how to run everything. Updated at every milestone.
 
 **Last updated:** 2026-10-17 22:30 (UTC+6), milestone 35: the **map slice on `feat/trip-map` is verified** with no fixes
-needed (#58, section 7 "State after the map verification") and is **ready for the owner's review**. The verification is
-recorded in a local docs commit that is not pushed yet. Nothing merged or deployed.
+needed (#58, section 7 "State after the map verification") and is **ready for the owner's review**. The verification commit
+`e2c2ae5` was pushed with the owner's yes. Slice 3 (drag to reorder) started on `feat/trip-drag-reorder`, branched from
+`feat/trip-map`. Nothing merged or deployed.
 Previous: milestone 34 (2026-10-17 17:36): the **trip-planner foundation is done** on the local branch
 `feat/trip-planner` (12 commits, reviewed and fully tested: place ids, trip logic, "Add to trip", the Plan-mode planner screen)
 and was **pushed to GitHub as a branch on 2026-10-17 at the owner's request** (backup; not merged). The map slice (pins +
@@ -323,7 +324,7 @@ checkpoint commit per green slice.
 main
 ├── feat/trip-planner        planner foundation: place ids, trip logic, Add to trip, planner screen (reviewed checkpoint)
 │     └── feat/trip-map      pins + district-level route (branched from feat/trip-planner, not from main)
-├── feat/trip-drag-reorder
+│           └── feat/trip-drag-reorder   drag to reorder via moveStop() (branched from feat/trip-map @ e2c2ae5)
 ├── feat/share-trip
 ├── feat/trip-suggestions
 ├── feat/trip-pdf
@@ -342,11 +343,13 @@ the planner branch; independent additions (sharing, PDF, refactors) get their ow
    (no billing). Then say yes for the Phase 0b run.
 
 ### State after the map verification (2026-10-17 22:30, UTC+6)
-- **Branch:** `feat/trip-map`, local HEAD = the docs commit that records this verification (not pushed; GitHub has
-  `2898e2a`). No code changed since the `wip(trip-map)` commit: it passed every check as it was.
+- **Branch:** `feat/trip-map` at `e2c2ae5`, pushed with the owner's yes (GitHub matches). No code changed since the
+  `wip(trip-map)` commit: it passed every check as it was.
 - **Map slice:** done and verified (#58). Ready for the owner's review.
-- **Next (owner's choice):** push the new docs commit; then roadmap step 3 (drag to reorder, reusing `moveStop()`) on its
-  own branch per the branch plan. Merging into `main` and deploying wait for the owner's yes.
+- **Now:** roadmap step 3, drag to reorder, on `feat/trip-drag-reorder` (from `feat/trip-map` @ `e2c2ae5`). One implementation
+  agent; it reuses `moveStop()` unchanged, keeps Move up / Move down as the keyboard baseline (the drag handle is pointer-only
+  and hidden from assistive tech), adds a pure, unit-tested drop-position helper, and does not auto-scroll. The owner is asked
+  again before this branch is pushed. Merging into `main` and deploying wait for the owner's yes.
 - **Notes for later (unchanged, not bugs):** "In your trip" looks like "Add to trip" apart from its label; phone browsers
   may honour only 3 Maps waypoints; `legDistancesKm` rounds to 10 km.
 
