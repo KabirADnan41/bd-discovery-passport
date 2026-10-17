@@ -31,21 +31,19 @@ For the site owner and future maintainers. How the site is protected, what was r
 | Requirements | Zero budget, small audience, no personal data beyond a username; guests need no account |
 | Design | Threat model above; attack surface kept same-origin; *Privacy's Blueprint* (Hartzog) standards: no deceptive, abusive or dangerous design (opt-in merges on sign-in, unticked consent box, no confirmshaming) |
 | Implementation | Exact-pinned dependencies (3 runtime), lockfile, ESLint with the React Compiler rules, no `dangerouslySetInnerHTML`/`eval`, no inline scripts or styles |
-| Verification | Unit tests (auth helpers, validators, storage hardening, token contrast), API smoke test (29 checks incl. CSRF, rate limits, 413), E2E that fails on any CSP violation, axe WCAG 2.2 AA scans, built-in code review (10 findings fixed), manual security review (3 findings fixed) |
+| Verification | Unit tests (auth helpers, validators, storage hardening, token contrast), API smoke test (29 checks incl. CSRF, rate limits, 413), E2E that fails on any CSP violation, axe WCAG 2.2 AA scans, code review (10 findings fixed), security review (3 findings fixed) |
 | Release | This document's incident-response plan; secrets set with `wrangler pages secret put`, never committed |
 
 ### Reviews performed
-- **Code review (built-in `code-review`, high):** 10 findings, all fixed. Among them: a login-lockout DoS, account deletion as an
-  unlimited password oracle, and guest stamps deleted before the server confirmed a merge.
-- **Security review:** the built-in `security-review` needs a git remote, so a manual OWASP-style pass was done instead. Fixed:
-  SQL `LIKE` wildcard risk, oversized body handling, unbounded sessions.
+- **Code review:** 10 findings, all fixed. Among them: a login-lockout DoS, account deletion as an unlimited password oracle,
+  and guest stamps deleted before the server confirmed a merge.
+- **Security review (manual, OWASP-style):** fixed a SQL `LIKE` wildcard risk, oversized body handling and unbounded
+  sessions.
 - **v2 round (2026-10-05):** a read-only security audit found F1 (rate-limited requests still wrote D1 rows; fixed by the
   firewall in section 5) and F2 (accepted, section 5). Then a code review (4 findings: a quiz crash after the round ended,
   false 429s from counting `GET /api/me` behind shared IPs, the honeypot, phone quiz tab order) and a security review
   (5 findings: IPv6 grouped by /64, the honeypot renamed to `hp_note`, the burst race accepted, privacy retention wording,
   1 info). All fixed or accepted; `npm audit` 0.
-- **Optional deep scan:** the `claude-security` plugin is installed and can run a multi-agent scan. It is heavy on usage, so
-  run it when convenient.
 
 ## 4. Security headers (`public/_headers`)
 
@@ -96,12 +94,3 @@ Burst race (accepted): the D1 limits read, then write, so parallel requests that
 | **Eradication** | Fix the cause in code; rotate the Cloudflare API token; if the pepper leaked, rotate it (all users must re-register) |
 | **Recovery** | `npx wrangler d1 time-travel restore bd-discovery-passport --timestamp=<unix time>` (free plan: last 7 days) |
 | **Lessons learned** | Add a test that reproduces the issue; update this file |
-
-## 8. Reference books and how they were used
-
-- *Security Engineering* 3rd ed. (Anderson): threat modelling (§27.3.5), SDL (§27.5.3), DevSecOps (§27.5.6).
-- *Blue Team Handbook: Incident Response Edition* (Murdoch): the PICERL phases above.
-- *Privacy's Blueprint* (Hartzog): trust, obscurity and autonomy; deceptive, abusive and dangerous design standards.
-- *Cybersecurity For Dummies*: account hygiene (multi-factor authentication for the hosting accounts).
-- *The Cuckoo's Egg* and *Linux Basics for Hackers*: background only; nothing version-specific was taken from older books.
-  Current configuration was checked against Cloudflare, OWASP and browser documentation instead.

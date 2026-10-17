@@ -45,13 +45,10 @@ See [docs/deployment.md](docs/deployment.md). Only a Cloudflare login is needed;
 
 | Doc | What it covers |
 |---|---|
-| [PROGRESS.md](PROGRESS.md) | Status, which skill did what, what is left, the approach audit |
-| [docs/architecture.md](docs/architecture.md) | How the pieces fit, key flows, the design system |
+| [docs/architecture.md](docs/architecture.md) | How the pieces fit, key flows, the design system, key decisions |
 | [docs/data-sources.md](docs/data-sources.md) | Sources, the 64-district pipeline, data problems found upstream |
 | [docs/security.md](docs/security.md) | Threat model, reviews, headers, incident response |
-| [docs/design-research.md](docs/design-research.md) | References studied and what was (not) adopted |
 | [docs/deployment.md](docs/deployment.md) | Free hosting setup and every-deploy steps |
-| [docs/project-skills.md](docs/project-skills.md), [docs/skill-usage-log.md](docs/skill-usage-log.md), [docs/claude-skill-audit.md](docs/claude-skill-audit.md) | Claude Code skills: inventory, selection, usage |
 
 ## Credits and licences
 
