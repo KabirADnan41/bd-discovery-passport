@@ -6,7 +6,22 @@ import PassportStamp from './PassportStamp';
 
 const TYPE_LABEL = { food: 'Food', culture: 'Culture', craft: 'Craft', tradition: 'Tradition' };
 
-function ClaimList({ items, kindLabel }) {
+/** Adds a place to the trip. In the trip it stays a focusable button (aria-disabled, not disabled) and a press does nothing. */
+function AddToTripButton({ place, inTrip, onAdd }) {
+  const label = inTrip ? 'In your trip' : 'Add to trip';
+  return (
+    <button type="button" className="btn btn-quiet min-h-11 px-4 text-[0.88rem]" aria-disabled={inTrip || undefined} onClick={() => onAdd(place)}>
+      {/* the sr-only span carries the whole name: browsers put a space before a trailing sr-only span, which would read "Add to trip : Name" */}
+      <span aria-hidden="true">{label}</span>
+      <span className="sr-only">
+        {label}: {place.name.en}
+      </span>
+    </button>
+  );
+}
+
+/** `onAddToTrip` is passed only for places, so landmarks and culture items get no trip button. */
+function ClaimList({ items, kindLabel, isInTrip, onAddToTrip }) {
   return (
     <ul className="grid">
       {items.map(item => (
@@ -32,6 +47,7 @@ function ClaimList({ items, kindLabel }) {
                 </svg>
                 <span className="sr-only"> to {item.name.en} in Google Maps (opens in a new tab)</span>
               </a>
+              {onAddToTrip && <AddToTripButton place={item} inTrip={isInTrip(item.id)} onAdd={onAddToTrip} />}
             </div>
           )}
           <p className="mt-1.5 text-[0.78rem] text-ink-3">
@@ -67,7 +83,7 @@ function Section({ title, bn, children }) {
 }
 
 /** Places to go, loaded on first card open. Rendered inside the page keyed by district, so it remounts per district. */
-function PlacesToGo({ id }) {
+function PlacesToGo({ id, isInTrip, onAddToTrip }) {
   const [places, setPlaces] = useState(null); // null while loading, false if the data could not load
   useEffect(() => {
     loadPlaces().then(all => setPlaces(all[id] ?? []), () => setPlaces(false));
@@ -76,7 +92,7 @@ function PlacesToGo({ id }) {
     <Section title="Places to go" bn="দেখার জায়গা">
       {places === null && <p className="text-[0.9rem] text-ink-3">Loading places…</p>}
       {places === false && <p className="text-[0.9rem] text-ink-3">Places could not load.</p>}
-      {places && <ClaimList items={places} kindLabel={item => item.category} />}
+      {places && <ClaimList items={places} kindLabel={item => item.category} isInTrip={isInTrip} onAddToTrip={onAddToTrip} />}
     </Section>
   );
 }
@@ -116,7 +132,7 @@ function useSheetDrag(sheetRef, onDismiss) {
   };
 }
 
-export default function DistrictCard({ details, isNew, exiting = false, headingRef, sheetRef, onClose, onSelect }) {
+export default function DistrictCard({ details, isNew, exiting = false, headingRef, sheetRef, onClose, onSelect, isInTrip, onAddToTrip }) {
   const { handleProps } = useSheetDrag(sheetRef, onClose);
   const { id, name, bn, division, stampCode, content, areaKm2, lat, lon, neighbors } = details;
   const landmarks = content?.landmarks ?? [];
@@ -190,7 +206,7 @@ export default function DistrictCard({ details, isNew, exiting = false, headingR
             <ClaimList items={cultureFood} kindLabel={item => TYPE_LABEL[item.type]} />
           </Section>
         )}
-        <PlacesToGo id={id} />
+        <PlacesToGo id={id} isInTrip={isInTrip} onAddToTrip={onAddToTrip} />
         {!content && (
           <div className="mt-9 border-t border-rule pt-4">
             <p className="font-medium">More discoveries coming soon.</p>

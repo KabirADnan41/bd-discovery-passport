@@ -6,6 +6,7 @@ import { usePresence } from '../../hooks/usePresence';
 import { usePassportSync } from '../../hooks/usePassportSync';
 import { DISTRICT_IDS, FEATURED_IDS, MAP, TOTAL_DISTRICTS, getDistrict, getDistrictDetails } from '../../lib/districtData';
 import { clearQuizBest, loadDiscovered, loadQuizBest, saveQuizBest } from '../../lib/discoveryStorage';
+import { addDay, addStop, hasStop, loadTrip, saveTrip } from '../../lib/trip';
 import { ROUND_SIZE, createRound, feedbackText, guess, next, promptText, quizMarks, totalScore } from '../../lib/quiz';
 import { clearStamps, errorMessage } from '../../lib/authClient';
 import BangladeshMap from '../map/BangladeshMap';
@@ -25,6 +26,7 @@ const GUTTERS = 'px-4 sm:px-6 lg:px-10 min-[90rem]:px-16';
 const EYEBROW = 'text-eyebrow text-brass uppercase';
 const isKeyboard = e => e.detail === 0; // click events synthesized from Enter/Space have detail 0
 const focusMap = () => document.querySelector('[data-district-id][tabindex="0"]')?.focus(); // the map's single tab stop
+const placeStop = id => ({ kind: 'place', id }); // how a place is stored in a trip
 
 export default function GameBoard() {
   const theme = useTheme();
@@ -48,6 +50,7 @@ export default function GameBoard() {
   const [resetState, setResetState] = useState({ open: false, busy: false, error: '' });
   const [round, setRound] = useState(null); // the quiz round; null means explore mode
   const [quizBest, setQuizBest] = useState(null);
+  const [trip, setTrip] = useState(() => loadTrip()); // read once; nothing is written until the first stop is added
   const quizMode = round !== null;
   const marks = useMemo(() => (round ? quizMarks(round) : undefined), [round]);
   const headingRef = useRef(null);
@@ -79,6 +82,23 @@ export default function GameBoard() {
     returnFocusRef.current = null;
     (target?.isConnected ? target : fallback)?.focus();
   }, [close, selectedId]);
+
+  const isInTrip = placeId => hasStop(trip, placeStop(placeId));
+
+  // The next trip is worked out here, not in a state updater, so each click saves and announces exactly once.
+  const handleAddToTrip = place => {
+    const stop = placeStop(place.id);
+    if (hasStop(trip, stop)) return; // pressing "In your trip" does nothing
+    let nextTrip = addStop(trip, stop);
+    if (nextTrip === trip) nextTrip = addStop(addDay(trip), stop); // the last day is full: start a new day
+    if (!hasStop(nextTrip, stop)) {
+      setAnnouncement('Your trip is full.');
+      return;
+    }
+    setTrip(nextTrip);
+    saveTrip(nextTrip);
+    setAnnouncement(`Added ${place.name.en} to your trip.`);
+  };
 
   // Quiz mode: choosing a district is a guess. It never opens a passport page or adds a stamp.
   const handleGuess = useCallback(
@@ -335,6 +355,8 @@ export default function GameBoard() {
                 sheetRef={sheetRef}
                 onClose={handleClose}
                 onSelect={id => handleActivate(id, 'pointer')}
+                isInTrip={isInTrip}
+                onAddToTrip={handleAddToTrip}
               />
             )}
 
