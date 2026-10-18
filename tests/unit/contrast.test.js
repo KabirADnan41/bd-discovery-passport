@@ -9,6 +9,16 @@ const parse = text => Object.fromEntries([...text.matchAll(/--([\w-]+):\s*(#[0-9
 
 const light = parse(block(':root {'));
 const dark = { ...light, ...parse(block(":root[data-theme='dark']")) };
+// the opacity the rest of the land softens to while a district is selected (a number, so not in the hex tokens above)
+const softenOf = text => Number(text.match(/--map-soften:\s*([\d.]+)/)?.[1]);
+const lightSoften = softenOf(block(':root {'));
+const darkSoften = softenOf(block(":root[data-theme='dark']")) || lightSoften;
+// a colour at an opacity over another, composited as the browser does (in sRGB)
+const over = (hex, under, alpha) =>
+  `#${[1, 3, 5]
+    .map(i => Math.round(alpha * parseInt(hex.slice(i, i + 2), 16) + (1 - alpha) * parseInt(under.slice(i, i + 2), 16)))
+    .map(v => v.toString(16).padStart(2, '0'))
+    .join('')}`;
 // light tokens that point at palette variables
 const resolve = (tokens, name) => {
   const direct = tokens[name];
@@ -32,9 +42,9 @@ const SURFACES = ['surface-canvas', 'surface-sheet', 'surface-paper', 'surface-s
 const MAP_LABELS = ['map-coordinate', 'map-water-label'];
 
 describe.each([
-  ['light', light],
-  ['dark', dark],
-])('%s theme tokens', (_, tokens) => {
+  ['light', light, lightSoften],
+  ['dark', dark, darkSoften],
+])('%s theme tokens', (_, tokens, soften) => {
   it.each(TEXT.flatMap(t => SURFACES.map(s => [t, s])))('%s on %s meets WCAG AA (4.5:1)', (text, surface) => {
     const fg = resolve(tokens, text);
     const bg = resolve(tokens, surface);
@@ -59,6 +69,15 @@ describe.each([
     const unexplored = resolve(tokens, 'map-locked');
     expect(unexplored, 'map-locked').toBeTruthy();
     expect(contrast(resolve(tokens, 'map-discovered'), unexplored)).toBeGreaterThanOrEqual(3);
+  });
+
+  it('with a district selected, the softened land still tells discovered from unexplored and from the sheet (3:1 non-text)', () => {
+    expect(soften).toBeGreaterThan(0);
+    expect(soften).toBeLessThanOrEqual(1);
+    const sheet = resolve(tokens, 'surface-sheet');
+    const discovered = over(resolve(tokens, 'map-discovered'), sheet, soften);
+    expect(contrast(discovered, over(resolve(tokens, 'map-locked'), sheet, soften))).toBeGreaterThanOrEqual(3);
+    expect(contrast(discovered, sheet)).toBeGreaterThanOrEqual(3);
   });
 
   it.each(MAP_LABELS.flatMap(t => ['surface-canvas', 'surface-sheet'].map(s => [t, s])))('%s on %s meets WCAG AA (4.5:1)', (text, surface) => {

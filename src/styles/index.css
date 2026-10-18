@@ -356,9 +356,14 @@
   overflow: visible;
   touch-action: manipulation;
 }
-/* the 64 districts are one raised landmass: one filter on their group, one shadow along the coast */
+/* the 64 districts are one raised landmass: one filter on their group, one shadow along the coast. While a district is selected
+   the rest of the land softens a little; the borders, the outline and a trip drawn above it do not. */
 .map-land {
   filter: var(--elev-land);
+  transition: opacity var(--dur-component) var(--ease-out);
+}
+.map-svg:has(> .overlay-selection) .map-land {
+  opacity: var(--map-soften);
 }
 .district {
   cursor: pointer;
@@ -457,13 +462,37 @@
   }
 }
 
-/* overlays drawn above the fills so outlines are never covered by a neighbour */
+/* Overlays, drawn above the fills so outlines are never covered by a neighbour. None takes the pointer, so hits stay on the
+   districts underneath. Copies lift; the districts themselves never move (they share borders). */
 .overlay-hover {
   fill: var(--map-hover);
   stroke: var(--map-outline);
   stroke-width: 1.4;
+  stroke-linejoin: round;
   pointer-events: none;
   animation: fade-in var(--dur-hover) var(--ease-out);
+}
+/* outside a quiz the hover copy is the district itself: its own fill, an inked edge and a shadow under it */
+.overlay-hover[data-state] {
+  filter: var(--shadow-lift-hover);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.overlay-hover[data-state='discovered'] {
+  fill: var(--map-discovered);
+}
+.overlay-hover[data-state='locked'] {
+  fill: url(#hatch-locked);
+}
+/* the selection: a filled copy, its paper rim and its stamp outline, on one deeper shadow */
+.overlay-selection {
+  pointer-events: none;
+  filter: var(--shadow-lift-selected);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.overlay-selected-lift {
+  fill: var(--map-selected);
 }
 .overlay-selected-halo {
   fill: none;
@@ -486,6 +515,58 @@
   stroke-width: 3;
   stroke-linejoin: round;
   pointer-events: none;
+}
+/* Lift and press. Lengths inside the map are viewBox units. Reduced motion keeps every fill, edge, shadow and the softening,
+   still: no lift, no press, no fade. */
+@media (prefers-reduced-motion: no-preference) {
+  .overlay-selection {
+    translate: var(--lift-selected);
+    transition:
+      translate var(--dur-component) var(--ease-out),
+      scale 160ms var(--ease-spring);
+  }
+  @starting-style {
+    .overlay-selection {
+      translate: 0 0;
+    }
+  }
+  .map-svg:has(.district[data-selected='true']:active) .overlay-selection {
+    scale: var(--lift-press);
+    transition:
+      translate var(--dur-component) var(--ease-out),
+      scale 100ms var(--ease-out);
+  }
+  .overlay-focus[data-lift='selected'] {
+    translate: var(--lift-selected);
+  }
+}
+/* the hover lift is for a mouse, the one pointer that hovers here (touch keeps the districts' own :active feedback) */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .overlay-hover[data-state] {
+    translate: var(--lift-hover);
+    transition:
+      translate var(--dur-micro) var(--ease-out),
+      scale 160ms var(--ease-spring);
+  }
+  .map-svg:has(.district:active) .overlay-hover[data-state] {
+    scale: var(--lift-press);
+    transition:
+      translate var(--dur-micro) var(--ease-out),
+      scale 100ms var(--ease-out);
+  }
+  @starting-style {
+    .overlay-hover[data-state] {
+      translate: 0 0;
+    }
+    /* a click on a lifted district: the selection starts where the pressed copy was, then springs up into place */
+    .overlay-selection[data-from-hover] {
+      translate: var(--lift-hover);
+      scale: var(--lift-press);
+    }
+  }
+  .overlay-focus[data-lift='hover'] {
+    translate: var(--lift-hover);
+  }
 }
 
 /* The trip on the map (plan mode): a dashed line per day and a pin per district, in the 1000-wide viewBox's units. Ink on both
@@ -603,6 +684,17 @@
 }
 .passport-enter {
   animation: page-in var(--dur-reveal) var(--ease-out);
+}
+/* Beside the map the whole card answers the selection: band and page wait until the district has locked, then enter together
+   out from the map's side. With the card already open, the next district's page replaces the last in place. (The phone sheet
+   keeps its own slide, with no wait.) */
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .passport {
+    animation: page-from-map var(--dur-component) var(--ease-out) 70ms backwards;
+  }
+  .passport-enter {
+    animation: none;
+  }
 }
 
 /* A journal page lies on two more pages (--page-stack). Box shadows, so the page's own overflow does not clip them. */
@@ -931,6 +1023,12 @@
     transform: translateY(8px);
   }
 }
+@keyframes page-from-map {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+}
 /* quiz: one soft pulse on a wrong guess (reduced motion: the fill alone) */
 @keyframes wrong-pulse {
   50% {
@@ -989,6 +1087,11 @@
   .passport-enter,
   .map-tooltip {
     animation-name: fade-in;
+  }
+  /* the map's lifting copies change state at once (the legend's swatch keeps its fade) */
+  .overlay-hover[data-state],
+  .overlay-selection .overlay-selected {
+    animation: none;
   }
   .stamp-impact {
     animation: fade-in 200ms var(--ease-out) both;

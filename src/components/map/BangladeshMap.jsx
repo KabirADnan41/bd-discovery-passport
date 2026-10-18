@@ -77,6 +77,10 @@ export default function BangladeshMap({ discoveredSet, selectedId, hoveredId, ma
   const selected = getDistrict(selectedId);
   const keyboardFocused = getDistrict(keyboardFocusId);
   const tooltipDistrict = quiz ? null : (hovered ?? keyboardFocused);
+  // Outside a quiz the hover copy is the district itself (its own fill), so it can lift; a quiz keeps a tint, as its marks must
+  // show through. The focus ring rides on whichever copy is lifted under it.
+  const hoverState = hovered && !quiz ? (discoveredSet.has(hovered.id) ? 'discovered' : 'locked') : undefined;
+  const liftOf = id => (id === selectedId ? 'selected' : hoverState && id === hoveredId ? 'hover' : undefined);
 
   return (
     <div className="map-canvas" style={{ '--map-ratio': VB_W / VB_H }}>
@@ -124,9 +128,14 @@ export default function BangladeshMap({ discoveredSet, selectedId, hoveredId, ma
         <path className="map-division" d={MAP.divisionBorders} />
         <path className="map-outline" d={MAP.outline} />
 
-        {hovered && hovered.id !== selectedId && <path key={`h${hovered.id}`} className="overlay-hover" d={hovered.d} />}
+        {hovered && hovered.id !== selectedId && (
+          <path key={`h${hovered.id}`} className="overlay-hover" data-state={hoverState} d={hovered.d} />
+        )}
+        {/* the selected district locks: a filled copy under its paper rim and stamp outline, lifted together; a click on a
+            lifted hover copy carries on from where that copy was (data-from-hover) */}
         {selected && (
-          <g key={`s${selected.id}`}>
+          <g key={`s${selected.id}`} className="overlay-selection" data-from-hover={selected.id === hoveredId || undefined}>
+            <path className="overlay-selected-lift" d={selected.d} />
             <path className="overlay-selected-halo" d={selected.d} />
             <path className="overlay-selected" d={selected.d} />
           </g>
@@ -152,7 +161,7 @@ export default function BangladeshMap({ discoveredSet, selectedId, hoveredId, ma
             })}
           </g>
         )}
-        {keyboardFocused && <path className="overlay-focus" d={keyboardFocused.d} />}
+        {keyboardFocused && <path className="overlay-focus" data-lift={liftOf(keyboardFocused.id)} d={keyboardFocused.d} />}
       </svg>
 
       <DistrictTooltip district={tooltipDistrict} discovered={tooltipDistrict ? discoveredSet.has(tooltipDistrict.id) : false} />
