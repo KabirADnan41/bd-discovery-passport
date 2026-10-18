@@ -196,3 +196,19 @@ test('on a desktop there is no Show on map button', async ({ page, isMobile }) =
   await expect(page.getByRole('button', { name: /^Show on map/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /^Back to day/ })).toHaveCount(0);
 });
+
+test('the route reads as river blue: its line is the main stroke and the paper casing only a thin edge, under a pin', async ({ page }) => {
+  await page.addInitScript(t => localStorage.setItem('bd-discovery-passport:trip:v1', t), JSON.stringify({
+    name: '',
+    days: [[{ kind: 'place', id: '43-patenga-sea-beach' }, { kind: 'place', id: '45-inani-beach' }]],
+  }));
+  await page.goto('/');
+  await page.getByRole('tab', { name: /^Plan/ }).click();
+  const width = sel => page.locator(sel).first().evaluate(el => parseFloat(getComputedStyle(el).strokeWidth));
+  const line = await width('.trip-overlay polyline');
+  const casing = await width('.trip-overlay .trip-casing');
+  const pin = await page.locator('.trip-overlay circle').first().evaluate(el => 2 * el.r.baseVal.value);
+  expect(casing).toBeGreaterThan(line); // a paper edge stays on both sides
+  expect(line / casing).toBeGreaterThanOrEqual(0.6); // the blue line, not its casing, is most of the route's width
+  expect(line).toBeLessThan(pin / 2); // and it stays well under a pin
+});

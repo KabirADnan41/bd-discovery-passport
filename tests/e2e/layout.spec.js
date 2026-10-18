@@ -62,3 +62,50 @@ test('phone: no sideways scrolling on Explore or with a district open', async ({
   await expect(page.getByRole('dialog', { name: 'Sylhet' })).toBeVisible();
   expect(await overflow(), 'a district open').toBeLessThanOrEqual(0);
 });
+
+// A long trip runs the planner far below the screen. On desktop widths the map beside it stays in view (the sheet is sticky and
+// always fits the screen), the page keeps its one scroll (no scroll box inside the planner) and nothing covers the planner.
+const LONG_TRIP = {
+  name: '',
+  days: [['54-bichanakandi', '54-lalakhal', '54-keane-bridge', '54-shah-paran-dargah'], ['43-patenga-sea-beach', '45-inani-beach'], ['1-star-mosque']].map(
+    day => day.map(id => ({ kind: 'place', id })),
+  ),
+};
+for (const [width, height] of [
+  [1024, 768],
+  [1440, 900],
+]) {
+  test(`at ${width}px the map stays in view beside a long planner, with no scroll box of its own`, async ({ page, isMobile }) => {
+    test.skip(isMobile, 'desktop layout; phones keep the planner above the map');
+    await page.setViewportSize({ width, height });
+    await page.addInitScript(t => localStorage.setItem('bd-discovery-passport:trip:v1', t), JSON.stringify(LONG_TRIP));
+    await page.goto('/');
+    await page.getByRole('tab', { name: /^Plan/ }).click();
+    await expect(page.getByRole('heading', { name: /^Your trip/ })).toBeVisible();
+    const masthead = await rect(page.getByRole('banner'));
+    expect((await rect(page.locator('.atlas-sheet'))).top).toBeGreaterThanOrEqual(masthead.bottom); // under the masthead at the top
+
+    // scroll as a reader does, until the planner's last controls sit at the bottom of the screen (the furthest point still in
+    // the planner; scrolling on past the atlas section rightly takes the map up with it)
+    const share = page.getByRole('button', { name: 'Share trip' });
+    await share.evaluate(el => window.scrollBy(0, el.getBoundingClientRect().bottom - window.innerHeight + 24));
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(200); // the page scrolled, not a box inside it
+    expect((await rect(page.locator('.atlas-sheet'))).top).toBeGreaterThanOrEqual(0);
+    for (const part of ['.map-canvas', '.atlas-key']) {
+      const box = await rect(page.locator(part));
+      expect(box.top, part).toBeGreaterThanOrEqual(0);
+      expect(box.bottom, part).toBeLessThanOrEqual(height); // the whole map and its key stay on screen
+    }
+    const own = await page.getByRole('heading', { name: /^Your trip/ }).evaluate(h => {
+      for (let el = h.parentElement; el && el !== document.body; el = el.parentElement)
+        if (el.scrollHeight > el.clientHeight + 1 && /auto|scroll/.test(getComputedStyle(el).overflowY)) return el.className;
+      return null;
+    });
+    expect(own).toBeNull();
+    const onTop = await share.evaluate(el => {
+      const r = el.getBoundingClientRect();
+      return el.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2));
+    });
+    expect(onTop).toBe(true); // the sticky map never covers the planner's controls
+  });
+}

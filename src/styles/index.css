@@ -243,6 +243,11 @@
   }
   .atlas-sheet {
     grid-area: 1 / 1;
+    /* the map stays in view while a long planner scrolls the page beside it. The sheet is sized to the screen under the masthead
+       (plan mode's longer key can push its bottom padding a few px past a short screen; the map and key stay whole), and the
+       journal (z-index 1 from 1280px) stays on top of its edge */
+    position: sticky;
+    top: var(--sheet-gap);
     justify-content: center;
     min-height: calc(100dvh - var(--masthead-h) - 1px - 2 * var(--sheet-gap));
     padding: var(--sheet-pad-top) 0.5rem var(--sheet-pad-bottom);
@@ -589,14 +594,15 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+/* The blue line is the route; the casing is only a thin paper edge (2 units each side) that keeps it 3:1 on the green. */
 .trip-overlay polyline {
   stroke: var(--route-river);
-  stroke-width: 5;
-  stroke-dasharray: 10 12; /* dashes say "approximate": the line joins district anchors, not roads */
+  stroke-width: 8;
+  stroke-dasharray: 12 16; /* dashes say "approximate": the line joins district anchors, not roads (round caps add 8 to each dash) */
 }
 .trip-overlay .trip-casing {
   stroke: var(--surface-paper);
-  stroke-width: 11;
+  stroke-width: 12;
 }
 .trip-overlay circle {
   fill: var(--text-primary);
