@@ -516,6 +516,14 @@
   stroke-linejoin: round;
   pointer-events: none;
 }
+/* A press darkens the copy over the pressed district, as :active darkens the district itself (hidden under the copy), so a
+   press shows on every pointer, with or without motion; the compression below adds to it */
+.map-svg:has(.district:active) .overlay-hover[data-state] {
+  filter: var(--shadow-lift-hover) brightness(0.9);
+}
+.map-svg:has(.district[data-selected='true']:active) .overlay-selection {
+  filter: var(--shadow-lift-selected) brightness(0.9);
+}
 /* Lift and press. Lengths inside the map are viewBox units. Reduced motion keeps every fill, edge, shadow and the softening,
    still: no lift, no press, no fade. */
 @media (prefers-reduced-motion: no-preference) {
@@ -540,7 +548,7 @@
     translate: var(--lift-selected);
   }
 }
-/* the hover lift is for a mouse, the one pointer that hovers here (touch keeps the districts' own :active feedback) */
+/* the hover lift is for a mouse, the one pointer that hovers here (a press on any pointer darkens the copy, above) */
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .overlay-hover[data-state] {
     translate: var(--lift-hover);

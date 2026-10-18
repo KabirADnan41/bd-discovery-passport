@@ -85,6 +85,27 @@ test('a press compresses the lifted copy, and the districts themselves never mov
   expect(await unmoved(sylhet)).toBe(true);
 });
 
+test('a press darkens the copy over the pressed district, hovered or already selected, also with reduced motion', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'the hover copy is for mouse pointers');
+  // with reduced motion nothing moves, so the copy covers the district completely: the copy itself must show the press
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const pressed = locator => style(locator, 'filter').then(filter => filter.includes('brightness(0.9)'));
+  await district(page, '54').hover();
+  await expect(hoverCopy(page)).toHaveAttribute('data-state', 'discovered');
+  expect(await pressed(hoverCopy(page))).toBe(false);
+  await page.mouse.down();
+  await expect.poll(() => pressed(hoverCopy(page))).toBe(true);
+  await page.mouse.up(); // the click selects it
+  await expect(selection(page)).toHaveCount(1);
+  expect(await pressed(selection(page))).toBe(false);
+  await page.mouse.down();
+  await expect.poll(() => pressed(selection(page))).toBe(true);
+  await page.mouse.up();
+});
+
 test('selecting locks a lifted copy and softens the rest of the land; closing the page clears both', async ({ page }) => {
   expect(await landOpacity(page)).toBe(1);
   await district(page, '54').click();
