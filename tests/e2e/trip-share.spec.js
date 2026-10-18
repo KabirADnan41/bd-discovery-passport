@@ -89,6 +89,14 @@ test('a shared-trip preview has a Bengali subtitle under its heading', async ({ 
   await page.goto(`/?trip=${SHARED}`);
   const subtitle = notice(page).getByRole('heading', { name: /^A shared trip/ }).locator('[lang="bn"]');
   await expect(subtitle).toHaveText('শেয়ার করা ভ্রমণ');
+  // under the English line, not beside it, at every width
+  const below = await subtitle.evaluate(el => {
+    const english = document.createRange();
+    english.selectNodeContents(el.parentElement.firstChild);
+    const line = english.getBoundingClientRect(); // the glyph box, which can overhang a tight line box, so compare with its middle
+    return el.getBoundingClientRect().top > line.top + line.height / 2;
+  });
+  expect(below).toBe(true);
 });
 
 test('if the copy fails, the same link shows in a read-only field, selected, and nothing is stored', async ({ page, baseURL }) => {

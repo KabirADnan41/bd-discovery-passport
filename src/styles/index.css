@@ -699,9 +699,6 @@
   .trip-stop[data-drop]::after {
     animation: trip-drop-line var(--dur-micro) var(--ease-out);
   }
-  .trip-stop[data-lifted] {
-    transition: box-shadow var(--dur-micro) var(--ease-out);
-  }
   .trip-stop[data-settled] {
     animation: trip-settle var(--dur-component) var(--ease-out);
   }

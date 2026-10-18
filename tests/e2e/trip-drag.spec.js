@@ -102,11 +102,17 @@ test('a drop line is a river-blue line on the edge, and the dropped stop reaches
     return colour;
   });
   expect(line).toEqual({ height: '3px', colour: river, position: 'absolute' }); // out of the flow: no layout shift
+  await page.evaluate(() => {
+    window.settleStarted = false;
+    document.addEventListener('animationstart', e => e.animationName === 'trip-settle' && (window.settleStarted = true));
+  });
   await page.mouse.up();
 
   const moved = stops.first(); // Inani Beach, now first
   await expect(moved).toHaveText(/^Inani Beach/);
-  await expect(moved).not.toHaveAttribute('data-settled', /.*/, { timeout: 4000 }); // the settle ran and cleared itself
+  await expect.poll(() => page.evaluate(() => window.settleStarted)).toBe(true); // the settle did run
+  await expect(moved).not.toHaveAttribute('data-settled', /.*/, { timeout: 4000 }); // and cleared itself
+  expect(await moved.evaluate(el => getComputedStyle(el).transform)).toBe('none'); // at rest in its place
   await expect(moved).not.toHaveAttribute('data-lifted');
   await expect(dropLines(page)).toHaveCount(0);
 });

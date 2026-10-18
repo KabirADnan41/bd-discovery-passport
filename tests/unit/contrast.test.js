@@ -114,10 +114,9 @@ describe.each([
       expect(line, 'route-river').toBeTruthy();
       expect(Math.max(contrast(line, under), contrast(casing, under))).toBeGreaterThanOrEqual(3);
     });
-    it.each(grounds)('the route line itself keeps 3:1 on %s unless its casing carries it (green only)', ground => {
-      const direct = contrast(resolve(tokens, 'route-river'), resolve(tokens, ground));
-      if (ground === 'map-discovered') expect(direct).toBeLessThan(3); // the reason for the casing
-      else expect(direct).toBeGreaterThanOrEqual(3);
+    // on the discovered green the casing carries the line (the test above), so only the other grounds need the line itself
+    it.each(grounds.filter(g => g !== 'map-discovered'))('the route line itself keeps 3:1 on %s', ground => {
+      expect(contrast(resolve(tokens, 'route-river'), resolve(tokens, ground))).toBeGreaterThanOrEqual(3);
     });
     it('the route line shows against its casing, the paper and the sheet (3:1 non-text)', () => {
       const line = resolve(tokens, 'route-river');
