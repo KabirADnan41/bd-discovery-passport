@@ -155,9 +155,9 @@
   --elev-land: drop-shadow(0 -0.75px 0 rgb(239 232 217 / 0.22)) drop-shadow(0 10px 18px rgb(0 0 0 / 0.55));
   --shadow-lift-hover: drop-shadow(0 2px 1.5px rgb(0 0 0 / 0.55));
   --shadow-lift-selected: drop-shadow(0 1px 0.5px rgb(0 0 0 / 0.5)) drop-shadow(0 4px 5px rgb(0 0 0 / 0.55));
-  /* at night discovered and unexplored are only just 3:1 apart, so the land barely softens: the selection stands out by its
-     lift, rim, outline and brighter green */
-  --map-soften: 0.97;
+  /* at night discovered and unexplored are only just 3:1 apart, so the land does not soften at all: the selection stands out
+     by its lift, rim, outline and brighter green */
+  --map-soften: 1;
 }
 
 /* A damped spring with a gentle overshoot (about 4%). A custom property cannot fall back by itself (any value is valid until
