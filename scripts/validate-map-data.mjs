@@ -93,14 +93,21 @@ export function validate({ generated, enriched, sourceDistricts, sourceDivisions
   // --- Bengali notes: optional sibling of `note`, same rules plus number fidelity
   // Bengali letters: the Bengali block without its digits (U+09E6 to U+09EF).
   const BENGALI_LETTER = /[ঀ-৥ৰ-৿]/;
+  // Bengali text is written in Bengali script only: no Latin letters and no Devanagari letters (U+0900 to U+097F), which
+  // look close but are another script. The dandas U+0964 and U+0965 are allowed: Bengali uses them as its full stop.
+  const otherScript = text => [...text].some(ch => {
+    const c = ch.codePointAt(0);
+    return /[A-Za-z]/.test(ch) || (c >= 0x0900 && c <= 0x097f && c !== 0x0964 && c !== 0x0965);
+  });
   // 280 = twice the 140 English limit; Bengali script needs roughly 1.3 to 2 characters per English one.
   const MAX_NOTE_BN_LENGTH = 280;
-  const numbersIn = s => new Set((s.replace(/[০-৯]/g, c => String(c.charCodeAt(0) - 0x09E6)).match(/\d+/g) || []).map(n => String(Number(n))));
+  const numbersIn = s => new Set((s.replace(/[০-৯]/g, c => String(c.charCodeAt(0) - 0x09E6)).replace(/(\d),(?=\d{3}(?!\d))/g, '$1').match(/\d+/g) || []).map(n => String(Number(n))));
   const checkNoteBn = (p, where) => {
     noMarkup(p.noteBn, `${where}.noteBn`);
     if (typeof p.noteBn !== 'string' || !p.noteBn.trim()) return;
     if (/[–—]/.test(p.noteBn)) err(`${where}: noteBn: use a hyphen, not an en/em dash`);
     if (!BENGALI_LETTER.test(p.noteBn)) err(`${where}: noteBn must contain Bengali letters`);
+    if (otherScript(p.noteBn)) err(`${where}: noteBn: only Bengali script, no Latin or Devanagari letters`);
     if (p.noteBn.length > MAX_NOTE_BN_LENGTH) err(`${where}: noteBn is over ${MAX_NOTE_BN_LENGTH} characters`);
     if (typeof p.note !== 'string') return;
     const en = numbersIn(p.note);
@@ -149,6 +156,7 @@ export function validate({ generated, enriched, sourceDistricts, sourceDivisions
         if (!used.has(key)) err(`categoriesBn: "${key}" is not a category used by any place`);
         noMarkup(label, `categoriesBn["${key}"]`);
         if (typeof label === 'string' && label.trim() && !BENGALI_LETTER.test(label)) err(`categoriesBn["${key}"]: must contain Bengali letters`);
+        else if (typeof label === 'string' && otherScript(label)) err(`categoriesBn["${key}"]: only Bengali script, no Latin or Devanagari letters`);
       }
     }
   }

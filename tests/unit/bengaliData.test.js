@@ -45,6 +45,15 @@ describe('Bengali note (noteBn) rules', () => {
   it('rejects a number that the English note does not have', () => {
     expect(withNote('Old fort.', 'পুরনো দুর্গ ২০০ বছরের।')).toMatch(/noteBn has a number not in the English note: 200/);
   });
+  it('reads a thousands comma as part of the number, in either note', () => {
+    expect(withNote('A library of 6,000 books.', '৬০০০ বইয়ের একটি গ্রন্থাগার।')).toBe('');
+    expect(withNote('A 1020-foot hill.', '১,০২০ ফুট উঁচু একটি পাহাড়।')).toBe('');
+    expect(withNote('A library of 6,000 books.', '৬০০ বইয়ের একটি গ্রন্থাগার।')).toMatch(/noteBn is missing the number 6000/);
+  });
+  it('rejects Latin or Devanagari letters left in the Bengali note', () => {
+    expect(withNote('A mosque attributed to a sultan.', 'সুলতানের বলে atribu করা একটি মসজিদ।')).toMatch(/noteBn: only Bengali script/);
+    expect(withNote('An eco park.', 'একটি ইকোपार्क।')).toMatch(/noteBn: only Bengali script/);
+  });
 });
 
 describe('Bengali category labels (categoriesBn)', () => {
@@ -76,5 +85,13 @@ describe('Bengali category labels (categoriesBn)', () => {
     expect(errors).toContain(`categoriesBn["${a}"]: empty text`);
     expect(errors).toContain(`categoriesBn["${b}"]: markup-like`);
     expect(errors).toContain(`categoriesBn["${c}"]: must contain Bengali letters`);
+  });
+  it('rejects Latin or Devanagari letters mixed into a label', () => {
+    const i = inputs();
+    const [a, b] = Object.keys(allCategories(i.places));
+    const map = { ...allCategories(i.places), [a]: 'ম্যানগ্রোভ ইকোपार्क', [b]: 'সীমান্ত করিডor' };
+    const errors = validate({ ...i, categoriesBn: map }).join('\n');
+    expect(errors).toContain(`categoriesBn["${a}"]: only Bengali script`);
+    expect(errors).toContain(`categoriesBn["${b}"]: only Bengali script`);
   });
 });
