@@ -8,6 +8,14 @@ import { SHARE_PARAM, encodeTripShare } from '../../lib/tripShare';
 import SharedTripNotice from './SharedTripNotice';
 
 const BUTTON = 'btn btn-quiet min-h-11 px-4 text-[0.88rem] aria-disabled:opacity-45';
+const ICON_BUTTON = 'btn btn-quiet min-h-11 min-w-11 px-0 aria-disabled:opacity-45'; // 44 x 44, a glyph and no text
+const GLYPH = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' };
+const GLYPHS = {
+  up: <path d="M3.5 10.5 8 6l4.5 4.5" />,
+  down: <path d="M3.5 5.5 8 10l4.5-4.5" />,
+  remove: <path d="M4 4l8 8M12 4l-8 8" />,
+};
+const COPIED_MS = 2000;
 const keyOf = stop => `${stop.kind}-${stop.id}`; // unique within a trip, and safe in an element id
 const stopCount = trip => trip.days.flat().length;
 const samePlace = (a, b) => a?.day === b?.day && a?.index === b?.index; // two { day, index }, either of which may be missing
@@ -34,10 +42,18 @@ function moveTarget(days, day, index, step) {
 }
 
 /** A disabled button stays focusable (aria-disabled, not disabled) and a press does nothing. */
-function TripButton({ id, label, fullLabel, disabled = false, onPress }) {
+function TripButton({ id, label, fullLabel, glyph, disabled = false, onPress }) {
   return (
-    <button id={id} type="button" className={BUTTON} aria-disabled={disabled || undefined} onClick={disabled ? undefined : onPress}>
-      {fullLabel ? (
+    <button id={id} type="button" className={glyph ? ICON_BUTTON : BUTTON} aria-disabled={disabled || undefined} onClick={disabled ? undefined : onPress}>
+      {glyph ? (
+        <>
+          {/* an icon-only button: the sr-only span is its whole name, the glyph is picture only */}
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" {...GLYPH}>
+            {GLYPHS[glyph]}
+          </svg>
+          <span className="sr-only">{fullLabel}</span>
+        </>
+      ) : fullLabel ? (
         <>
           {/* as in AddToTripButton: the sr-only span carries the whole name, so it never reads "Move up : Name" */}
           <span aria-hidden="true">{label}</span>
@@ -54,18 +70,28 @@ function TripButton({ id, label, fullLabel, disabled = false, onPress }) {
  * One stop, its grip and its buttons. Focus follows by id: a moved stop keeps its button, a removed one hands over to
  * `focusAfterRemove`. `lifted` marks the stop being dragged, and `drop` ('before' or 'after') the edge where a drop line shows.
  */
-function Stop({ trip, day, index, names, focusAfterRemove, onEdit, gripProps, lifted, drop }) {
+function Stop({ trip, day, index, names, focusAfterRemove, onEdit, gripProps, lifted, drop, settled, onSettled }) {
   const key = keyOf(trip.days[day][index]);
   const moveButton = (step, label) => {
     const to = moveTarget(trip.days, day, index, step);
     const next = moveStop(trip, { day, index }, to);
     const id = `trip-${step < 0 ? 'up' : 'down'}-${key}`;
     return (
-      <TripButton id={id} label={label} fullLabel={`${label}: ${names.en}`} disabled={next === trip} onPress={() => onEdit(next, movedMessage(names, to), id)} />
+      <TripButton id={id} label={label} glyph={step < 0 ? 'up' : 'down'} fullLabel={`${label}: ${names.en}`} disabled={next === trip} onPress={() => onEdit(next, movedMessage(names, to), id)} />
     );
   };
   return (
-    <li className="trip-stop flex gap-2 border-t border-rule py-3.5 first:border-t-0 first:pt-1" data-lifted={lifted || undefined} data-drop={drop}>
+    <li
+      className="trip-stop flex gap-2 border-t border-rule py-3.5 first:border-t-0 first:pt-1"
+      data-lifted={lifted || undefined}
+      data-drop={drop}
+      data-settled={settled || undefined}
+      onAnimationEnd={e => e.animationName === 'trip-settle' && onSettled()}
+    >
+      {/* the same pin the map draws for a stop (a filled circle with a paper outline); the dashed rail joining a day's pins is CSS */}
+      <svg className="trip-pin" aria-hidden="true" width="18" height="18" viewBox="0 0 18 18">
+        <circle cx="9" cy="9" r="7" />
+      </svg>
       {/* pointers only: Move up and Move down are the way for keyboards and screen readers, so the grip is hidden and never focused */}
       <span className="trip-grip flex h-11 w-6 shrink-0 justify-center pt-1" aria-hidden="true" {...gripProps({ day, index }, names)}>
         <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
@@ -87,12 +113,13 @@ function Stop({ trip, day, index, names, focusAfterRemove, onEdit, gripProps, li
           )}
         </p>
         {names.district && <p className="mt-0.5 text-[0.85rem] text-ink-3">{names.district}</p>}
-        <div className="mt-2 flex flex-wrap gap-2">
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
           {moveButton(-1, 'Move up')}
           {moveButton(1, 'Move down')}
           <TripButton
             id={`trip-remove-${key}`}
             label="Remove"
+            glyph="remove"
             fullLabel={`Remove: ${names.en}`}
             onPress={() => onEdit(removeStop(trip, day, index), `Removed ${names.en} from your trip.`, focusAfterRemove)}
           />
@@ -118,6 +145,7 @@ const measureDays = () => [...document.querySelectorAll('.trip-day')].map(day =>
  */
 function useStopDrag(trip, onEdit) {
   const [drag, setDrag] = useState(null);
+  const [settled, setSettled] = useState(null); // keyOf the stop just dropped, until its settle animation ends (CSS drops it at once under reduced motion)
   const dragging = drag !== null;
   useEffect(() => {
     if (!dragging) return undefined;
@@ -136,6 +164,7 @@ function useStopDrag(trip, onEdit) {
     onPointerDown: e => {
       if (!e.isPrimary || e.button !== 0) return; // one stop at a time, by the main button or the first finger
       e.currentTarget.setPointerCapture(e.pointerId);
+      setSettled(null);
       setDrag({ pointerId: e.pointerId, from, names, days: measureDays(), to: null });
     },
     onPointerMove: e => {
@@ -147,11 +176,13 @@ function useStopDrag(trip, onEdit) {
       if (!holds(e)) return;
       const to = moveAt(e);
       setDrag(null);
-      if (to) onEdit(moveStop(trip, drag.from, to), movedMessage(drag.names, to));
+      if (!to) return;
+      setSettled(keyOf(trip.days[drag.from.day][drag.from.index]));
+      onEdit(moveStop(trip, drag.from, to), movedMessage(drag.names, to));
     },
     onPointerCancel: e => holds(e) && setDrag(null),
   });
-  return { drag, gripProps };
+  return { drag, gripProps, settled, clearSettled: () => setSettled(null) };
 }
 
 /**
@@ -173,9 +204,12 @@ export default function TripPanel({ trip, onEdit, onClear, onShowOnMap, onAnnoun
     if (stopCount(pruned) < stopCount(trip)) onEdit(pruned);
   }, [placesById, trip, onEdit]);
 
-  const { drag, gripProps } = useStopDrag(trip, onEdit);
+  const { drag, gripProps, settled, clearSettled } = useStopDrag(trip, onEdit);
   const [linkShown, setLinkShown] = useState(false); // after a copy fails, the link shows in a field instead
   const linkRef = useRef(null);
+  const [copied, setCopied] = useState(false); // the visible "Link copied", for about 2 s (the announcement is the screen reader's)
+  const copiedTimer = useRef(0);
+  useEffect(() => () => clearTimeout(copiedTimer.current), []);
   const stops = trip.days.flat();
   const withDay = addDay(trip);
   // A shared trip's days in local names, by id, once the places have loaded; its own text is never shown. Null for a link
@@ -187,6 +221,9 @@ export default function TripPanel({ trip, onEdit, onClear, onShowOnMap, onAnnoun
     try {
       await navigator.clipboard.writeText(shareLink(trip));
       onAnnounce('Trip link copied.');
+      clearTimeout(copiedTimer.current); // a second click starts the 2 s again
+      setCopied(true);
+      copiedTimer.current = setTimeout(() => setCopied(false), COPIED_MS);
     } catch {
       flushSync(() => setLinkShown(true)); // the field is on screen before it is selected
       linkRef.current?.focus();
@@ -237,7 +274,7 @@ export default function TripPanel({ trip, onEdit, onClear, onShowOnMap, onAnnoun
                     </span>
                   </h3>
                   {day.length > 0 && (
-                    <ol>
+                    <ol className="trip-day-stops">
                       {day.map((stop, i) => {
                         const at = stops.indexOf(stop);
                         const neighbour = stops[at + 1] ?? stops[at - 1];
@@ -253,6 +290,8 @@ export default function TripPanel({ trip, onEdit, onClear, onShowOnMap, onAnnoun
                             gripProps={gripProps}
                             lifted={samePlace(drag?.from, { day: d, index: i })}
                             drop={dropAt(i)}
+                            settled={settled === keyOf(stop)}
+                            onSettled={clearSettled}
                           />
                         );
                       })}
@@ -294,7 +333,18 @@ export default function TripPanel({ trip, onEdit, onClear, onShowOnMap, onAnnoun
             <div className="mt-8 flex flex-wrap gap-2">
               <TripButton label="Add a day" disabled={withDay === trip} onPress={() => onEdit(withDay, `Added day ${withDay.days.length}.`)} />
               <TripButton label="Clear trip" onPress={onClear} />
-              <TripButton label="Share trip" onPress={shareTrip} />
+              <div className="relative">
+                <TripButton label="Share trip" onPress={shareTrip} />
+                {/* picture only (aria-hidden): the status region has said it. Out of the flow, so nothing moves when it comes and goes. */}
+                {copied && (
+                  <span className="trip-copied" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 16 16" {...GLYPH}>
+                      <path d="m3 8.5 3.2 3.2L13 4.8" />
+                    </svg>
+                    Link copied
+                  </span>
+                )}
+              </div>
             </div>
             {linkShown && (
               <div className="mt-4 grid gap-1.5">

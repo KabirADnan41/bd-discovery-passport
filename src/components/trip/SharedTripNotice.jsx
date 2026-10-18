@@ -7,8 +7,11 @@
 export default function SharedTripNotice({ days, replaces, onSave, onReplace, onDismiss }) {
   return (
     <section aria-labelledby="shared-trip-title" className="mb-8 rounded-[12px] border border-rule-strong px-5 py-4">
-      <h2 id="shared-trip-title" className="text-h3">
+      <h2 id="shared-trip-title" className="flex flex-wrap items-baseline gap-x-3 text-h3">
         A shared trip
+        <span lang="bn" className="font-normal text-ink-3">
+          শেয়ার করা ভ্রমণ
+        </span>
       </h2>
       {days ? (
         <ol className="mt-2 grid gap-1 text-[1.0625rem] leading-snug">

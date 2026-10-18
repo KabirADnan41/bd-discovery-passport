@@ -159,6 +159,10 @@ export default function BangladeshMap({ discoveredSet, selectedId, justDiscovere
         )}
         {tripMap && (
           <g className="trip-overlay" aria-hidden="true">
+            {/* a paper casing under every route (paths, not polylines, so the lines stay one per day): it keeps the river-blue line readable on the green and the hatching */}
+            {tripMap.routes.map(
+              (route, day) => route.length > 1 && <path key={day} className="trip-casing" d={`M${route.map(id => getDistrict(id).label.join(',')).join('L')}`} />,
+            )}
             {tripMap.routes.map(
               (route, day) =>
                 route.length > 1 && <polyline key={day} data-trip-day={day + 1} points={route.map(id => getDistrict(id).label.join(',')).join(' ')} />,

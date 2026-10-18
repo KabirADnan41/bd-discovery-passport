@@ -61,6 +61,27 @@ test('Plan mode pins each district once with its stop count, and draws a route o
   await expect(lines).toHaveAttribute('points', `${at('54')} ${at('1')}`);
 });
 
+test('a route is drawn in the river-blue token over a paper casing, and not in ink', async ({ page }) => {
+  await startWithTrip(page, [[BICHANAKANDI, STAR_MOSQUE]]);
+  await openPlanner(page);
+  const colours = await page.evaluate(() => {
+    const probe = document.createElement('i');
+    document.body.append(probe);
+    const resolved = name => {
+      probe.style.color = `var(${name})`;
+      return getComputedStyle(probe).color;
+    };
+    const out = { river: resolved('--route-river'), ink: resolved('--text-primary'), paper: resolved('--surface-paper') };
+    probe.remove();
+    const stroke = sel => getComputedStyle(document.querySelector(sel)).stroke;
+    return { ...out, line: stroke('.trip-overlay polyline'), casing: stroke('.trip-overlay .trip-casing') };
+  });
+  expect(colours.line).toBe(colours.river);
+  expect(colours.line).not.toBe(colours.ink);
+  expect(colours.casing).toBe(colours.paper);
+  await expect(overlay(page).locator('.trip-casing')).toHaveCount(1); // one casing per route, under it
+});
+
 test('a day that ends in one district and a day that starts in another are two routes, never one line', async ({ page }) => {
   await startWithTrip(page, [[BICHANAKANDI, STAR_MOSQUE], [INANI_BEACH, PATENGA]]);
   await openPlanner(page);

@@ -82,6 +82,51 @@ test('dragging the third stop to the top of its day saves 3, 1, 2, announces it 
   await expect(stops).toHaveText([/^Inani Beach/, /^Bichanakandi/, /^Star Mosque/]);
 });
 
+test('a drop line is a river-blue line on the edge, and the dropped stop reaches its settled end state', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'mouse drag; the phone drag is below');
+  await startPlanning(page, [[BICHANAKANDI, STAR_MOSQUE, INANI_BEACH]]);
+  const stops = stopsOf(page, 1);
+  const x = await hold(page, stops.nth(2));
+  await moveTo(page, x, (await topOf(stops.first())) + 4);
+  await expect(stops.first()).toHaveAttribute('data-drop', 'before');
+  const line = await stops.first().evaluate(el => {
+    const style = getComputedStyle(el, '::after');
+    return { height: style.height, colour: style.backgroundColor, position: style.position };
+  });
+  const river = await page.evaluate(() => {
+    const probe = document.createElement('i');
+    probe.style.color = 'var(--route-river)';
+    document.body.append(probe);
+    const colour = getComputedStyle(probe).color;
+    probe.remove();
+    return colour;
+  });
+  expect(line).toEqual({ height: '3px', colour: river, position: 'absolute' }); // out of the flow: no layout shift
+  await page.mouse.up();
+
+  const moved = stops.first(); // Inani Beach, now first
+  await expect(moved).toHaveText(/^Inani Beach/);
+  await expect(moved).not.toHaveAttribute('data-settled', /.*/, { timeout: 4000 }); // the settle ran and cleared itself
+  await expect(moved).not.toHaveAttribute('data-lifted');
+  await expect(dropLines(page)).toHaveCount(0);
+});
+
+test('under reduced motion a dropped stop runs no settle animation', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'mouse drag');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await startPlanning(page, [[BICHANAKANDI, STAR_MOSQUE, INANI_BEACH]]);
+  const stops = stopsOf(page, 1);
+  const x = await hold(page, stops.nth(2));
+  await moveTo(page, x, (await topOf(stops.first())) + 4);
+  await expect(stops.first()).toHaveAttribute('data-drop', 'before');
+  expect(await stops.first().evaluate(el => getComputedStyle(el, '::after').animationName)).toBe('none');
+  await page.mouse.up();
+
+  await expect(stops).toHaveText([/^Inani Beach/, /^Bichanakandi/, /^Star Mosque/]); // the end state is there at once
+  expect(await stops.first().evaluate(el => getComputedStyle(el).animationName)).toBe('none');
+  expect(await stops.first().evaluate(el => el.getAnimations().length)).toBe(0);
+});
+
 test('a stop dragged from day 1 into day 2, between its stops, is saved in that order', async ({ page }) => {
   await startPlanning(page, [
     [BICHANAKANDI, LALAKHAL],

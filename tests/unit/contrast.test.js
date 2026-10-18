@@ -102,6 +102,38 @@ describe.each([
     expect(contrast(over(success, paper, 0.7), paper)).toBeGreaterThanOrEqual(3);
   });
 
+  // A trip's route (and the planner's rail) and its pins are non-text graphics on the land. A route is --route-river with a paper
+  // casing under it; a pin is an ink disc with a paper outline. Each must show (3:1) against every ground it can sit on, by its
+  // own colour or by its casing/outline, and the line must also read on the paper of the planner.
+  describe('trip route and pins', () => {
+    const grounds = ['map-discovered', 'map-locked', 'map-locked-hatch'];
+    it.each(grounds)('the route (with its casing) shows on %s (3:1 non-text)', ground => {
+      const line = resolve(tokens, 'route-river');
+      const casing = resolve(tokens, 'surface-paper');
+      const under = resolve(tokens, ground);
+      expect(line, 'route-river').toBeTruthy();
+      expect(Math.max(contrast(line, under), contrast(casing, under))).toBeGreaterThanOrEqual(3);
+    });
+    it.each(grounds)('the route line itself keeps 3:1 on %s unless its casing carries it (green only)', ground => {
+      const direct = contrast(resolve(tokens, 'route-river'), resolve(tokens, ground));
+      if (ground === 'map-discovered') expect(direct).toBeLessThan(3); // the reason for the casing
+      else expect(direct).toBeGreaterThanOrEqual(3);
+    });
+    it('the route line shows against its casing, the paper and the sheet (3:1 non-text)', () => {
+      const line = resolve(tokens, 'route-river');
+      for (const s of ['surface-paper', 'surface-sheet', 'surface-canvas']) expect(contrast(line, resolve(tokens, s))).toBeGreaterThanOrEqual(3);
+    });
+    it.each(grounds)('a pin (ink disc, paper outline) shows on %s (3:1 non-text)', ground => {
+      const under = resolve(tokens, ground);
+      const disc = contrast(resolve(tokens, 'text-primary'), under);
+      const outline = contrast(resolve(tokens, 'surface-paper'), under);
+      expect(Math.max(disc, outline)).toBeGreaterThanOrEqual(3);
+    });
+    it('a pin disc shows against its paper outline (3:1 non-text)', () => {
+      expect(contrast(resolve(tokens, 'text-primary'), resolve(tokens, 'surface-paper'))).toBeGreaterThanOrEqual(3);
+    });
+  });
+
   it('text on the green cover meets WCAG AA (4.5:1)', () => {
     expect(contrast(resolve(tokens, 'text-on-cover'), resolve(tokens, 'surface-cover'))).toBeGreaterThanOrEqual(4.5);
   });

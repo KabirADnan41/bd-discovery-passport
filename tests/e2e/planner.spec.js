@@ -69,6 +69,42 @@ test('a saved trip lists its days in order, each with Google Maps directions in 
   expect(day2.get('destination')).toMatch(/^Shah Paran Dargah, /);
 });
 
+test('the Move and Remove controls are compact 44 px icon buttons that keep their full names', async ({ page }) => {
+  await startWithTrip(page, [[BICHANAKANDI, LALAKHAL]]);
+  await openPlanner(page);
+  for (const name of ['Move up: Bichanakandi', 'Move down: Bichanakandi', 'Remove: Bichanakandi', 'Remove: Lalakhal']) {
+    const control = button(page, name);
+    await expect(control).toBeVisible();
+    const box = await control.boundingBox();
+    expect(box.width).toBeGreaterThanOrEqual(44);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    expect(box.width).toBeLessThan(60); // an icon, not a word
+    await expect(control.locator('svg')).toHaveCount(1); // a glyph; the name is the screen-reader text
+  }
+  await expect(button(page, 'Move up: Bichanakandi')).toHaveAttribute('aria-disabled', 'true'); // still focusable
+});
+
+test('each day is a dashed river-blue rail with one map pin per stop, matching the route on the map', async ({ page }) => {
+  await startWithTrip(page, [[BICHANAKANDI, place('1-star-mosque')], [SHAH_PARAN]]); // day 1 joins two districts, so it has a route
+  await openPlanner(page);
+  await expect(planner(page).locator('.trip-pin')).toHaveCount(3);
+  const rail = await stopsOf(page, 1).first().evaluate(el => {
+    const style = getComputedStyle(el, '::before');
+    return { style: style.borderLeftStyle, color: style.borderLeftColor };
+  });
+  expect(rail.style).toBe('dashed');
+  const colours = await page.evaluate(() => {
+    const probe = document.createElement('i');
+    probe.style.color = 'var(--route-river)';
+    document.body.append(probe);
+    const river = getComputedStyle(probe).color;
+    probe.remove();
+    return { river, line: getComputedStyle(document.querySelector('.trip-overlay polyline')).stroke };
+  });
+  expect(rail.color).toBe(colours.river);
+  expect(colours.line).toBe(colours.river); // the planner and the map draw the day the same way
+});
+
 test('Move down and Move up reorder a day, keep focus on the moved stop, and the order is saved', async ({ page }) => {
   await startWithTrip(page, [[BICHANAKANDI, LALAKHAL, SHAH_PARAN]]);
   await openPlanner(page);

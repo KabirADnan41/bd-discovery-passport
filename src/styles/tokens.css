@@ -51,6 +51,7 @@
   --accent-stamp: var(--passport-vermilion); /* stamp graphics, selection outline, danger button */
   --accent-stamp-text: #a8332c; /* small vermilion text: ≥5.1:1 on every light surface (#b93b33 is 4.34 on sunk) */
   --accent-river: var(--river-blue);
+  --route-river: #2c7486; /* a trip's route and rail: river blue, a shade deeper so it keeps 3:1 on the hatching (tests/unit/contrast.test.js) */
   --accent-brass: var(--muted-brass);
   --accent-brass-text: #7a5a1e; /* eyebrows: brass dark enough for small text */
   --text-success: #1f6b47;
@@ -149,6 +150,7 @@
   --accent-stamp: #e4695d;
   --accent-stamp-text: #ec8176;
   --accent-river: #7fbccb;
+  --route-river: #7fbccb;
   --accent-brass: #d5b06a;
   --accent-brass-text: #d5b06a;
   --focus-ring: #7fbccb;

@@ -577,18 +577,26 @@
   }
 }
 
-/* The trip on the map (plan mode): a dashed line per day and a pin per district, in the 1000-wide viewBox's units. Ink on both
-   themes (it reads on green and on hatching), and clicks pass through to the districts underneath. */
+/* The trip on the map (plan mode): a dashed river-blue line per day and an ink pin per district, in the 1000-wide viewBox's units.
+   The planner's rail and pins are drawn the same way (below), so the two visibly match. Each line has a paper casing under it, so it
+   keeps 3:1 on the green, the hatching and the sheet in both themes; clicks pass through to the districts underneath. */
 .trip-overlay {
   pointer-events: none;
 }
-.trip-overlay polyline {
+.trip-overlay polyline,
+.trip-overlay .trip-casing {
   fill: none;
-  stroke: var(--text-primary);
-  stroke-width: 5;
-  stroke-dasharray: 10 12; /* dashes say "approximate": the line joins district anchors, not roads */
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+.trip-overlay polyline {
+  stroke: var(--route-river);
+  stroke-width: 5;
+  stroke-dasharray: 10 12; /* dashes say "approximate": the line joins district anchors, not roads */
+}
+.trip-overlay .trip-casing {
+  stroke: var(--surface-paper);
+  stroke-width: 11;
 }
 .trip-overlay circle {
   fill: var(--text-primary);
@@ -601,8 +609,51 @@
   font-weight: 700;
 }
 
+/* The planner's day: a dashed river-blue rail down the stops, each marked by the map's pin (filled circle, paper outline). */
+.trip-stop {
+  --pin-y: 1.625rem; /* the pin's centre, from the row's top: the name's first line */
+  position: relative;
+  padding-left: 1.75rem;
+}
+.trip-stop:first-child {
+  --pin-y: 1rem;
+}
+.trip-stop::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  border-left: 2.5px dashed var(--route-river);
+  pointer-events: none;
+}
+.trip-stop:first-child::before {
+  top: var(--pin-y);
+}
+.trip-stop:last-child::before {
+  bottom: calc(100% - var(--pin-y));
+}
+.trip-stop:only-child::before {
+  display: none; /* one stop has nothing to join */
+}
+.trip-pin {
+  position: absolute;
+  left: 0;
+  top: calc(var(--pin-y) - 9px);
+  pointer-events: none;
+}
+.trip-pin circle {
+  fill: var(--text-primary);
+  stroke: var(--surface-paper);
+  stroke-width: 3;
+}
+.trip-stop[data-lifted] .trip-pin circle {
+  fill: var(--route-river);
+}
+
 /* Drag to reorder in the planner (pointers only; the Move buttons are the keyboard way). Nothing here changes the layout:
-   the held stop lifts in its place, and the drop line is a shadow on the edge where the stop would land. */
+   the held stop lifts in its place, the drop line is a river-blue line on the edge where the stop would land, and a dropped
+   stop settles into its place. All of it is transform, opacity and shadow. */
 .trip-grip {
   color: var(--text-muted);
   cursor: grab;
@@ -614,8 +665,7 @@
   color: var(--text-primary);
 }
 .trip-stop[data-lifted] {
-  position: relative; /* above its neighbours' rules */
-  z-index: 1;
+  z-index: 1; /* above its neighbours' rules */
   border-top-color: transparent;
   border-radius: var(--radius-control);
   background: var(--surface-paper);
@@ -626,14 +676,83 @@
 .trip-stop[data-lifted] .trip-grip {
   cursor: grabbing;
 }
-.trip-stop[data-drop='before'] {
-  box-shadow: inset 0 3px 0 var(--accent-river);
+.trip-stop[data-drop]::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--route-river);
+  pointer-events: none;
 }
-.trip-stop[data-drop='after'] {
-  box-shadow: inset 0 -3px 0 var(--accent-river);
+.trip-stop[data-drop='before']::after {
+  top: -1.5px;
+}
+.trip-stop[data-drop='after']::after {
+  bottom: -1.5px;
 }
 .trip-day[data-drop] > h3 {
-  box-shadow: 0 3px 0 var(--accent-river);
+  box-shadow: 0 3px 0 var(--route-river);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .trip-stop[data-drop]::after {
+    animation: trip-drop-line var(--dur-micro) var(--ease-out);
+  }
+  .trip-stop[data-lifted] {
+    transition: box-shadow var(--dur-micro) var(--ease-out);
+  }
+  .trip-stop[data-settled] {
+    animation: trip-settle var(--dur-component) var(--ease-out);
+  }
+  .trip-copied {
+    animation: trip-copied-in var(--dur-micro) var(--ease-out);
+  }
+}
+@keyframes trip-drop-line {
+  from {
+    opacity: 0;
+    transform: scaleX(0.85);
+  }
+}
+@keyframes trip-settle {
+  from {
+    opacity: 0.7;
+    transform: translateY(-5px) scale(1.01);
+  }
+}
+@keyframes trip-copied-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+}
+
+/* "Link copied" beside Share trip: out of the flow, so nothing moves when it comes and goes. */
+.trip-copied {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 4px);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  font-weight: 560;
+  color: var(--text-success);
+  pointer-events: none;
+}
+
+@media (forced-colors: active) {
+  .trip-pin circle {
+    forced-color-adjust: none;
+    fill: CanvasText;
+    stroke: Canvas;
+  }
+  .trip-stop[data-drop]::after {
+    forced-color-adjust: none;
+    background: Highlight;
+  }
 }
 
 /* hatch pattern colours (pattern content is in the SVG defs) */

@@ -68,6 +68,29 @@ test('Share trip copies a link to this page that holds only the trip’s ids, wi
   expect(await rawTrip(page)).toBe(saved); // sharing stores nothing
 });
 
+test('Share trip shows a visible "Link copied" that goes away by itself, and the screen reader hears it once', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await saveLocalTrip(page, LOCAL_DAYS);
+  await page.goto('/');
+  await openPlanner(page);
+  const copied = planner(page).getByText('Link copied', { exact: true });
+  await expect(copied).toHaveCount(0);
+  const before = await shareButton(page).boundingBox();
+  await shareButton(page).click();
+  await expect(copied).toBeVisible();
+  await expect(copied).toHaveAttribute('aria-hidden', 'true'); // the status region says it, so the picture does not
+  await expect(status(page)).toHaveText('Trip link copied.');
+  expect(await shareButton(page).boundingBox()).toEqual(before); // nothing moved
+  await expect(shareButton(page)).toBeFocused(); // focus stayed on the button
+  await expect(copied).toHaveCount(0, { timeout: 6000 });
+});
+
+test('a shared-trip preview has a Bengali subtitle under its heading', async ({ page }) => {
+  await page.goto(`/?trip=${SHARED}`);
+  const subtitle = notice(page).getByRole('heading', { name: /^A shared trip/ }).locator('[lang="bn"]');
+  await expect(subtitle).toHaveText('শেয়ার করা ভ্রমণ');
+});
+
 test('if the copy fails, the same link shows in a read-only field, selected, and nothing is stored', async ({ page, baseURL }) => {
   await rejectCopies(page);
   const saved = await saveLocalTrip(page, LOCAL_DAYS);

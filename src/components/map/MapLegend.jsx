@@ -44,7 +44,7 @@ const TRIP_ITEMS = [
         y1="7"
         x2="20"
         y2="7"
-        style={{ stroke: 'var(--text-primary)', strokeWidth: 2, strokeDasharray: '3 4', strokeLinecap: 'round' }}
+        style={{ stroke: 'var(--route-river)', strokeWidth: 2, strokeDasharray: '3 4', strokeLinecap: 'round' }}
       />
     ),
   },
