@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = p => JSON.parse(fs.readFileSync(path.join(ROOT, p), 'utf8'));
 
-export function validate({ generated, enriched, sourceDistricts, sourceDivisions, places }) {
+export function validate({ generated, enriched, sourceDistricts, sourceDivisions, places, categoriesBn }) {
   const errors = [];
   const err = m => errors.push(m);
 
@@ -90,6 +90,25 @@ export function validate({ generated, enriched, sourceDistricts, sourceDivisions
     });
   }
 
+  // --- Bengali notes: optional sibling of `note`, same rules plus number fidelity
+  // Bengali letters: the Bengali block without its digits (U+09E6 to U+09EF).
+  const BENGALI_LETTER = /[ঀ-৥ৰ-৿]/;
+  // 280 = twice the 140 English limit; Bengali script needs roughly 1.3 to 2 characters per English one.
+  const MAX_NOTE_BN_LENGTH = 280;
+  const numbersIn = s => new Set((s.replace(/[০-৯]/g, c => String(c.charCodeAt(0) - 0x09E6)).match(/\d+/g) || []).map(n => String(Number(n))));
+  const checkNoteBn = (p, where) => {
+    noMarkup(p.noteBn, `${where}.noteBn`);
+    if (typeof p.noteBn !== 'string' || !p.noteBn.trim()) return;
+    if (/[–—]/.test(p.noteBn)) err(`${where}: noteBn: use a hyphen, not an en/em dash`);
+    if (!BENGALI_LETTER.test(p.noteBn)) err(`${where}: noteBn must contain Bengali letters`);
+    if (p.noteBn.length > MAX_NOTE_BN_LENGTH) err(`${where}: noteBn is over ${MAX_NOTE_BN_LENGTH} characters`);
+    if (typeof p.note !== 'string') return;
+    const en = numbersIn(p.note);
+    const bn = numbersIn(p.noteBn);
+    for (const n of en) if (!bn.has(n)) err(`${where}: noteBn is missing the number ${n}`);
+    for (const n of bn) if (!en.has(n)) err(`${where}: noteBn has a number not in the English note: ${n}`);
+  };
+
   // --- places to go: 3 to 6 per district, every district, each with a stored id "<districtId>-<slug>" that is unique file-wide
   const PLACE_ID = /^(\d{1,2})-[a-z0-9]+(?:-[a-z0-9]+)*$/;
   const MAX_PLACE_ID_LENGTH = 64; // MAX_TOKEN_LENGTH in src/lib/tripShare.js, not imported as this script runs in plain Node
@@ -114,11 +133,25 @@ export function validate({ generated, enriched, sourceDistricts, sourceDivisions
       noMarkup(p.note, `${where}.note`);
       if (/[–—]/.test(p.note)) err(`${where}: use a hyphen, not an en/em dash`);
       if (p.note?.length > 140) err(`${where}: note is over 140 characters`);
+      if (p.noteBn !== undefined) checkNoteBn(p, where);
       checkAddress(id, p.address, where);
       checkSources(p.sources, where);
     });
   }
   for (const id of Object.keys(places)) if (!expected.has(id)) err(`places id ${id} is not a real district id`);
+  // --- Bengali category labels: optional file; when present it must cover exactly the categories in use
+  if (categoriesBn !== undefined) {
+    if (!categoriesBn || typeof categoriesBn !== 'object' || Array.isArray(categoriesBn)) err('categoriesBn: must be a plain object');
+    else {
+      const used = new Set(Object.values(places).flat().map(p => p.category));
+      for (const c of used) if (!Object.hasOwn(categoriesBn, c)) err(`categoriesBn: missing a label for "${c}"`);
+      for (const [key, label] of Object.entries(categoriesBn)) {
+        if (!used.has(key)) err(`categoriesBn: "${key}" is not a category used by any place`);
+        noMarkup(label, `categoriesBn["${key}"]`);
+        if (typeof label === 'string' && label.trim() && !BENGALI_LETTER.test(label)) err(`categoriesBn["${key}"]: must contain Bengali letters`);
+      }
+    }
+  }
   return errors;
 }
 
@@ -129,6 +162,8 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
     sourceDistricts: readJson('data/source/bd-districts.json').districts,
     sourceDivisions: readJson('data/source/bd-divisions.json').divisions,
     places: readJson('src/data/places.json'),
+    // optional: absent until the Bengali labels exist
+    categoriesBn: fs.existsSync(path.join(ROOT, 'src/data/categories.bn.json')) ? readJson('src/data/categories.bn.json') : undefined,
   });
   if (errors.length) {
     console.error(`validate-map-data: ${errors.length} problem(s)\n  - ${errors.join('\n  - ')}`);
