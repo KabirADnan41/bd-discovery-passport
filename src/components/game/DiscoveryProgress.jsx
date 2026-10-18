@@ -2,21 +2,24 @@ import { useState } from 'react';
 import { formatBn } from '../../lib/districtData';
 
 /**
- * The count before a rise of exactly one (a discovery), for the tick in index.css; null after any other change (a reset, a sign-in
- * bringing stamps along) and once the tick has played. Only the picture ticks: the text always holds the true count.
+ * The count before a rise of exactly one that a new discovery caused, for the tick in index.css; null after any other change (a
+ * reset, a sign-in bringing stamps along) and once the tick has played. Only the picture ticks: the text always holds the true count.
  */
-function useCountRise(count) {
-  const [seen, setSeen] = useState({ count, from: null });
+function useCountRise(count, discoveryId) {
+  const [seen, setSeen] = useState({ count, id: discoveryId, from: null });
   // adjusting state while rendering, as usePresence does
-  if (seen.count !== count) setSeen({ count, from: count === seen.count + 1 ? seen.count : null });
+  if (seen.count !== count) {
+    const discovered = count === seen.count + 1 && discoveryId != null && discoveryId !== seen.id;
+    setSeen({ count, id: discoveryId, from: discovered ? seen.count : null });
+  }
   const done = () => setSeen(s => (s.from === null ? s : { ...s, from: null }));
   return [seen.from, done];
 }
 
 // The masthead count. The numbers carry the meaning; the Bengali repeats them for Bengali readers (under the count on tablets,
 // beside it on wide screens).
-export default function DiscoveryProgress({ count, total }) {
-  const [from, tickDone] = useCountRise(count);
+export default function DiscoveryProgress({ count, total, discoveryId }) {
+  const [from, tickDone] = useCountRise(count, discoveryId);
   return (
     <div className="shrink-0 text-right xl:flex xl:items-baseline xl:gap-2.5">
       <p className="leading-none whitespace-nowrap">

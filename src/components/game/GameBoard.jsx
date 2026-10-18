@@ -485,7 +485,7 @@ export default function GameBoard() {
             </div>
           </div>
           <div className="col-start-2 row-start-1 flex items-center gap-3 justify-self-end sm:gap-4 lg:col-start-3">
-            <DiscoveryProgress count={discovered.length} total={TOTAL_DISTRICTS} />
+            <DiscoveryProgress count={discovered.length} total={TOTAL_DISTRICTS} discoveryId={justDiscoveredId} />
             <PassportMenu
               account={account}
               sync={sync.status}
