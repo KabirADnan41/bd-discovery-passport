@@ -95,6 +95,13 @@ describe.each([
     expect(contrast(resolve(tokens, 'rule-strong'), resolve(tokens, 'surface-paper'))).toBeGreaterThanOrEqual(3);
   });
 
+  it('"In your trip" meets WCAG AA (4.5:1) on its green tint, and its border shows against the paper (3:1 non-text)', () => {
+    const paper = resolve(tokens, 'surface-paper');
+    const success = resolve(tokens, 'text-success');
+    expect(contrast(success, over(success, paper, 0.09))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(over(success, paper, 0.7), paper)).toBeGreaterThanOrEqual(3);
+  });
+
   it('text on the green cover meets WCAG AA (4.5:1)', () => {
     expect(contrast(resolve(tokens, 'text-on-cover'), resolve(tokens, 'surface-cover'))).toBeGreaterThanOrEqual(4.5);
   });

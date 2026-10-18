@@ -11,7 +11,7 @@ const focusDistrict = id => document.getElementById(`district-${id}`)?.focus();
 
 // Fills never re-render on hover: only data-state / data-selected / tabIndex changes reach them. The group is the land: it
 // carries the one landmass shadow (.map-land), so the overlays drawn above it stay crisp.
-const DistrictLayer = memo(function DistrictLayer({ discoveredSet, selectedId, tabbableId, marks, handlers }) {
+const DistrictLayer = memo(function DistrictLayer({ discoveredSet, selectedId, inkingId, tabbableId, marks, handlers }) {
   return (
     <g className="map-land">
       {DISTRICTS.map(d => {
@@ -26,6 +26,7 @@ const DistrictLayer = memo(function DistrictLayer({ discoveredSet, selectedId, t
             data-district-name={d.name}
             data-state={discovered ? 'discovered' : 'locked'}
             data-selected={d.id === selectedId}
+            data-inking={d.id === inkingId || undefined}
             data-quiz={marks?.[d.id]}
             role="button"
             tabIndex={d.id === tabbableId ? 0 : -1}
@@ -40,7 +41,8 @@ const DistrictLayer = memo(function DistrictLayer({ discoveredSet, selectedId, t
 
 // In quiz mode the map shows no district names (district aria-labels keep them) and Enter makes a guess.
 // `tripMap` ({ pins, routes } from tripMapData) is passed in plan mode only: the trip is drawn at each district's own anchor, nowhere else.
-export default function BangladeshMap({ discoveredSet, selectedId, hoveredId, marks, tripMap, onHoverChange, onActivate }) {
+// `justDiscoveredId` is the district just stamped for the first time: while it is selected it inks in once the stamp has landed.
+export default function BangladeshMap({ discoveredSet, selectedId, justDiscoveredId, hoveredId, marks, tripMap, onHoverChange, onActivate }) {
   const quiz = marks !== undefined; // quiz marks are passed only in quiz mode
   const [focusedId, setFocusedId] = useState(null);
   const [keyboardFocusId, setKeyboardFocusId] = useState(null);
@@ -75,6 +77,7 @@ export default function BangladeshMap({ discoveredSet, selectedId, hoveredId, ma
 
   const hovered = getDistrict(hoveredId);
   const selected = getDistrict(selectedId);
+  const inkingId = selected && selected.id === justDiscoveredId ? selected.id : null;
   const keyboardFocused = getDistrict(keyboardFocusId);
   const tooltipDistrict = quiz ? null : (hovered ?? keyboardFocused);
   // Outside a quiz the hover copy is the district itself (its own fill), so it can lift; a quiz keeps a tint, as its marks must
@@ -123,7 +126,14 @@ export default function BangladeshMap({ discoveredSet, selectedId, hoveredId, ma
           ))}
         </g>
 
-        <DistrictLayer discoveredSet={discoveredSet} selectedId={selectedId} tabbableId={tabbableId} marks={marks} handlers={handlers} />
+        <DistrictLayer
+          discoveredSet={discoveredSet}
+          selectedId={selectedId}
+          inkingId={inkingId}
+          tabbableId={tabbableId}
+          marks={marks}
+          handlers={handlers}
+        />
 
         <path className="map-division" d={MAP.divisionBorders} />
         <path className="map-outline" d={MAP.outline} />
@@ -132,10 +142,17 @@ export default function BangladeshMap({ discoveredSet, selectedId, hoveredId, ma
           <path key={`h${hovered.id}`} className="overlay-hover" data-state={hoverState} d={hovered.d} />
         )}
         {/* the selected district locks: a filled copy under its paper rim and stamp outline, lifted together; a click on a
-            lifted hover copy carries on from where that copy was (data-from-hover) */}
+            lifted hover copy carries on from where that copy was (data-from-hover). A district stamped for the first time keeps
+            the hatch (data-inking) until its ink spreads over the copy. */}
         {selected && (
-          <g key={`s${selected.id}`} className="overlay-selection" data-from-hover={selected.id === hoveredId || undefined}>
+          <g
+            key={`s${selected.id}`}
+            className="overlay-selection"
+            data-from-hover={selected.id === hoveredId || undefined}
+            data-inking={inkingId || undefined}
+          >
             <path className="overlay-selected-lift" d={selected.d} />
+            {inkingId && <path className="overlay-selected-ink" d={selected.d} />}
             <path className="overlay-selected-halo" d={selected.d} />
             <path className="overlay-selected" d={selected.d} />
           </g>

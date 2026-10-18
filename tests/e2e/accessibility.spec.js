@@ -20,7 +20,7 @@ for (const theme of ['light', 'dark']) {
     test('passport page open (verified content)', async ({ page }) => {
       await page.goto('/?district=54');
       await expect(page.getByRole('dialog', { name: 'Sylhet' })).toBeVisible();
-      await page.waitForTimeout(600); // let the stamp and sheet settle
+      await page.waitForFunction(() => document.getAnimations().every(a => a.playState !== 'running')); // let the first discovery's sequence finish
       expect(await scan(page)).toEqual([]);
     });
 

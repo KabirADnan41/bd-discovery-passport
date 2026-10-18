@@ -83,6 +83,13 @@
   --dur-moment: 460ms;
   --ease-spring: cubic-bezier(0.34, 1.2, 0.64, 1); /* a small overshoot; the real spring is set below where linear() works */
 
+  /* A first discovery plays in this order, on one clock (from the click): the page settles, the stamp lands, the district inks in
+     on the map as the stamp touches the page, and the count ticks as the ink reaches the district's edge. */
+  --seq-stamp: 320ms;
+  --seq-contact: calc(var(--seq-stamp) + var(--dur-stamp) * 0.34); /* the stamp touches the page 34% into its landing */
+  --seq-ink: 500ms;
+  --seq-count: 720ms;
+
   /* the map's lift: a hovered or selected district's copy rises off the land. Lengths in the map are its viewBox units (1000
      across: about 0.6px each at 1440×900, 0.4px on a phone). The selection sits a little higher, on a deeper shadow. */
   --lift-hover: 0 -4px;

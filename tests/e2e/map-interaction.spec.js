@@ -119,7 +119,7 @@ test('selecting locks a lifted copy and softens the rest of the land; closing th
   await expect.poll(() => landOpacity(page)).toBe(1);
 });
 
-test('beside the map the whole card waits for the map, then enters as one surface; phones and reduced motion do not wait', async ({
+test('the card enters once, as one surface, on its first open: beside the map it waits for the map; phones and reduced motion do not wait', async ({
   page,
   isMobile,
 }) => {
@@ -127,24 +127,26 @@ test('beside the map the whole card waits for the map, then enters as one surfac
   await district(page, '54').click();
   await expect(card).toBeVisible();
   expect(await card.evaluate(el => el.inert)).toBe(false); // focus can land in it while it enters
+  // the page inside the card (keyed by district) never has an entrance of its own, in any viewport or motion setting
+  const article = card.locator('.passport-page');
+  expect((await entranceOf(article)).name).toBe('none');
   if (isMobile) {
-    // the phone sheet keeps its own slide, and its page its fade, with no wait
+    // the phone sheet keeps its own slide, with no wait
     expect((await entranceOf(card)).name).toBe('none');
-    expect((await entranceOf(card.locator('.passport-enter'))).delay).toBe('0s');
   } else {
-    // band and page are held fully transparent through the wait, then enter together: the page has no entrance of its own
+    // band and page are held fully transparent through the wait, then enter together
     expect(await entranceOf(card)).toEqual({ name: 'page-from-map', delay: '0.07s', fill: 'backwards' });
     expect(await firstKeyframe(page, 'page-from-map')).toEqual({ at: '0%', opacity: '0' });
-    expect((await entranceOf(card.locator('.passport-enter'))).name).toBe('none');
   }
-  // reduced motion: no wait and no slide
+  // reduced motion: no wait and no slide, only the surface's plain fade (a transition, with no delay)
   await card.getByRole('button', { name: 'Close' }).click();
   await expect(card).toHaveCount(0);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await district(page, '54').click();
   await expect(card).toBeVisible();
   expect((await entranceOf(card)).name).toBe('none');
-  expect(await entranceOf(card.locator('.passport-enter'))).toMatchObject({ name: 'fade-in', delay: '0s' });
+  expect((await entranceOf(article)).name).toBe('none');
+  expect(await style(card, 'transitionDelay')).toBe('0s');
 });
 
 test('with reduced motion the copies neither move nor animate, and the selection is just as clear', async ({ page, isMobile }) => {

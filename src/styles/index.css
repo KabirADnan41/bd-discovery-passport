@@ -690,18 +690,122 @@
   min-height: 0;
   flex: 1;
 }
-.passport-enter {
-  animation: page-in var(--dur-reveal) var(--ease-out);
-}
-/* Beside the map the whole card answers the selection: band and page wait until the district has locked, then enter together
-   out from the map's side. With the card already open, the next district's page replaces the last in place. (The phone sheet
-   keeps its own slide, with no wait.) */
+/* The card enters once, on its first open, as one surface: beside the map it waits until the district has locked, then enters
+   out from the map's side; the phone sheet slides up with no wait; with reduced motion it only fades (a transition, in the last
+   block). With the card already open, the next district's page replaces the last in place, with no motion of its own: the page
+   inside the card (keyed by district, so it starts at the top) never animates. */
 @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
   .passport {
     animation: page-from-map var(--dur-component) var(--ease-out) 70ms backwards;
   }
-  .passport-enter {
-    animation: none;
+}
+/* On the card's first open its groups settle in a short stagger, just after the card has begun to arrive: the title, the
+   division, then the sections. The card sets data-settle until it shows another district, so a swap never settles. Phones keep
+   their sheet's slide alone. */
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .passport[data-settle] .settle {
+    animation: settle var(--dur-component) var(--ease-out) backwards;
+  }
+  .passport[data-settle] .settle-1 {
+    animation-delay: 110ms;
+  }
+  .passport[data-settle] .settle-2 {
+    animation-delay: 150ms;
+  }
+  .passport[data-settle] .settle-3 {
+    animation-delay: 190ms;
+  }
+}
+/* the page's side margins; on a phone's sheet they also keep clear of a notch when the phone is turned */
+.passport-inset {
+  --inset: 1.25rem;
+  padding-left: max(var(--inset), env(safe-area-inset-left));
+  padding-right: max(var(--inset), env(safe-area-inset-right));
+}
+@media (min-width: 640px) {
+  .passport-inset {
+    --inset: 1.75rem;
+  }
+}
+
+/* A place's kind: a small brass mark and its words, quiet beside the address. */
+.kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  color: var(--accent-brass-text);
+}
+.kind::before {
+  content: '';
+  width: 0.3rem;
+  height: 0.3rem;
+  flex-shrink: 0;
+  background: var(--accent-brass);
+  transform: rotate(45deg);
+}
+
+/* A place's actions (Directions, Add to trip): quiet buttons that answer a press. The press sinks and darkens at once and springs
+   back on release; in the trip, "Add to trip" has turned to a settled green "In your trip" that takes no press. */
+.act {
+  transition:
+    background-color var(--dur-hover) ease,
+    border-color var(--dur-hover) ease,
+    color var(--dur-hover) ease,
+    transform 220ms var(--ease-spring);
+}
+.act:active:not([aria-disabled='true']) {
+  border-color: var(--text-primary);
+  background: color-mix(in srgb, var(--text-primary) 12%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .btn.act:active:not(:disabled):not([aria-disabled='true']) {
+    transform: scale(0.97);
+    transition:
+      background-color 60ms ease,
+      border-color 60ms ease,
+      color var(--dur-hover) ease,
+      transform 90ms var(--ease-out);
+  }
+}
+.act[aria-disabled='true'] {
+  border-color: color-mix(in srgb, var(--text-success) 70%, var(--surface-paper));
+  background: color-mix(in srgb, var(--text-success) 9%, transparent);
+  color: var(--text-success);
+}
+/* the plus and the check share one place and cross over when aria-disabled changes: a transition runs only on a real change, never on
+   a page load, and it also runs back when the stop is removed from the planner */
+.act-icon {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.act-icon > svg {
+  position: absolute;
+  inset: 0;
+  transition:
+    opacity var(--dur-micro) var(--ease-out),
+    transform var(--dur-micro) var(--ease-spring);
+}
+.act-check {
+  opacity: 0;
+  transform: scale(0.5);
+}
+.act[aria-disabled='true'] .act-check {
+  opacity: 1;
+  transform: none;
+}
+.act[aria-disabled='true'] .act-plus {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.5);
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .act-ext {
+    transition: transform var(--dur-micro) var(--ease-out);
+  }
+  .act:hover .act-ext {
+    transform: translate(1px, -1px);
   }
 }
 
@@ -760,24 +864,21 @@
     transform: translateY(100%);
     transition-duration: 220ms;
   }
-  /* grab handle: the drag target at the top of the green band (content below keeps normal scrolling) */
+  /* grab handle: the drag target at the top of the green band (content below keeps normal scrolling). The target is a thumb-sized
+     strip across the band; the bar in it stays slim. */
   .sheet-handle {
     display: flex;
     justify-content: center;
-    padding: 8px 0 2px;
+    padding: 10px 0 6px;
     touch-action: none;
     user-select: none;
     cursor: grab;
   }
   .sheet-handle span {
-    width: 40px;
-    height: 4px;
-    border-radius: 2px;
+    width: 44px;
+    height: 5px;
+    border-radius: 3px;
     background: color-mix(in srgb, var(--text-on-cover) 55%, transparent);
-  }
-  /* the sheet already slides; its page only fades so there is one movement, not two */
-  .sheet .passport-enter {
-    animation-name: fade-in;
   }
   .sheet .passport-page {
     padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
@@ -943,8 +1044,34 @@
 [data-theme='dark'] .stamp {
   mix-blend-mode: normal;
 }
+/* A first discovery: the rubber stamp lands once the page has settled (the sequence tokens set when). It comes down larger and
+   slightly turned, presses in as it touches, gives back a hair and rests: transform only, with a short fade in front so it does not
+   show before it falls. Ink bleeds out of its ring at the touch, and the "New stamp" label arrives with it. */
 .stamp-impact {
-  animation: stamp-impact var(--dur-stamp) var(--ease-out) both;
+  animation:
+    stamp-land var(--dur-stamp) linear var(--seq-stamp) backwards,
+    stamp-appear 90ms linear var(--seq-stamp) backwards;
+}
+.stamp-bleed {
+  position: absolute;
+  inset: 3px; /* the stamp's outer ring, in from the edge of the 116px stamp */
+  border: 2.5px solid var(--accent-stamp);
+  border-radius: 50%;
+  opacity: 0;
+  filter: blur(1.5px);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+[data-theme='dark'] .stamp-bleed {
+  mix-blend-mode: normal;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .stamp-bleed {
+    animation: stamp-bleed 380ms var(--ease-out) var(--seq-contact);
+  }
+  .new-stamp {
+    animation: fade-in var(--dur-component) var(--ease-out) var(--seq-contact) backwards;
+  }
 }
 /* The latest stamps lie in a pile: newest first and on top (the list sets --pile). Every stamp but the oldest has a slot 1rem
    narrower than its button, so it overlaps the next one; on a narrow page the slots shrink further, never below a 44px target,
@@ -1006,6 +1133,45 @@
   background: var(--map-discovered);
 }
 
+/* ------------------------------------------------------------------ first discovery: the ink on the map, the count's tick */
+/* The district's lifted copy shows the unexplored hatch until the stamp lands, then ink spreads out over it from the middle (a
+   clip-path, the one thing that moves). The district itself, under the copy, holds the hatch for as long, so no green edge shows
+   early. With reduced motion the ink is simply there: the district is inked at once. */
+.overlay-selection[data-inking] .overlay-selected-lift {
+  fill: url(#hatch-locked);
+}
+.overlay-selected-ink {
+  fill: var(--map-selected);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .overlay-selected-ink {
+    animation: ink-in 320ms var(--ease-out) var(--seq-ink) backwards;
+  }
+  .district[data-inking] {
+    animation: ink-hold var(--seq-ink) linear;
+  }
+}
+/* The masthead's count after a discovery. The new number is in the text at once, so a screen reader and a copy of the page read
+   the truth; the picture keeps the old number until the ink is in, then the old one rises away and the new one rises in. */
+.count {
+  position: relative;
+  display: inline-block;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .count[data-prev] {
+    animation: count-in var(--dur-component) var(--ease-out) var(--seq-count) backwards;
+  }
+  .count[data-prev]::before {
+    content: attr(data-prev);
+    content: attr(data-prev) / '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    animation: count-out var(--dur-component) var(--ease-out) var(--seq-count) forwards;
+  }
+}
+
 /* theme switches are instant: no half-faded controls mid-switch */
 [data-theme-switching] *,
 [data-theme-switching] *::before,
@@ -1025,16 +1191,16 @@
     translate: -50% calc(-100% - 6px);
   }
 }
-@keyframes page-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-}
 @keyframes page-from-map {
   from {
     opacity: 0;
     transform: translateX(-12px);
+  }
+}
+@keyframes settle {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
   }
 }
 /* quiz: one soft pulse on a wrong guess (reduced motion: the fill alone) */
@@ -1043,24 +1209,66 @@
     opacity: 0.7;
   }
 }
-/* press, overshoot, settle: the rubber stamp hits the page */
-@keyframes stamp-impact {
+/* The rubber stamp lands (460ms): a heavy fall that speeds up into the page, a press as it touches (34% in), a hair of give back,
+   then rest. Its own opacity is not touched here. */
+@keyframes stamp-land {
   0% {
-    opacity: 0;
-    transform: scale(1.6) rotate(calc(var(--stamp-rot) - 10deg));
-    filter: blur(2px);
+    transform: scale(1.32) rotate(calc(var(--stamp-rot) - 6deg));
+    animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.5);
   }
-  55% {
-    opacity: 1;
-    transform: scale(0.94) rotate(var(--stamp-rot));
-    filter: blur(0);
+  34% {
+    transform: scale(0.955) rotate(var(--stamp-rot));
+    animation-timing-function: var(--ease-out);
   }
-  75% {
-    transform: scale(1.03) rotate(var(--stamp-rot));
+  66% {
+    transform: scale(1.014) rotate(var(--stamp-rot));
+    animation-timing-function: var(--ease-out);
   }
   100% {
-    opacity: 1;
     transform: scale(1) rotate(var(--stamp-rot));
+  }
+}
+@keyframes stamp-appear {
+  from {
+    opacity: 0;
+  }
+}
+/* the ink squeezes out around the ring at the touch, then dries */
+@keyframes stamp-bleed {
+  from {
+    opacity: 0.3;
+    transform: scale(0.985);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+}
+/* the lifted copy of a newly discovered district takes its ink from the middle outwards */
+@keyframes ink-in {
+  from {
+    clip-path: circle(0% at 50% 50%);
+  }
+  to {
+    clip-path: circle(72% at 50% 50%);
+  }
+}
+@keyframes ink-hold {
+  from,
+  to {
+    fill: url(#hatch-locked);
+  }
+}
+@keyframes count-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.45em);
+  }
+}
+@keyframes count-out {
+  to {
+    opacity: 0;
+    transform: translateY(-0.45em);
   }
 }
 
@@ -1092,7 +1300,6 @@
       transform: none;
     }
   }
-  .passport-enter,
   .map-tooltip {
     animation-name: fade-in;
   }
@@ -1101,11 +1308,14 @@
   .overlay-selection .overlay-selected {
     animation: none;
   }
-  .stamp-impact {
+  .stamp-impact,
+  .new-stamp {
     animation: fade-in 200ms var(--ease-out) both;
   }
   .mode-tab,
-  .mode-tabs-indicator {
+  .mode-tabs-indicator,
+  .act,
+  .act-icon > svg {
     transition: none;
   }
   .btn:active:not(:disabled):not([aria-disabled='true']) {

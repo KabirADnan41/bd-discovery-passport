@@ -557,6 +557,7 @@ export default function GameBoard() {
             <BangladeshMap
               discoveredSet={discoveredSet}
               selectedId={selectedId}
+              justDiscoveredId={justDiscoveredId}
               hoveredId={hoveredId}
               marks={marks}
               tripMap={tripOnMap ? tripMap : undefined}

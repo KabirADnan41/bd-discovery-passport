@@ -1,12 +1,28 @@
+import { useState } from 'react';
 import { formatBn } from '../../lib/districtData';
+
+/**
+ * The count before a rise of exactly one (a discovery), for the tick in index.css; null after any other change (a reset, a sign-in
+ * bringing stamps along) and once the tick has played. Only the picture ticks: the text always holds the true count.
+ */
+function useCountRise(count) {
+  const [seen, setSeen] = useState({ count, from: null });
+  // adjusting state while rendering, as usePresence does
+  if (seen.count !== count) setSeen({ count, from: count === seen.count + 1 ? seen.count : null });
+  const done = () => setSeen(s => (s.from === null ? s : { ...s, from: null }));
+  return [seen.from, done];
+}
 
 // The masthead count. The numbers carry the meaning; the Bengali repeats them for Bengali readers (under the count on tablets,
 // beside it on wide screens).
 export default function DiscoveryProgress({ count, total }) {
+  const [from, tickDone] = useCountRise(count);
   return (
     <div className="shrink-0 text-right xl:flex xl:items-baseline xl:gap-2.5">
       <p className="leading-none whitespace-nowrap">
-        <span className="text-[1.25rem] font-[650] tabular-nums">{count}</span>
+        <span key={count} className="count text-[1.25rem] font-[650] tabular-nums" data-prev={from ?? undefined} onAnimationEnd={tickDone}>
+          {count}
+        </span>
         <span className="text-ink-3 tabular-nums"> / {total}</span>
         <span className="sr-only"> districts discovered</span>
         <span className="ml-1.5 hidden text-[0.85rem] text-ink-3 sm:inline" aria-hidden="true">
@@ -14,7 +30,10 @@ export default function DiscoveryProgress({ count, total }) {
         </span>
       </p>
       <p lang="bn" className="mt-0.5 hidden text-[0.75rem] leading-tight text-ink-3 sm:block xl:mt-0 xl:text-[0.8rem]" aria-hidden="true">
-        {formatBn(count)}/{formatBn(total)} জেলা
+        <span key={count} className="count" data-prev={from === null ? undefined : formatBn(from)}>
+          {formatBn(count)}
+        </span>
+        /{formatBn(total)} জেলা
       </p>
     </div>
   );
