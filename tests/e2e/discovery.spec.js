@@ -1,4 +1,4 @@
-import { test, expect, countText } from './fixtures.js';
+import { test, expect, countText, separatorLineGap } from './fixtures.js';
 
 const openCard = (page, name) => page.getByRole('dialog', { name });
 // The gazetteer entry for a district (the map path has the same accessible name prefix).
@@ -66,6 +66,17 @@ test('places to go load on card open with Google Maps directions in a new tab', 
   // measured at rest: mid-entrance the page is still sliding in, and a translated box can measure a float rounding under its height
   await page.waitForFunction(() => document.getAnimations().every(a => a.playState !== 'running'));
   expect((await directions.boundingBox()).height).toBeGreaterThanOrEqual(44);
+});
+
+test('a place shows its Bengali note and Bengali kind beside the English', async ({ page }) => {
+  await indexEntry(page, 'Nilphamari').click();
+  const card = openCard(page, 'Nilphamari');
+  const places = card.locator('section', { has: page.getByRole('heading', { name: /^Places to go/ }) });
+  const nilsagar = places.getByRole('listitem').filter({ hasText: 'Nilsagar' });
+  await expect(nilsagar.locator('.kind')).toHaveText('Historic lake');
+  await expect(nilsagar.locator('.kind + [lang="bn"]')).toHaveText('ঐতিহাসিক লেক');
+  await expect(nilsagar.locator('p[lang="bn"]', { hasText: 'পরিযায়ী পাখি' })).toBeVisible();
+  expect(await separatorLineGap(nilsagar), 'the · starts the address line').toBeLessThan(4);
 });
 
 test('stamps persist across reloads (guest)', async ({ page }) => {

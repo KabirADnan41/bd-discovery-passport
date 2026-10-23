@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures.js';
+import { test, expect, separatorLineGap } from './fixtures.js';
 
 // The atlas layout's guardrails. On a desktop the journal rests on the atlas sheet's edge but never on the map, so no district
 // is covered and the map keeps every click up to its right edge. On a phone nothing scrolls sideways.
@@ -62,6 +62,27 @@ test('phone: no sideways scrolling on Explore or with a district open', async ({
   await expect(page.getByRole('dialog', { name: 'Sylhet' })).toBeVisible();
   expect(await overflow(), 'a district open').toBeLessThanOrEqual(0);
 });
+
+// The longest Bengali kind (Meherpur) and the longest Bengali note (Sylhet) must wrap inside a phone screen.
+for (const [district, place, kindBn] of [
+  ['Meherpur', 'Bhatpara Nilkuthi', 'নীলকুঠির ধ্বংসাবশেষ ও উদ্যান'],
+  ['Sylhet', 'Bichanakandi', 'নদীতে নৌকা ভ্রমণ'],
+]) {
+  test(`phone: ${place}'s Bengali kind and note wrap without sideways scrolling`, async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'phone layout');
+    await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
+    await page.locator('#district-index').getByRole('button', { name: new RegExp(`^${district}`) }).click();
+    const row = page.getByRole('dialog', { name: district }).getByRole('listitem').filter({ hasText: place });
+    const label = row.locator('.kind + [lang="bn"]');
+    await label.scrollIntoViewIfNeeded();
+    await expect(label).toHaveText(kindBn);
+    const width = page.viewportSize().width;
+    for (const el of [label, row.locator('p[lang="bn"]')]) expect((await el.boundingBox()).x + (await el.boundingBox()).width).toBeLessThanOrEqual(width);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+    expect(await separatorLineGap(row), 'the · starts the address line').toBeLessThan(4);
+  });
+}
 
 // A long trip runs the planner far below the screen. On desktop widths the map beside it stays in view (the sheet is sticky and
 // always fits the screen), the page keeps its one scroll (no scroll box inside the planner) and nothing covers the planner.
