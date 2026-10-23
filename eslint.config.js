@@ -26,8 +26,13 @@ export default [
     languageOptions: { sourceType: 'script', globals: globals.browser },
   },
   {
-    files: ['scripts/**/*.mjs', 'tests/**/*.{js,mjs}', '*.config.js'],
-    languageOptions: { ecmaVersion: 'latest', sourceType: 'module', globals: { ...globals.node, ...globals.browser } },
+    files: ['scripts/**/*.mjs', 'tests/**/*.{js,mjs,jsx}', '*.config.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: { ...globals.node, ...globals.browser },
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
   },
   {
     files: ['functions/**/*.js', 'server/**/*.js', 'shared/**/*.js'],
