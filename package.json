@@ -6,13 +6,14 @@
   "type": "module",
   "license": "MIT",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.13"
   },
   "scripts": {
     "dev": "vite",
     "build:map": "node scripts/build-district-map.mjs",
     "validate:data": "node scripts/validate-map-data.mjs",
     "build": "npm run validate:data && vite build",
+    "check:dist": "node scripts/check-dist.mjs",
     "preview": "wrangler pages dev --port 8788 --ip 127.0.0.1",
     "lint": "eslint .",
     "test": "vitest run",
@@ -47,6 +48,6 @@
     "topojson-simplify": "3.0.3",
     "vite": "8.3.1",
     "vitest": "5.0.2",
-    "wrangler": "4.142.0"
+    "wrangler": "4.149.0"
   }
 }

@@ -45,7 +45,20 @@ export async function onRequest(context) {
     return await context.next();
   } catch (e) {
     if (e instanceof HttpError) return error(e.status, e.message);
-    console.error('api error', e);
+    // One short JSON line, never the error object: D1 errors carry SQLite text in `cause`. No body, cookie, token, key or IP.
+    console.error(
+      JSON.stringify({
+        event: 'api_error',
+        method: request.method,
+        route: new URL(request.url).pathname,
+        error: e?.name ?? null,
+        // quoted parts can echo values (a D1 type error quotes the bound value, a JSON error a piece of its input)
+        message: String(e?.message ?? '')
+          .replace(/'[^']*'|"[^"]*"/g, quoted => `${quoted[0]}…${quoted[0]}`)
+          .slice(0, 200),
+        ray: request.headers.get('cf-ray'),
+      }),
+    );
     return error(500, 'Something went wrong. Please try again.');
   }
 }

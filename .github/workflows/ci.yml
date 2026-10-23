@@ -28,6 +28,9 @@ jobs:
 
       - run: npm run build
 
+      - name: Build output has no source maps or server-only code
+        run: npm run check:dist
+
       - name: Throwaway pepper and local D1 for the API tests
         run: |
           node -e "require('fs').writeFileSync('.dev.vars','AUTH_PEPPER='+require('crypto').randomBytes(32).toString('base64url')+'\n')"
