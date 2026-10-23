@@ -1,4 +1,4 @@
-import { test, expect, countText } from './fixtures.js';
+import { test, expect, countText, separatorLineGap } from './fixtures.js';
 
 const openCard = (page, name) => page.getByRole('dialog', { name });
 // The gazetteer entry for a district (the map path has the same accessible name prefix).
@@ -76,6 +76,7 @@ test('a place shows its Bengali note and Bengali kind beside the English', async
   await expect(nilsagar.locator('.kind')).toHaveText('Historic lake');
   await expect(nilsagar.locator('.kind + [lang="bn"]')).toHaveText('ঐতিহাসিক লেক');
   await expect(nilsagar.locator('p[lang="bn"]', { hasText: 'পরিযায়ী পাখি' })).toBeVisible();
+  expect(await separatorLineGap(nilsagar), 'the · starts the address line').toBeLessThan(4);
 });
 
 test('stamps persist across reloads (guest)', async ({ page }) => {

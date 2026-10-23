@@ -38,10 +38,23 @@ describe('ClaimList Bengali text in the Living Atlas place row', () => {
     expect(kind.parentElement.textContent).toBe('Historic lakeঐতিহাসিক লেক·Dhobadanga, Nilphamari');
   });
 
+  it('keeps the · with the start of the address so it never dangles when the address wraps', () => {
+    for (const items of [[place()], [place({ category: 'Unlabelled kind' })]]) {
+      const { container, unmount } = render(<ClaimList items={items} kindLabel={kindLabel} kindLabelBn={kindLabelBn} />);
+      const meta = container.querySelector('.kind').parentElement;
+      const dot = [...meta.querySelectorAll('[aria-hidden="true"]')].find(el => el.textContent === '·');
+      // one item on the metadata line: the hidden dot first, then the address text, which still wraps normally
+      expect(dot.parentElement.parentElement).toBe(meta);
+      expect(dot.parentElement.textContent).toBe('·Dhobadanga, Nilphamari');
+      expect(dot.parentElement.firstChild).toBe(dot);
+      unmount();
+    }
+  });
+
   it('falls back to English only when the note or the kind has no Bengali', () => {
     const { container } = render(<ClaimList items={[place({ category: 'Unlabelled kind' })]} kindLabel={kindLabel} kindLabelBn={kindLabelBn} />);
     expect(screen.getByText('Watch migratory birds at an old lake.')).toBeTruthy();
-    expect(container.querySelector('.kind').nextElementSibling.textContent).toBe('·');
+    expect(container.querySelector('.kind').nextElementSibling.textContent).toBe('·Dhobadanga, Nilphamari');
     expect(bengaliTexts(container)).toEqual(['টেস্ট লেক']);
   });
 

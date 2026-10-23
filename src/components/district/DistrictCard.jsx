@@ -55,11 +55,14 @@ export function ClaimList({ items, kindLabel, kindLabelBn, isInTrip, onAddToTrip
                 {kindLabelBn(item)}
               </span>
             )}
+            {/* the · leads the address as one item, so a wrap moves them together and the address still wraps inside */}
             {item.address && (
-              <>
-                <span aria-hidden="true">·</span>
-                <span>{item.address}</span>
-              </>
+              <span>
+                <span aria-hidden="true" className="mr-2">
+                  ·
+                </span>
+                {item.address}
+              </span>
             )}
           </p>
           <p className="mt-2 max-w-[60ch] text-[0.95rem] leading-[1.55] text-ink-2">{item.note}</p>

@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures.js';
+import { test, expect, separatorLineGap } from './fixtures.js';
 
 // The atlas layout's guardrails. On a desktop the journal rests on the atlas sheet's edge but never on the map, so no district
 // is covered and the map keeps every click up to its right edge. On a phone nothing scrolls sideways.
@@ -80,6 +80,7 @@ for (const [district, place, kindBn] of [
     const width = page.viewportSize().width;
     for (const el of [label, row.locator('p[lang="bn"]')]) expect((await el.boundingBox()).x + (await el.boundingBox()).width).toBeLessThanOrEqual(width);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+    expect(await separatorLineGap(row), 'the · starts the address line').toBeLessThan(4);
   });
 }
 

@@ -27,3 +27,21 @@ export const test = base.extend({
 export { expect };
 
 export const countText = async page => (await page.getByRole('banner').innerText()).match(/(\d+)\s*\/\s*64/)?.[1];
+
+/**
+ * Pixels between the top of a place row's `·` separator and the first line of the address after it: 0 when they share
+ * a line, about a line height when the separator dangles at the end of the line above.
+ */
+export const separatorLineGap = row =>
+  row.locator('p:has(> .kind)').evaluate(meta => {
+    const dot = [...meta.querySelectorAll('[aria-hidden="true"]')].find(el => el.textContent === '·');
+    const walker = document.createTreeWalker(meta, NodeFilter.SHOW_TEXT);
+    let address = null;
+    for (let node = walker.nextNode(); node && !address; node = walker.nextNode()) {
+      const after = dot.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING;
+      if (after && !dot.contains(node) && node.textContent.trim()) address = node;
+    }
+    const range = document.createRange();
+    range.selectNodeContents(address);
+    return Math.abs(range.getClientRects()[0].top - dot.getBoundingClientRect().top);
+  });
