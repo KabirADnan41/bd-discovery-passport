@@ -33,7 +33,8 @@ test('sign up needs the terms box, then brings guest stamps along', async ({ pag
   await dialog.getByRole('button', { name: 'Create account' }).click();
   await expect(page.getByRole('button', { name: user })).toBeVisible({ timeout: 15_000 });
 
-  expect(await page.evaluate(() => localStorage.getItem('bd-discovery-passport:v1'))).toBeNull(); // guest copy cleared
+  // the guest copy is cleared once the server confirms the merged stamps, which can land after the account button shows
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('bd-discovery-passport:v1'))).toBeNull();
   await page.locator('[data-district-id="54"]').click();
   await expect.poll(() => page.evaluate(() => fetch('/api/me').then(r => r.json()).then(j => j.discovered))).toEqual(['1', '54']);
 });
