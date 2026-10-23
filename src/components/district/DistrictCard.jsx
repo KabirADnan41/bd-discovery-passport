@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { formatBn, formatCoord, formatEn } from '../../lib/districtData';
-import { directionsUrl, loadPlaces } from '../../lib/places';
+import { categoryBn, directionsUrl, loadPlaces } from '../../lib/places';
 import { dampedOffset, shouldDismiss } from '../../lib/sheetGesture';
 import PassportStamp from './PassportStamp';
 
@@ -29,8 +29,11 @@ function AddToTripButton({ place, inTrip, onAdd }) {
   );
 }
 
-/** `onAddToTrip` is passed only for places, so landmarks and culture items get no trip button. */
-function ClaimList({ items, kindLabel, isInTrip, onAddToTrip }) {
+/**
+ * `onAddToTrip` is passed only for places, so landmarks and culture items get no trip button.
+ * `kindLabelBn` (places only) adds a Bengali kind label; without one, or without `noteBn`, the item stays English.
+ */
+export function ClaimList({ items, kindLabel, kindLabelBn, isInTrip, onAddToTrip }) {
   return (
     <ul>
       {items.map(item => (
@@ -46,6 +49,12 @@ function ClaimList({ items, kindLabel, isInTrip, onAddToTrip }) {
           {/* the kind of place is a small brass mark in front of the address, not a label above the name */}
           <p className="mt-1 flex flex-wrap items-baseline gap-x-2 text-[0.8125rem] leading-snug text-ink-3">
             <span className="kind">{kindLabel(item)}</span>
+            {/* the Bengali kind is its own item, so a long one wraps to the next line instead of widening the brass mark */}
+            {kindLabelBn?.(item) && (
+              <span lang="bn" className="text-brass">
+                {kindLabelBn(item)}
+              </span>
+            )}
             {item.address && (
               <>
                 <span aria-hidden="true">·</span>
@@ -54,6 +63,11 @@ function ClaimList({ items, kindLabel, isInTrip, onAddToTrip }) {
             )}
           </p>
           <p className="mt-2 max-w-[60ch] text-[0.95rem] leading-[1.55] text-ink-2">{item.note}</p>
+          {item.noteBn && (
+            <p lang="bn" className="mt-1 max-w-[60ch] text-[0.95rem] leading-[1.55] text-ink-2">
+              {item.noteBn}
+            </p>
+          )}
           {item.address && (
             <div className="mt-2.5 flex flex-wrap items-center gap-2">
               <a className="btn btn-quiet act" href={directionsUrl(item.name.en, item.address)} target="_blank" rel="noopener noreferrer">
@@ -108,7 +122,9 @@ function PlacesToGo({ id, isInTrip, onAddToTrip }) {
     <Section title="Places to go" bn="দেখার জায়গা">
       {places === null && <p className="text-[0.9rem] text-ink-3">Loading places…</p>}
       {places === false && <p className="text-[0.9rem] text-ink-3">Places could not load.</p>}
-      {places && <ClaimList items={places} kindLabel={item => item.category} isInTrip={isInTrip} onAddToTrip={onAddToTrip} />}
+      {places && (
+        <ClaimList items={places} kindLabel={item => item.category} kindLabelBn={item => categoryBn(item.category)} isInTrip={isInTrip} onAddToTrip={onAddToTrip} />
+      )}
     </Section>
   );
 }

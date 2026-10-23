@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
-import { directionsUrl } from '../../src/lib/places';
+import { categoryBn, directionsUrl } from '../../src/lib/places';
+import CATEGORIES_BN from '../../src/data/categories.bn.json';
 
 const PREFIX = 'https://www.google.com/maps/dir/?api=1&destination=';
 
@@ -18,5 +19,21 @@ describe('directionsUrl', () => {
     expect(destination).not.toMatch(/[&#?= ]/);
     expect(new URL(url).searchParams.get('destination')).toBe("St. Martin's Island & Chera Dwip, Teknaf, Cox's Bazar, Bangladesh");
     expect(new URL(url).searchParams.get('api')).toBe('1');
+  });
+});
+
+describe('categoryBn', () => {
+  it('gives the Bengali label for a place category', () => {
+    expect(categoryBn('Historic lake')).toBe(CATEGORIES_BN['Historic lake']);
+    expect(categoryBn('Historic lake')).toMatch(/[ঀ-৿]/);
+  });
+
+  it('gives nothing for a category without a label, so the label stays English', () => {
+    expect(categoryBn('Not a place category')).toBeUndefined();
+    expect(categoryBn(undefined)).toBeUndefined();
+  });
+
+  it('reads only the label file own keys, never inherited object members', () => {
+    for (const key of ['constructor', 'toString', '__proto__', 'hasOwnProperty']) expect(categoryBn(key)).toBeUndefined();
   });
 });
