@@ -66,6 +66,16 @@ test('places to go load on card open with Google Maps directions in a new tab', 
   expect((await directions.boundingBox()).height).toBeGreaterThanOrEqual(44);
 });
 
+test('a place shows its Bengali note and Bengali kind beside the English', async ({ page }) => {
+  await indexEntry(page, 'Nilphamari').click();
+  const card = openCard(page, 'Nilphamari');
+  const places = card.locator('section', { has: page.getByRole('heading', { name: /^Places to go/ }) });
+  const nilsagar = places.getByRole('listitem').filter({ hasText: 'Nilsagar' });
+  await expect(nilsagar.getByText('Historic lake')).toBeVisible();
+  await expect(nilsagar.locator('[lang="bn"]', { hasText: 'ঐতিহাসিক লেক' })).toBeVisible();
+  await expect(nilsagar.locator('p[lang="bn"]', { hasText: 'পরিযায়ী পাখি' })).toBeVisible();
+});
+
 test('stamps persist across reloads (guest)', async ({ page }) => {
   await indexEntry(page, 'Dhaka').click();
   await page.keyboard.press('Escape');
